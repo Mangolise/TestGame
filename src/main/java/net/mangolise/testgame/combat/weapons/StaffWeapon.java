@@ -1,27 +1,26 @@
 package net.mangolise.testgame.combat.weapons;
 
 import net.mangolise.testgame.combat.Attack;
-import net.mangolise.testgame.events.ProjectileCollideAnyEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
-import net.mangolise.testgame.projectiles.VanillaProjectile;
-import net.minestom.server.MinecraftServer;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.DamageType;
-import net.minestom.server.event.EventListener;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.tag.Tag;
 
-import java.util.Collection;
+import java.util.*;
 import java.util.function.Consumer;
 
 public record StaffWeapon(int level) implements Attack.Node {
     
     public static final Tag<Player> STAFF_USER = Tag.Transient("testgame.attack.staff.user");
-    public static final Tag<Double> VELOCITY = Tag.Double("testgame.attack.staff.velocity").defaultValue(6.0);
-    public static final Tag<Double> EXPLOSION_SIZE = Tag.Double("testgame.attack.staff.explosion_size").defaultValue(3.0);
+    public static final Tag<AttackableMob> HIT_ENTITY = Tag.Transient("testgame.attack.staff.hit_entity");
+    public static final Tag<Double> ARC_CHANCE = Tag.Double("testgame.attack.staff.arc_chance").defaultValue(0.5);
     
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
@@ -29,8 +28,8 @@ public record StaffWeapon(int level) implements Attack.Node {
         if (next != null) {
             // modifiers only
             
-            // staff has a staff damage of 3, and increases by 0.5 per level
-            attack.setTag(Attack.DAMAGE, 3 + level * 0.5);
+            // staff has a staff damage of 6, and increases by 0.5 per level
+            attack.setTag(Attack.DAMAGE, 6 + level * 0.5);
 
             // staff has a base crit change of 0.5, and increases by 0.1 per level
             attack.setTag(Attack.CRIT_CHANCE, 0.5 + level * 0.1);
@@ -46,44 +45,53 @@ public record StaffWeapon(int level) implements Attack.Node {
         }
         
         // spawn spell
-        var instance = user.getInstance();
+        AttackableMob originalEntity = attack.getTag(HIT_ENTITY);
 
-        var fireballEntity = new VanillaProjectile(user, EntityType.FIREBALL);
-        fireballEntity.setNoGravity(true);
-
-        var playerScale = user.getAttribute(Attribute.SCALE).getValue();
-
-        var point = user.getPosition().add(user.getPosition().direction().mul(attack.getTag(EXPLOSION_SIZE) / 2.0));
-        fireballEntity.setInstance(instance, point.add(0, user.getEyeHeight() * playerScale, 0));
-        
-        var velocity = user.getPosition().direction().mul(attack.getTag(VELOCITY));
-
-        fireballEntity.setVelocity(velocity);
-
-        MinecraftServer.getGlobalEventHandler().addListener(EventListener.builder(ProjectileCollideAnyEvent.class)
-                .handler(event -> {
-                    Collection<Entity> entities = instance.getNearbyEntities(event.getCollisionPosition(), attack.getTag(EXPLOSION_SIZE));
-                    for (Entity entity : entities) {
-                        if (entity instanceof AttackableMob mob) {
-                            mob.applyAttack(DamageType.ARROW, attack);
-                        }
-                    }
-
-                    instance.sendGroupedPacket(new ParticlePacket(Particle.SMOKE, false, true, fireballEntity.getPosition(), new Pos(0, 0, 0), 1, 75));
-                    instance.sendGroupedPacket(new ParticlePacket(Particle.EXPLOSION, false, true, fireballEntity.getPosition(), new Pos(0, 0, 0), 1, 5));
-                    instance.sendGroupedPacket(new ParticlePacket(Particle.LAVA, false, true, fireballEntity.getPosition(), new Pos(0, 0, 0), 1, 25));
-                    fireballEntity.remove();
-                })
-                .filter(event -> event.getEntity() == fireballEntity)
-                .expireCount(1)
-                .expireWhen(ignored -> fireballEntity.isRemoved())
-                .build()
-        );
+        Set<UUID> chainedEntities = new HashSet<>();
+        chainAttack(chainedEntities, originalEntity, attack, 1.0);
     }
 
     @Override
     public double priority() {
         return PRIORITY_WEAPON;
+    }
+
+    private void chainAttack(Set<UUID> chainedEntities, AttackableMob attackableMob, Attack attack, double depth) {
+        if (attackableMob == null) {
+            return;
+        }
+
+        Entity originEntity = attackableMob.getEntity();
+
+        chainedEntities.add(originEntity.getUuid());
+        attackableMob.applyAttack(DamageType.PLAYER_ATTACK, attack);
+
+        Instance instance = originEntity.getInstance();
+
+        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), 2.5);
+        for (Entity entity : entities) {
+            if (!(entity instanceof AttackableMob mob) || chainedEntities.contains(entity.getUuid()) || (Math.random() + attack.getTag(ARC_CHANCE)) / depth < 0.65) {
+                continue;
+            }
+
+            Vec end = entity.getPosition().asVec().add(0, entity.getEyeHeight(), 0);
+            Vec start = originEntity.getPosition().asVec().add(0, originEntity.getEyeHeight(), 0);
+
+            Vec direction = end.sub(start);
+            double distance = originEntity.getDistance(entity);
+
+            for (double d = 0; d < distance; d += 0.1) {
+                Pos currentPos = originEntity.getPosition().add(direction.mul(d));
+
+                ParticlePacket particlePacket = new ParticlePacket(Particle.SCULK_CHARGE_POP, false, true, new Pos(currentPos.x(), currentPos.y() + entity.getEyeHeight(), currentPos.z()), new Pos(0, 0, 0), 0, 1);
+                instance.sendGroupedPacket(particlePacket);
+
+                ParticlePacket particlePacket2 = new ParticlePacket(Particle.BUBBLE_POP, false, true, new Pos(currentPos.x(), currentPos.y() + entity.getEyeHeight(), currentPos.z()), new Pos(0, 0, 0), 0, 1);
+                instance.sendGroupedPacket(particlePacket2);
+            }
+
+            chainAttack(chainedEntities, mob, attack, depth + 1.0);
+        }
     }
 }
 

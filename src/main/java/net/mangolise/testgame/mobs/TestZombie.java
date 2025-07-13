@@ -48,6 +48,11 @@ public class TestZombie extends EntityCreature implements AttackableMob {
     }
 
     @Override
+    public Entity getEntity() {
+        return this;
+    }
+
+    @Override
     public void tick(long time) {
         super.tick(time);
         

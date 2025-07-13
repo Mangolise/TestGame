@@ -142,43 +142,20 @@ public sealed interface Mod extends Attack.Node {
         }
     }
 
-    record StaffVelocity(int level) implements Mod {
+    record StaffArcChance(int level) implements Mod {
 
         @Override
         public Component description() {
             return Component.text()
-                    .append(Component.text("+ Multiplies spell velocity", NamedTextColor.GREEN))
-                    .append(Component.text("    Velocity multiplier: 2.0 + (1.0 per level)", NamedTextColor.RED))
+                    .append(Component.text("+ Adds to the chance for an arc to happen", NamedTextColor.GREEN))
+                    .append(Component.text("    Arc chance Addition: 1.0 + (0.1 per level)", NamedTextColor.RED))
                     .build();
         }
 
         @Override
         public void attack(Attack tags, @UnknownNullability Consumer<Attack> next) {
-            double velocity = 2.0 + (1.0 * level);
-            tags.updateTag(StaffWeapon.VELOCITY, velo -> velo * velocity);
-            next.accept(tags);
-        }
-
-        @Override
-        public double priority() {
-            return PRIORITY_STAT_MODIFIER;
-        }
-    }
-
-    record StaffExplosionSize(int level) implements Mod {
-
-        @Override
-        public Component description() {
-            return Component.text()
-                    .append(Component.text("+ Adds to the Staffs Explosion Size", NamedTextColor.GREEN))
-                    .append(Component.text("    Explosion Addition: 1.0 + (1.0 per level)", NamedTextColor.RED))
-                    .build();
-        }
-
-        @Override
-        public void attack(Attack tags, @UnknownNullability Consumer<Attack> next) {
-            double explosionSize = 1.0 + level;
-            tags.updateTag(StaffWeapon.EXPLOSION_SIZE, exploSize -> exploSize + explosionSize);
+            double arcChance = 1.0 + level;
+            tags.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + arcChance);
             next.accept(tags);
         }
 

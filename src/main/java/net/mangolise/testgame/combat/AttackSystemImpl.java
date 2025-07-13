@@ -5,10 +5,14 @@ import net.mangolise.testgame.combat.weapons.BowWeapon;
 import net.mangolise.testgame.combat.weapons.CannonBallBall;
 import net.mangolise.testgame.combat.weapons.SnakeWeapon;
 import net.mangolise.testgame.combat.weapons.StaffWeapon;
+import net.mangolise.testgame.mobs.AttackableMob;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerHand;
+import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.event.player.PlayerHandAnimationEvent;
+import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.item.Material;
 
 import java.util.*;
@@ -83,23 +87,28 @@ public final class AttackSystemImpl implements AttackSystem {
             var itemUseHand = player.getItemUseHand() == null ? PlayerHand.MAIN : player.getItemUseHand();
             var item = player.getItemInHand(itemUseHand);
 
-            // bow
-            if (item.material() == Material.BOW) {
-                BowWeapon bowWeapon = new BowWeapon(1);
-                AttackSystem.INSTANCE.use(player, bowWeapon, tags -> {
-                    tags.setTag(Attack.USER, player);
-                    tags.setTag(BowWeapon.BOW_USER, player);
-                });
-            } else if (item.material() == Material.SUNFLOWER) { // CannonBallBall
-                CannonBallBall weapon = new CannonBallBall(2);
-                AttackSystem.INSTANCE.use(player, weapon, tags -> tags.setTag(Attack.USER, player));
-            } else if (item.material() == Material.BLAZE_ROD) { // staff
+            onSwing(player, item.material());
+        });
+
+        MinecraftServer.getGlobalEventHandler().addListener(PlayerUseItemEvent.class, e -> {
+            var player = e.getPlayer();
+            onSwing(player, e.getItemStack().material());
+        });
+
+        MinecraftServer.getGlobalEventHandler().addListener(PlayerEntityInteractEvent.class, e -> {
+            Player player = e.getPlayer();
+
+            // staff
+            if (player.getItemInHand(e.getHand()).material() == Material.BLAZE_ROD) {
                 StaffWeapon staffWeapon = new StaffWeapon(1);
                 AttackSystem.INSTANCE.use(player, staffWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
                     tags.setTag(StaffWeapon.STAFF_USER, player);
+                    if (e.getTarget() instanceof AttackableMob target) {
+                        tags.setTag(StaffWeapon.HIT_ENTITY, target);
+                    }
                 });
-            } else if (item.material() == Material.STICK) { // staff
+            } else if (player.getItemInHand(e.getHand()).material() == Material.STICK) { // staff
                 SnakeWeapon snakeWeapon = new SnakeWeapon(1);
                 AttackSystem.INSTANCE.use(player, snakeWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
@@ -107,5 +116,19 @@ public final class AttackSystemImpl implements AttackSystem {
                 });
             }
         });
+    }
+
+    private void onSwing(Player player, Material material) {
+        // bow
+        if (material == Material.BOW) {
+            BowWeapon bowWeapon = new BowWeapon(1);
+            AttackSystem.INSTANCE.use(player, bowWeapon, tags -> {
+                tags.setTag(Attack.USER, player);
+                tags.setTag(BowWeapon.BOW_USER, player);
+            });
+        } else if (material == Material.SUNFLOWER) { // CannonBallBall
+            CannonBallBall weapon = new CannonBallBall(2);
+            AttackSystem.INSTANCE.use(player, weapon, tags -> tags.setTag(Attack.USER, player));
+        }
     }
 }
