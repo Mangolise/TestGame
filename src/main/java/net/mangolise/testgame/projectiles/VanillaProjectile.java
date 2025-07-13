@@ -43,7 +43,6 @@ public class VanillaProjectile extends Entity {
     @Override
     public void tick(long time) {
         final Pos from = getPosition();
-        System.out.println(getVelocity());
         super.tick(time);
 
         if (isRemoved()) {
