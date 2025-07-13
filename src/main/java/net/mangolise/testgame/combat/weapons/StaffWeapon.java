@@ -1,5 +1,6 @@
 package net.mangolise.testgame.combat.weapons;
 
+import net.krystilize.pathable.Path;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.minestom.server.coordinate.Point;
@@ -48,6 +49,15 @@ public record StaffWeapon(int level) implements Attack.Node {
         AttackableMob originalEntity = attack.getTag(HIT_ENTITY);
 
         Set<UUID> chainedEntities = new HashSet<>();
+
+        Vec playerPos = new Vec(user.getPosition().x(), user.getPosition().y() + user.getEyeHeight() * user.getAttribute(Attribute.SCALE).getValue(), user.getPosition().z());
+
+        Entity entity = originalEntity.getEntity();
+        var entityScale = entity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getBaseValue() : 1.0;
+        Vec entityPos = new Vec(entity.getPosition().x(), entity.getPosition().y() + entity.getEyeHeight() * entityScale, entity.getPosition().z());
+
+        createLightningLine(playerPos, entityPos, user.getInstance());
+
         chainAttack(chainedEntities, originalEntity, attack, 1.0);
     }
 
@@ -68,29 +78,37 @@ public record StaffWeapon(int level) implements Attack.Node {
 
         Instance instance = originEntity.getInstance();
 
-        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), 2.5);
+        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), 3);
         for (Entity entity : entities) {
             if (!(entity instanceof AttackableMob mob) || chainedEntities.contains(entity.getUuid()) || (Math.random() + attack.getTag(ARC_CHANCE)) / depth < 0.65) {
                 continue;
             }
 
-            Vec end = entity.getPosition().asVec().add(0, entity.getEyeHeight(), 0);
-            Vec start = originEntity.getPosition().asVec().add(0, originEntity.getEyeHeight(), 0);
+            var originEntityScale = originEntity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getBaseValue() : 1.0;
+            var entityScale = entity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getBaseValue() : 1.0;
 
-            Vec direction = end.sub(start);
-            double distance = originEntity.getDistance(entity);
+            Vec start = originEntity.getPosition().asVec().add(0, originEntity.getEyeHeight() * originEntityScale, 0);
+            Vec end = entity.getPosition().asVec().add(0, entity.getEyeHeight() * entityScale, 0);
 
-            for (double d = 0; d < distance; d += 0.1) {
-                Pos currentPos = originEntity.getPosition().add(direction.mul(d));
-
-                ParticlePacket particlePacket = new ParticlePacket(Particle.SCULK_CHARGE_POP, false, true, new Pos(currentPos.x(), currentPos.y() + entity.getEyeHeight(), currentPos.z()), new Pos(0, 0, 0), 0, 1);
-                instance.sendGroupedPacket(particlePacket);
-
-                ParticlePacket particlePacket2 = new ParticlePacket(Particle.BUBBLE_POP, false, true, new Pos(currentPos.x(), currentPos.y() + entity.getEyeHeight(), currentPos.z()), new Pos(0, 0, 0), 0, 1);
-                instance.sendGroupedPacket(particlePacket2);
-            }
+            createLightningLine(start, end, instance);
 
             chainAttack(chainedEntities, mob, attack, depth + 1.0);
+        }
+    }
+
+    private void createLightningLine(Vec start, Vec end, Instance instance) {
+        Path path = Path.line(start, end);
+        for (Path.Context context : path.equalIterate(0.2)) {
+            Pos offset = new Pos(0, 0, 0);
+
+            ParticlePacket particlePacket = new ParticlePacket(Particle.GLOW, false, true, context.pos(), offset, 0, 1);
+            instance.sendGroupedPacket(particlePacket);
+
+            ParticlePacket particlePacket2 = new ParticlePacket(Particle.BUBBLE_POP, false, true, context.pos(), offset, 0, 1);
+            instance.sendGroupedPacket(particlePacket2);
+
+            ParticlePacket particlePacket3 = new ParticlePacket(Particle.BUBBLE, false, true, context.pos(), offset, 0, 1);
+            instance.sendGroupedPacket(particlePacket3);
         }
     }
 }
