@@ -24,7 +24,7 @@ dependencies {
 tasks.withType<Jar> {
     manifest {
         // Change this to your main class
-        attributes["Main-Class"] = "net.mangolise.minestomgamejam2025.Test"
+        attributes["Main-Class"] = "net.mangolise.testgame.Test"
     }
 }
 
@@ -32,34 +32,35 @@ java {
     withSourcesJar()
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "serbleMaven"
-            url = uri("https://maven.serble.net/snapshots/")
-            credentials {
-                username = System.getenv("SERBLE_REPO_USERNAME")?:""
-                password = System.getenv("SERBLE_REPO_PASSWORD")?:""
-            }
-            authentication {
-                create<BasicAuthentication>("basic")
-            }
-        }
-    }
 
-    publications {
-        create<MavenPublication>("mavenGitCommit") {
-            groupId = "net.mangolise"
-            artifactId = "minestomgamejam2025"
-            version = versionStr
-            from(components["java"])
-        }
-
-        create<MavenPublication>("mavenLatest") {
-            groupId = "net.mangolise"
-            artifactId = "minestomgamejam2025"
-            version = "latest"
-            from(components["java"])
-        }
-    }
-}
+//publishing {
+//    repositories {
+//        maven {
+//            name = "serbleMaven"
+//            url = uri("https://maven.serble.net/snapshots/")
+//            credentials {
+//                username = System.getenv("SERBLE_REPO_USERNAME")?:""
+//                password = System.getenv("SERBLE_REPO_PASSWORD")?:""
+//            }
+//            authentication {
+//                create<BasicAuthentication>("basic")
+//            }
+//        }
+//    }
+//
+//    publications {
+//        create<MavenPublication>("mavenGitCommit") {
+//            groupId = "net.mangolise"
+//            artifactId = "testgame"
+//            version = versionStr
+//            from(components["java"])
+//        }
+//
+//        create<MavenPublication>("mavenLatest") {
+//            groupId = "net.mangolise"
+//            artifactId = "testgame"
+//            version = "latest"
+//            from(components["java"])
+//        }
+//    }
+//}
