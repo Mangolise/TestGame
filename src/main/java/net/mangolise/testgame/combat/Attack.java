@@ -1,7 +1,6 @@
 package net.mangolise.testgame.combat;
 
 import net.minestom.server.entity.Entity;
-import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagHandler;
 import net.minestom.server.tag.Taggable;

@@ -1,7 +1,7 @@
 package net.mangolise.testgame.combat.weapons;
 
 import net.mangolise.testgame.combat.Attack;
-import net.mangolise.testgame.events.ProjectileCollideWithAnyEvent;
+import net.mangolise.testgame.events.ProjectileCollideAnyEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.projectiles.VanillaProjectile;
 import net.minestom.server.MinecraftServer;
@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 public record StaffWeapon(int level) implements Attack.Node {
     
     public static final Tag<Player> STAFF_USER = Tag.Transient("testgame.attack.staff.user");
-    public static final Tag<Double> VELOCITY = Tag.Double("testgame.attack.staff.velocity").defaultValue(56.0);
+    public static final Tag<Double> VELOCITY = Tag.Double("testgame.attack.staff.velocity").defaultValue(6.0);
     public static final Tag<Double> EXPLOSION_SIZE = Tag.Double("testgame.attack.staff.explosion_size").defaultValue(3.0);
     
     @Override
@@ -48,7 +48,7 @@ public record StaffWeapon(int level) implements Attack.Node {
         // spawn spell
         var instance = user.getInstance();
 
-        var fireballEntity = new VanillaProjectile(user, attack, EntityType.FIREBALL);
+        var fireballEntity = new VanillaProjectile(user, EntityType.FIREBALL);
         fireballEntity.setNoGravity(true);
 
         var playerScale = user.getAttribute(Attribute.SCALE).getValue();
@@ -60,7 +60,7 @@ public record StaffWeapon(int level) implements Attack.Node {
 
         fireballEntity.setVelocity(velocity);
 
-        MinecraftServer.getGlobalEventHandler().addListener(EventListener.builder(ProjectileCollideWithAnyEvent.class)
+        MinecraftServer.getGlobalEventHandler().addListener(EventListener.builder(ProjectileCollideAnyEvent.class)
                 .handler(event -> {
                     Collection<Entity> entities = instance.getNearbyEntities(event.getCollisionPosition(), attack.getTag(EXPLOSION_SIZE));
                     for (Entity entity : entities) {

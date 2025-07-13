@@ -2,7 +2,6 @@ package net.mangolise.testgame.combat.weapons;
 
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
-import net.mangolise.testgame.events.ProjectileCollideWithAnyEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.projectiles.VanillaProjectile;
 import net.minestom.server.MinecraftServer;
@@ -12,7 +11,6 @@ import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.tag.Tag;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 
 public record BowWeapon(int level) implements Attack.Node {
@@ -45,7 +43,7 @@ public record BowWeapon(int level) implements Attack.Node {
         // spawn single arrow
         var instance = user.getInstance();
         
-        var arrow = new VanillaProjectile(user, attack, EntityType.ARROW);
+        var arrow = new VanillaProjectile(user, EntityType.ARROW);
         var playerScale = user.getAttribute(Attribute.SCALE).getValue();
         arrow.setInstance(instance, user.getPosition().add(0, user.getEyeHeight() * playerScale, 0));
         

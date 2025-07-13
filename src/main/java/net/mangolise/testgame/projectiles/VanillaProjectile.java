@@ -1,9 +1,8 @@
 package net.mangolise.testgame.projectiles;
 
-import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.events.ProjectileCollideBlockEvent;
 import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
-import net.mangolise.testgame.events.ProjectileCollideWithAnyEvent;
+import net.mangolise.testgame.events.ProjectileCollideAnyEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.minestom.server.collision.BoundingBox;
 import net.minestom.server.collision.SweepResult;
@@ -25,7 +24,7 @@ import java.lang.reflect.Field;
 public class VanillaProjectile extends Entity {
     private final Player shooter;
 
-    public VanillaProjectile(@Nullable Player shooter, Attack attack, EntityType entityType) {
+    public VanillaProjectile(@Nullable Player shooter, EntityType entityType) {
         super(entityType);
         this.shooter = shooter;
 
@@ -44,6 +43,7 @@ public class VanillaProjectile extends Entity {
     @Override
     public void tick(long time) {
         final Pos from = getPosition();
+        System.out.println(getVelocity());
         super.tick(time);
 
         if (isRemoved()) {
@@ -113,7 +113,7 @@ public class VanillaProjectile extends Entity {
 
             Pos posPos = getCollidedPosition(result).asPosition().withView(from);
 
-            ProjectileCollideWithAnyEvent event = new ProjectileCollideBlockEvent(this, posPos, block);
+            ProjectileCollideAnyEvent event = new ProjectileCollideBlockEvent(this, posPos, block);
             EventDispatcher.call(event);
             if (!event.isCancelled()) {
                 if (!this.isRemoved()) {
@@ -138,7 +138,7 @@ public class VanillaProjectile extends Entity {
             SweepResult result = new SweepResult(Double.MAX_VALUE, 0, 0, 0, null, 0, 0, 0, 0, 0, 0);
             if (entity.getBoundingBox().intersectBoxSwept(from.asVec(), movement, entity.getPosition(), boundingBox, result)) {
                 Pos posPos = getCollidedPosition(result).asPosition().withView(from);
-                final ProjectileCollideWithAnyEvent event = new ProjectileCollideEntityEvent(this, posPos, entity);
+                final ProjectileCollideAnyEvent event = new ProjectileCollideEntityEvent(this, posPos, entity);
                 EventDispatcher.call(event);
                 if (!event.isCancelled()) {
                     return true;

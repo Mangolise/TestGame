@@ -2,11 +2,11 @@ package net.mangolise.testgame.combat;
 
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.weapons.BowWeapon;
+import net.mangolise.testgame.combat.weapons.CannonBallBall;
 import net.mangolise.testgame.combat.weapons.StaffWeapon;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.PlayerHand;
-import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.event.player.PlayerHandAnimationEvent;
 import net.minestom.server.item.Material;
 
@@ -84,16 +84,15 @@ public final class AttackSystemImpl implements AttackSystem {
 
             // bow
             if (item.material() == Material.BOW) {
-
                 BowWeapon bowWeapon = new BowWeapon(1);
                 AttackSystem.INSTANCE.use(player, bowWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
                     tags.setTag(BowWeapon.BOW_USER, player);
                 });
-            }
-
-            // staff
-            if (item.material() == Material.BLAZE_ROD) {
+            } else if (item.material() == Material.SUNFLOWER) { // CannonBallBall
+                CannonBallBall weapon = new CannonBallBall(2);
+                AttackSystem.INSTANCE.use(player, weapon, tags -> tags.setTag(Attack.USER, player));
+            } else if (item.material() == Material.BLAZE_ROD) { // staff
                 StaffWeapon staffWeapon = new StaffWeapon(1);
                 AttackSystem.INSTANCE.use(player, staffWeapon, tags -> {
                     tags.setTag(Attack.USER, player);

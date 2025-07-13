@@ -4,7 +4,7 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 
-public class ProjectileCollideEntityEvent extends ProjectileCollideWithAnyEvent {
+public class ProjectileCollideEntityEvent extends ProjectileCollideAnyEvent {
     private final @NotNull Entity target;
 
     public ProjectileCollideEntityEvent(@NotNull Entity projectile, @NotNull Pos position, @NotNull Entity target) {

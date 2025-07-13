@@ -5,7 +5,7 @@ import net.minestom.server.entity.Entity;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
 
-public class ProjectileCollideBlockEvent extends ProjectileCollideWithAnyEvent {
+public class ProjectileCollideBlockEvent extends ProjectileCollideAnyEvent {
     private final @NotNull Block block;
 
     public ProjectileCollideBlockEvent(@NotNull Entity projectile, @NotNull Pos position, @NotNull Block block) {
