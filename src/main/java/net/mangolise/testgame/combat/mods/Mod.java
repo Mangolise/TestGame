@@ -4,6 +4,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.BowWeapon;
+import net.mangolise.testgame.combat.weapons.StaffWeapon;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.function.Consumer;
 
@@ -129,7 +131,7 @@ public sealed interface Mod extends Attack.Node {
 
         @Override
         public void attack(Attack attack, Consumer<Attack> next) {
-            double velocity = 1.3 + (level * 0.3);
+            double velocity = 2.0 + (1.0 * level);
             attack.updateTag(BowWeapon.VELOCITY, velo -> velo * velocity);
             next.accept(attack);
         }
@@ -137,6 +139,52 @@ public sealed interface Mod extends Attack.Node {
         @Override
         public double priority() {
             return PRIORITY_STAT_MODIFIER;
+        }
+    }
+
+    record StaffVelocity(int level) implements Mod {
+
+        @Override
+        public Component description() {
+            return Component.text()
+                    .append(Component.text("+ Multiplies spell velocity", NamedTextColor.GREEN))
+                    .append(Component.text("    Velocity multiplier: 2.0 + (1.0 per level)", NamedTextColor.RED))
+                    .build();
+        }
+
+        @Override
+        public void attack(Attack tags, @UnknownNullability Consumer<Attack> next) {
+            double velocity = 2.0 + (1.0 * level);
+            tags.updateTag(StaffWeapon.VELOCITY, velo -> velo * velocity);
+            next.accept(tags);
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_STAT_MODIFIER;
+        }
+    }
+
+    record StaffExplosionSize(int level) implements Mod {
+
+        @Override
+        public Component description() {
+            return Component.text()
+                    .append(Component.text("+ Adds to the Staffs Explosion Size", NamedTextColor.GREEN))
+                    .append(Component.text("    Explosion Addition: 1.0 + (1.0 per level)", NamedTextColor.RED))
+                    .build();
+        }
+
+        @Override
+        public void attack(Attack tags, @UnknownNullability Consumer<Attack> next) {
+            double explosionSize = 1.0 + level;
+            tags.updateTag(StaffWeapon.EXPLOSION_SIZE, exploSize -> exploSize + explosionSize);
+            next.accept(tags);
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_ADDITIVE_MODIFIER;
         }
     }
     

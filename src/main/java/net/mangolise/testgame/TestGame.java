@@ -120,6 +120,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
             player.getInventory().clear();
             player.getInventory().addItemStack(ItemStack.of(Material.BOW));
+            player.getInventory().addItemStack(ItemStack.of(Material.BLAZE_ROD));
         });
 
         Log.logger().info("Started game");

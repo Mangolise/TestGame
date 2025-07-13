@@ -1,7 +1,5 @@
 package net.mangolise.testgame;
 
-import net.mangolise.combat.CombatConfig;
-import net.mangolise.combat.MangoCombat;
 import net.mangolise.gamesdk.permissions.Permissions;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.gamesdk.util.PerformanceTracker;

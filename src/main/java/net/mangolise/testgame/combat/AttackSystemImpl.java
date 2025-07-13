@@ -2,6 +2,7 @@ package net.mangolise.testgame.combat;
 
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.weapons.BowWeapon;
+import net.mangolise.testgame.combat.weapons.StaffWeapon;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.PlayerHand;
@@ -88,6 +89,15 @@ public final class AttackSystemImpl implements AttackSystem {
                 AttackSystem.INSTANCE.use(player, bowWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
                     tags.setTag(BowWeapon.BOW_USER, player);
+                });
+            }
+
+            // staff
+            if (item.material() == Material.BLAZE_ROD) {
+                StaffWeapon staffWeapon = new StaffWeapon(1);
+                AttackSystem.INSTANCE.use(player, staffWeapon, tags -> {
+                    tags.setTag(Attack.USER, player);
+                    tags.setTag(StaffWeapon.STAFF_USER, player);
                 });
             }
         });

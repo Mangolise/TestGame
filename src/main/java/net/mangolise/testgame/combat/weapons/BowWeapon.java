@@ -95,7 +95,7 @@ class ArrowEntity extends Entity {
     private final Player shooter;
 
     public ArrowEntity(@Nullable Player shooter) {
-        super(EntityType.BAT);
+        super(EntityType.IRON_GOLEM);
         this.shooter = shooter;
 
         hasPhysics = false;
