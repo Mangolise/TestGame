@@ -7,5 +7,5 @@ import net.minestom.server.registry.RegistryKey;
 
 public interface AttackableMob {
     void applyAttack(RegistryKey<DamageType> type, Attack attack);
-    Entity getEntity();
+    Entity asEntity();
 }

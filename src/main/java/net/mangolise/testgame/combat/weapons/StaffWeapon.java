@@ -4,7 +4,6 @@ import net.krystilize.pathable.Path;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.util.ThrottledScheduler;
-import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
@@ -52,7 +51,7 @@ public record StaffWeapon(int level) implements Weapon {
 
             Vec playerPos = new Vec(user.getPosition().x(), user.getPosition().y() + user.getEyeHeight() * user.getAttribute(Attribute.SCALE).getValue(), user.getPosition().z());
 
-            Entity entity = originalEntity.getEntity();
+            Entity entity = originalEntity.asEntity();
             var entityScale = entity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getBaseValue() : 1.0;
             Vec entityPos = new Vec(entity.getPosition().x(), entity.getPosition().y() + entity.getEyeHeight() * entityScale, entity.getPosition().z());
 
@@ -72,7 +71,7 @@ public record StaffWeapon(int level) implements Weapon {
             return;
         }
 
-        Entity originEntity = attackableMob.getEntity();
+        Entity originEntity = attackableMob.asEntity();
         
         if (originEntity.isRemoved() || (originEntity instanceof LivingEntity living && living.isDead())) {
             return;

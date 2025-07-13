@@ -50,7 +50,7 @@ public class TestZombie extends EntityCreature implements AttackableMob {
     }
 
     @Override
-    public Entity getEntity() {
+    public Entity asEntity() {
         return this;
     }
 
