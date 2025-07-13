@@ -129,7 +129,7 @@ public sealed interface Mod extends Attack.Node {
 
         @Override
         public void attack(Attack attack, Consumer<Attack> next) {
-            double velocity = 2.0 + level;
+            double velocity = 1.3 + (level * 0.3);
             attack.updateTag(BowWeapon.VELOCITY, velo -> velo * velocity);
             next.accept(attack);
         }
