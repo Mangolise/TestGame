@@ -201,7 +201,9 @@ public record StaffWeapon(int level) implements Attack.Node {
                 ProjectileCollideEvent event = new ProjectileCollideEvent(this, posPos);
                 EventDispatcher.call(event);
                 if (!event.isCancelled()) {
-                    teleport(posPos);
+                    if (!this.isRemoved()) {
+                        teleport(posPos);
+                    }
                     return true;
                 }
             }
