@@ -5,13 +5,13 @@ import net.mangolise.testgame.events.ProjectileCollideAnyEvent;
 import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.projectiles.VanillaProjectile;
+import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.event.EventListener;
-import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -31,34 +31,34 @@ public record CannonBallBall(int level) implements Attack.Node {
         // next == null means that we perform the attack
         Player user = (Player) attack.getTag(Attack.USER);
         if (user == null) {
-            throw new IllegalStateException("BowWeapon attack called without a user set in the tags.");
+            throw new IllegalStateException("CannonBallBall attack called without a user set in the tags.");
         }
 
-        // spawn single arrow
-        var instance = user.getInstance();
+        double playerScale = user.getAttribute(Attribute.SCALE).getValue();
+        Pos position = user.getPosition().withPitch(0).add(0, user.getEyeHeight() * playerScale, 0);
+        Vec velocity = user.getPosition().direction().mul(24);
 
-        var cannonBall = new VanillaProjectile(user, EntityType.BLOCK_DISPLAY);
-        setMeta(cannonBall, Vec.ONE);
-
-        var playerScale = user.getAttribute(Attribute.SCALE).getValue();
-        cannonBall.setInstance(instance, user.getPosition().withPitch(0).add(0, user.getEyeHeight() * playerScale, 0));
-
-        cannonBall.setVelocity(user.getPosition().direction().mul(24));
-
-        cannonBall.eventNode().addListener(EventListener.builder(ProjectileCollideAnyEvent.class)
-                .handler(event -> onCannonBallCollide(event, user, cannonBall, attack, level))
-                .expireCount(1)
-                .expireWhen(ignored -> cannonBall.isRemoved())
-                .build());
+        createCannonBall(user, attack, position, velocity, Vec.ONE, level);
     }
 
-    private void setMeta(VanillaProjectile projectile, Vec scale) {
-        projectile.editEntityMeta(BlockDisplayMeta.class, meta -> {
+    private void createCannonBall(Player user, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount) {
+        user.sendMessage(String.valueOf(splitCount));
+        VanillaProjectile cannonBall = new VanillaProjectile(user, EntityType.BLOCK_DISPLAY);
+        cannonBall.editEntityMeta(BlockDisplayMeta.class, meta -> {
             meta.setBlockState(Block.SMOOTH_BASALT);
             meta.setScale(scale);
             meta.setPosRotInterpolationDuration(1);
             meta.setTranslation(new Vec(-0.5));
         });
+
+        cannonBall.setInstance(user.getInstance(), position);
+        cannonBall.setVelocity(velocity);
+
+        cannonBall.eventNode().addListener(EventListener.builder(ProjectileCollideAnyEvent.class)
+                .handler(event -> onCannonBallCollide(event, user, cannonBall, attack, splitCount))
+                .expireCount(1)
+                .expireWhen(ignored -> cannonBall.isRemoved())
+                .build());
     }
 
     @Override
@@ -76,8 +76,6 @@ public record CannonBallBall(int level) implements Attack.Node {
             target.applyAttack(DamageType.FALLING_ANVIL, attack);
         }
 
-        Instance instance = cannonBall.getInstance();
-
         if (splitCount <= 0) {
             return;
         }
@@ -86,17 +84,11 @@ public record CannonBallBall(int level) implements Attack.Node {
 
         final int CHILD_COUNT = 6;
         for (int i = 0; i < CHILD_COUNT; i++) {
-            var child = new VanillaProjectile(user, EntityType.BLOCK_DISPLAY);
-            setMeta(child, new Vec(0.25));
+            double rotation = i * Math.TAU / CHILD_COUNT;
+            Pos position = cannonBall.getPosition().withYaw((float) rotation);
+            Vec velocity = new Vec(6, 12, 0).rotateAroundY(rotation);
 
-            child.setVelocity(new Vec(6, 12, 0).rotateAroundY(i * Math.TAU / CHILD_COUNT));
-            child.setInstance(instance, cannonBall.getPosition());
-
-            child.eventNode().addListener(EventListener.builder(ProjectileCollideAnyEvent.class)
-                    .handler(e -> onCannonBallCollide(e, user, child, attack, splitCount - 1))
-                    .expireCount(1)
-                    .expireWhen(ignored -> child.isRemoved())
-                    .build());
+            createCannonBall(user, attack, position, velocity, new Vec(0.25), splitCount - 1);
         }
     }
 }
