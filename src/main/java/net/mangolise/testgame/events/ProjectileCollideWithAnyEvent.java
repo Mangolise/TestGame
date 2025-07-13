@@ -7,13 +7,13 @@ import net.minestom.server.event.trait.EntityInstanceEvent;
 import net.minestom.server.event.trait.RecursiveEvent;
 import org.jetbrains.annotations.NotNull;
 
-public class ProjectileCollideEvent implements EntityInstanceEvent, CancellableEvent, RecursiveEvent {
+public class ProjectileCollideWithAnyEvent implements EntityInstanceEvent, CancellableEvent, RecursiveEvent {
 
     private final @NotNull Entity projectile;
     private final @NotNull Pos position;
     private boolean cancelled;
 
-    public ProjectileCollideEvent(@NotNull Entity projectile, @NotNull Pos position) {
+    public ProjectileCollideWithAnyEvent(@NotNull Entity projectile, @NotNull Pos position) {
         this.projectile = projectile;
         this.position = position;
     }
