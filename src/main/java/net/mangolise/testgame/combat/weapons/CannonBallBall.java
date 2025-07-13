@@ -67,7 +67,6 @@ public record CannonBallBall(int level) implements Attack.Node {
     }
 
     private void onCannonBallCollide(ProjectileCollideAnyEvent event, Player user, VanillaProjectile cannonBall, Attack attack, int splitCount) {
-        user.sendMessage("hi");
         if (event instanceof ProjectileCollideEntityEvent eEvent) {
             if (!(eEvent.getTarget() instanceof AttackableMob target)) {
                 event.setCancelled(true);
@@ -77,7 +76,7 @@ public record CannonBallBall(int level) implements Attack.Node {
             target.applyAttack(DamageType.FALLING_ANVIL, attack);
         }
 
-        Instance instance = user.getInstance();
+        Instance instance = cannonBall.getInstance();
 
         if (splitCount <= 0) {
             return;
