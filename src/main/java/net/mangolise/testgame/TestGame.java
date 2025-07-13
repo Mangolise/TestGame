@@ -98,8 +98,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
                 entity.getAttribute(Attribute.SCALE).setBaseValue(0.5 * (1.0 / Math.pow(speedMultiplier, 0.4)));
             }
         });
-        
-        
 
         // Player spawning
         GlobalEventHandler events = MinecraftServer.getGlobalEventHandler();
@@ -122,6 +120,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
             player.getInventory().addItemStack(ItemStack.of(Material.BOW));
             player.getInventory().addItemStack(ItemStack.of(Material.SUNFLOWER));
             player.getInventory().addItemStack(ItemStack.of(Material.BLAZE_ROD));
+            player.getInventory().addItemStack(ItemStack.of(Material.STICK));
         });
 
         Log.logger().info("Started game");

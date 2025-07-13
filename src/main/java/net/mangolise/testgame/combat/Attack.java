@@ -15,6 +15,7 @@ public class Attack implements Taggable {
     public static final Tag<Entity> USER = Tag.Transient("testgame.attack.user");
     public static final Tag<Double> DAMAGE = Tag.Double("testgame.attack.damage").defaultValue(0.0);
     public static final Tag<Double> CRIT_CHANCE = Tag.Double("testgame.attack.crit_chance").defaultValue(0.0);
+    public static final Tag<Double> COOLDOWN = Tag.Double("testgame.attack.cooldown").defaultValue(1.0);
 
     private final int seed;
     private final TagHandler tagHandler;
