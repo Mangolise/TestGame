@@ -1,41 +1,20 @@
 package net.mangolise.testgame.combat.weapons;
 
-import net.kyori.adventure.text.Component;
-import net.mangolise.gamesdk.entity.ProjectileEntity;
 import net.mangolise.testgame.combat.Attack;
-import net.mangolise.testgame.events.ProjectileCollideEvent;
+import net.mangolise.testgame.events.ProjectileCollideWithAnyEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.projectiles.VanillaProjectile;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.adventure.audience.Audiences;
-import net.minestom.server.collision.BoundingBox;
-import net.minestom.server.collision.SweepResult;
-import net.minestom.server.coordinate.BlockVec;
-import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.DamageType;
-import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.EventListener;
-import net.minestom.server.event.entity.projectile.ProjectileCollideWithBlockEvent;
-import net.minestom.server.event.entity.projectile.ProjectileCollideWithEntityEvent;
-import net.minestom.server.event.trait.CancellableEvent;
-import net.minestom.server.event.trait.EntityInstanceEvent;
-import net.minestom.server.event.trait.RecursiveEvent;
-import net.minestom.server.instance.Instance;
-import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.tag.Tag;
-import net.minestom.server.utils.block.BlockIterator;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 
 public record StaffWeapon(int level) implements Attack.Node {
@@ -81,7 +60,7 @@ public record StaffWeapon(int level) implements Attack.Node {
 
         fireballEntity.setVelocity(velocity);
 
-        MinecraftServer.getGlobalEventHandler().addListener(EventListener.builder(ProjectileCollideEvent.class)
+        MinecraftServer.getGlobalEventHandler().addListener(EventListener.builder(ProjectileCollideWithAnyEvent.class)
                 .handler(event -> {
                     Collection<Entity> entities = instance.getNearbyEntities(event.getCollisionPosition(), attack.getTag(EXPLOSION_SIZE));
                     for (Entity entity : entities) {

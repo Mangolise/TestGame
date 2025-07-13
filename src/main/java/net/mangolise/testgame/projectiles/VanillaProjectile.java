@@ -1,7 +1,9 @@
 package net.mangolise.testgame.projectiles;
 
 import net.mangolise.testgame.combat.Attack;
-import net.mangolise.testgame.events.ProjectileCollideEvent;
+import net.mangolise.testgame.events.ProjectileCollideBlockEvent;
+import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
+import net.mangolise.testgame.events.ProjectileCollideWithAnyEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.minestom.server.collision.BoundingBox;
 import net.minestom.server.collision.SweepResult;
@@ -111,7 +113,7 @@ public class VanillaProjectile extends Entity {
 
             Pos posPos = getCollidedPosition(result).asPosition().withView(from);
 
-            ProjectileCollideEvent event = new ProjectileCollideEvent(this, posPos);
+            ProjectileCollideWithAnyEvent event = new ProjectileCollideBlockEvent(this, posPos, block);
             EventDispatcher.call(event);
             if (!event.isCancelled()) {
                 if (!this.isRemoved()) {
@@ -136,7 +138,7 @@ public class VanillaProjectile extends Entity {
             SweepResult result = new SweepResult(Double.MAX_VALUE, 0, 0, 0, null, 0, 0, 0, 0, 0, 0);
             if (entity.getBoundingBox().intersectBoxSwept(from.asVec(), movement, entity.getPosition(), boundingBox, result)) {
                 Pos posPos = getCollidedPosition(result).asPosition().withView(from);
-                final ProjectileCollideEvent event = new ProjectileCollideEvent(this, posPos);
+                final ProjectileCollideWithAnyEvent event = new ProjectileCollideEntityEvent(this, posPos, entity);
                 EventDispatcher.call(event);
                 if (!event.isCancelled()) {
                     return true;
