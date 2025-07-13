@@ -18,7 +18,6 @@ public class GiveModsCommand extends Command {
             AttackSystem.INSTANCE.add(player, new Mod.DoubleAttack(3));
             AttackSystem.INSTANCE.add(player, new Mod.TripleAttack(3));
             AttackSystem.INSTANCE.add(player, new Mod.QuadAttack(3));
-            AttackSystem.INSTANCE.add(player, new Mod.BowVelocity(1));
             AttackSystem.INSTANCE.add(player, new Mod.StaffArcChance(1));
 //            AttackSystem.INSTANCE.add(player, new Mod.CritToDamage(3));
         });

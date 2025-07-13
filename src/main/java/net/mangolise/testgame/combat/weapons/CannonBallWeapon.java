@@ -5,6 +5,7 @@ import net.mangolise.testgame.events.ProjectileCollideAnyEvent;
 import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.projectiles.VanillaProjectile;
+import net.mangolise.testgame.util.ThrottledScheduler;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
@@ -15,30 +16,36 @@ import net.minestom.server.event.EventListener;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.UnknownNullability;
 
+import java.util.List;
 import java.util.function.Consumer;
 
-public record CannonBallBall(int level) implements Attack.Node {
+public record CannonBallWeapon(int level) implements Weapon {
     @Override
     public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-        if (next != null) {
-            attack.setTag(Attack.DAMAGE, 8.0 + level * 2.0);
-            attack.setTag(Attack.CRIT_CHANCE, 0.5 + level * 0.1);
+        attack.setTag(Attack.DAMAGE, 8.0 + level * 2.0);
+        attack.setTag(Attack.CRIT_CHANCE, 0.5 + level * 0.1);
 
-            next.accept(attack);
-            return;
+        next.accept(attack);
+    }
+
+    @Override
+    public void doWeaponAttack(List<Attack> attacks) {
+        for (Attack attack : attacks) {
+            // next == null means that we perform the attack
+            Player user = (Player) attack.getTag(Attack.USER);
+            if (user == null) {
+                throw new IllegalStateException("CannonBallBall attack called without a user set in the tags.");
+            }
+
+            double playerScale = user.getAttribute(Attribute.SCALE).getValue();
+            Pos position = user.getPosition().withPitch(0).add(0, user.getEyeHeight() * playerScale, 0);
+            Vec velocity = user.getPosition().direction().mul(24);
+            
+            double inaccuracy = attacks.size() - 1.0; // more attacks, more inaccuracy
+            velocity = velocity.add((Math.random() - 0.5) * inaccuracy, (Math.random() - 0.5) * inaccuracy, (Math.random() - 0.5) * inaccuracy);
+
+            createCannonBall(user, attack, position, velocity, Vec.ONE, level);
         }
-
-        // next == null means that we perform the attack
-        Player user = (Player) attack.getTag(Attack.USER);
-        if (user == null) {
-            throw new IllegalStateException("CannonBallBall attack called without a user set in the tags.");
-        }
-
-        double playerScale = user.getAttribute(Attribute.SCALE).getValue();
-        Pos position = user.getPosition().withPitch(0).add(0, user.getEyeHeight() * playerScale, 0);
-        Vec velocity = user.getPosition().direction().mul(24);
-
-        createCannonBall(user, attack, position, velocity, Vec.ONE, level);
     }
 
     private void createCannonBall(Player user, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount) {
@@ -88,7 +95,9 @@ public record CannonBallBall(int level) implements Attack.Node {
             Pos position = cannonBall.getPosition().withYaw((float) rotation);
             Vec velocity = new Vec(6, 12, 0).rotateAroundY(rotation);
 
-            createCannonBall(user, attack, position, velocity, new Vec(0.25), splitCount - 1);
+            ThrottledScheduler.use(user.getInstance(), "cannonball-weapon-ball-attack", 10, () -> {
+                createCannonBall(user, attack, position, velocity, new Vec(0.25), splitCount - 1);
+            });
         }
     }
 }

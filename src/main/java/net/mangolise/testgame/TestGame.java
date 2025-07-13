@@ -84,21 +84,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
             }
         });
 
-        MinecraftServer.getGlobalEventHandler().addListener(PlayerSpawnEvent.class, e -> {
-            var player = e.getPlayer();
-
-            for (int i = 0; i < 128; i++) {
-                TestZombie entity = new TestZombie();
-                double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.3;
-
-                entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
-
-                entity.setInstance(instance, new Pos(36.79 + Math.random() * 8.0, 72.74 + Math.random() * 64.0, 20.48 + Math.random() * 8.0));
-                entity.setTarget(player);
-                entity.getAttribute(Attribute.SCALE).setBaseValue(0.5 * (1.0 / Math.pow(speedMultiplier, 0.4)));
-            }
-        });
-
         // Player spawning
         GlobalEventHandler events = MinecraftServer.getGlobalEventHandler();
         events.addListener(AsyncPlayerConfigurationEvent.class, e -> {
@@ -121,6 +106,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
             player.getInventory().addItemStack(ItemStack.of(Material.SUNFLOWER));
             player.getInventory().addItemStack(ItemStack.of(Material.BLAZE_ROD));
             player.getInventory().addItemStack(ItemStack.of(Material.STICK));
+            player.getInventory().setItemStack(8, ItemStack.of(Material.ZOMBIE_SPAWN_EGG));
         });
 
         Log.logger().info("Started game");

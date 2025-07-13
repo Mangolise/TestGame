@@ -1,15 +1,14 @@
 package net.mangolise.testgame.combat;
 
 import net.mangolise.testgame.combat.mods.Mod;
-import net.mangolise.testgame.combat.weapons.BowWeapon;
-import net.mangolise.testgame.combat.weapons.CannonBallBall;
-import net.mangolise.testgame.combat.weapons.SnakeWeapon;
-import net.mangolise.testgame.combat.weapons.StaffWeapon;
+import net.mangolise.testgame.combat.weapons.*;
 import net.mangolise.testgame.mobs.AttackableMob;
+import net.mangolise.testgame.mobs.TestZombie;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerHand;
+import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.event.player.PlayerHandAnimationEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
@@ -23,11 +22,11 @@ public final class AttackSystemImpl implements AttackSystem {
     
     private final Map<Entity, Map<Class<? extends Mod>, Mod>> modifierNodes = Collections.synchronizedMap(new WeakHashMap<>());
 
-    public void use(Entity entity, Attack.Node weapon) {
+    public void use(Entity entity, Weapon weapon) {
         use(entity, weapon, tags -> {});
     }
 
-    public void use(Entity entity, Attack.Node weapon, Consumer<Attack> tags) {
+    public void use(Entity entity, Weapon weapon, Consumer<Attack> tags) {
         Map<Class<? extends Mod>, Mod> nodes = modifierNodes.computeIfAbsent(entity, k -> new HashMap<>());
         List<Attack.Node> unsorted = new ArrayList<>(nodes.values());
         List<Attack.Node> sorted = sort(unsorted);
@@ -50,12 +49,7 @@ public final class AttackSystemImpl implements AttackSystem {
         }
         
         // finish the attack processing
-        for (int i = 0; i < attacks.size(); i++) {
-            Attack attack = attacks.get(i);
-            // Print the attack details.
-//            System.out.printf("Attack %d processed: Damage = %s, Crit Chance = %s%n", i, attack.getTag(Attack.DAMAGE), attack.getTag(Attack.CRIT_CHANCE));
-            weapon.attack(attack, null);
-        }
+        weapon.doWeaponAttack(List.copyOf(attacks));
     }
 
     @Override
@@ -108,12 +102,6 @@ public final class AttackSystemImpl implements AttackSystem {
                         tags.setTag(StaffWeapon.HIT_ENTITY, target);
                     }
                 });
-            } else if (player.getItemInHand(e.getHand()).material() == Material.STICK) { // staff
-                SnakeWeapon snakeWeapon = new SnakeWeapon(1);
-                AttackSystem.INSTANCE.use(player, snakeWeapon, tags -> {
-                    tags.setTag(Attack.USER, player);
-                    tags.setTag(StaffWeapon.STAFF_USER, player);
-                });
             }
         });
     }
@@ -127,8 +115,25 @@ public final class AttackSystemImpl implements AttackSystem {
                 tags.setTag(BowWeapon.BOW_USER, player);
             });
         } else if (material == Material.SUNFLOWER) { // CannonBallBall
-            CannonBallBall weapon = new CannonBallBall(2);
+            CannonBallWeapon weapon = new CannonBallWeapon(2);
             AttackSystem.INSTANCE.use(player, weapon, tags -> tags.setTag(Attack.USER, player));
+        } else if (material == Material.STICK) { // staff
+            SnakeWeapon snakeWeapon = new SnakeWeapon(1);
+            AttackSystem.INSTANCE.use(player, snakeWeapon, tags -> {
+                tags.setTag(Attack.USER, player);
+                tags.setTag(StaffWeapon.STAFF_USER, player);
+            });
+        } else if (material == Material.ZOMBIE_SPAWN_EGG) { // spawn zombies
+            for (int i = 0; i < 128; i++) {
+                TestZombie entity = new TestZombie();
+                double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.3;
+
+                entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
+
+                entity.setInstance(player.getInstance(), player.getPosition().add(Math.random() * 8.0, Math.random() * 64.0, Math.random() * 8.0));
+                entity.setTarget(player);
+                entity.getAttribute(Attribute.SCALE).setBaseValue(0.5 * (1.0 / Math.pow(speedMultiplier, 0.4)));
+            }
         }
     }
 }

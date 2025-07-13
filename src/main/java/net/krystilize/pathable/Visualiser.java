@@ -29,11 +29,11 @@ class Visualiser {
 //        Path path = Path.shapes().triangle(new Vec(-1, 0), new Vec(0, 1), new Vec(1, 0));
 //        Path circle = Path.shapes().circle(new Vec(0, 0), 1.1);
 
-//        Path curve = Path.line(new Vec(0, 0), new Vec(1, 1));
-//        Path curve = Path.line(new Vec(1, 1), new Vec(2, 0));
-//        Path curve = Path.interpolation(Path.line(new Vec(0, 0), new Vec(1, 1)), Path.line(new Vec(1, 1), new Vec(2, 0)));
-//        Path curve = Path.curve(new Vec(0, 0), new Vec(1, 1), new Vec(2, 0), new Vec(0, -1));
-//        Path curve = Path.shapes().circle(new Vec(0, 0, 0), 1);
+//        Path path = Path.line(new Vec(0, 0), new Vec(1, 1));
+//        Path path = Path.line(new Vec(1, 1), new Vec(2, 0));
+//        Path path = Path.interpolation(Path.line(new Vec(-1, 0), new Vec(1, 1)), Path.line(new Vec(1, 1), new Vec(2, 0)));
+        Path path = Path.curve(new Vec(0, 0), new Vec(1, 1), new Vec(2, 0), new Vec(0, -1));
+//        Path path = Path.shapes().circle(new Vec(0, 0, 0), 1);
 
 //        Vec radius = new Vec(1);
 //        Vec center = new Vec(0, 0, 0);
@@ -44,8 +44,8 @@ class Visualiser {
 //
 //        Path path = Path.curve(center.add(-rx, 0, 0), center.add(-rx, 0, rzk), center.add(-rxk, 0, rz));
         
-        Path path = Path.shapes().ellipse(new Vec(0, 0), new Vec(1, 1));
-        path = path.rotate(new Vec(0.0), new Vec(0.0, 1.0, 0.0));
+//        Path path = Path.shapes().ellipse(new Vec(0, 0), new Vec(1, 1));
+//        path = path.rotate(new Vec(0.0), new Vec(0.0, 1.0, 0.0));
 
         Path finalPath = path;
         window(graphics -> {
@@ -55,7 +55,7 @@ class Visualiser {
             drawPath(graphics, finalPath.derivative());
             graphics.setColor(Color.BLUE);
             drawPath(graphics, finalPath.derivative().derivative());
-            graphics.setColor(Color.CYAN);
+            graphics.setColor(Color.DARK_GRAY);
             drawPath(graphics, finalPath.derivative().derivative().derivative());
         });
     }

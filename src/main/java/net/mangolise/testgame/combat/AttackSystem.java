@@ -1,6 +1,7 @@
 package net.mangolise.testgame.combat;
 
 import net.mangolise.testgame.combat.mods.Mod;
+import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.entity.Entity;
 
 import java.util.function.Consumer;
@@ -9,8 +10,8 @@ public sealed interface AttackSystem permits AttackSystemImpl {
     
     AttackSystem INSTANCE = new AttackSystemImpl();
 
-    void use(Entity entity, Attack.Node weapon);
-    void use(Entity entity, Attack.Node weapon, Consumer<Attack> tags);
+    void use(Entity entity, Weapon weapon);
+    void use(Entity entity, Weapon weapon, Consumer<Attack> tags);
     
     /**
      * Adds a mod to the entity.
