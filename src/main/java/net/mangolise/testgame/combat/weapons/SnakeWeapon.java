@@ -1,5 +1,6 @@
 package net.mangolise.testgame.combat.weapons;
 
+import net.krystilize.pathable.Path;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.mods.Mod;
@@ -97,6 +98,7 @@ public record SnakeWeapon(int level) implements Weapon {
         private int remainingTicks;
 
         private int msSinceLastHit = 0;
+        private final Vec randomCurve = Vec.ONE.mul(Math.random()).sub(0.5, 0, 0.5).mul(0.1);
 
         public Snake(Instance instance, Attack attack, Pos pos, Entity target, int remainingTicks, Set<Entity> alreadyMarked) {
             this.instance = instance;
@@ -133,9 +135,10 @@ public record SnakeWeapon(int level) implements Weapon {
             direction = direction.mul(Math.max(tickMs, 1) / 1000.0);
 
             pos = pos.add(direction);
+            pos = pos.add(randomCurve);
 
             // check if we hit the target
-            if (target.getPosition().distanceSquared(pos) < 0.5 * 0.5) {
+            if (target.getPosition().distanceSquared(pos) < speedBonus * speedBonus * 0.25) {
                 // hit the target
                 ((AttackableMob) target).applyAttack(DamageType.IN_WALL, attack);
 
