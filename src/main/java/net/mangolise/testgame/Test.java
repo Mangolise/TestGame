@@ -3,12 +3,18 @@ package net.mangolise.testgame;
 import net.mangolise.gamesdk.permissions.Permissions;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.gamesdk.util.PerformanceTracker;
+import net.mangolise.testgame.commands.GiveModsCommand;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.extras.bungee.BungeeCordProxy;
+import net.minestom.server.extras.velocity.VelocityProxy;
 
 public class Test {
     public static void main(String[] args) {
+        // Remove dumb Minestom limitations that are enabled by default.
+        System.setProperty("minestom.packet-queue-size", "10000000");
+        System.setProperty("minestom.packet-per-tick", "10000000");
+
         MinecraftServer server = MinecraftServer.init();
         PerformanceTracker.start();
 
@@ -16,14 +22,29 @@ public class Test {
             BungeeCordProxy.enable();
         }
 
+        // This is required for the final submission.
+        String secret = System.getenv("VELOCITY_SECRET");
+        if (secret != null) {
+            VelocityProxy.enable(secret);
+        }
+
         // give every permission to every player
         MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {
             Permissions.setPermission(e.getPlayer(), "*", true);
         });
-        
-        TestGame.Config config = new TestGame.Config();
-        TestGame game = new TestGame(config);
-        game.setup();
+
+        TestGame.CreateRegistryEntries();
+        LobbyGame.CreateRegistryEntries();
+
+        // TODO: How should we handle this?
+        MinecraftServer.getCommandManager().register(new GiveModsCommand());
+
+        LobbyGame lobby = new LobbyGame(new LobbyGame.Config(ps -> {
+            TestGame game = new TestGame(new TestGame.Config(ps));
+            game.setup();
+        }));
+        lobby.setup();
+
         server.start("0.0.0.0", GameSdkUtils.getConfiguredPort());
     }
 }

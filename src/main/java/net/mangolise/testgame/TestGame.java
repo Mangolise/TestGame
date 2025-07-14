@@ -1,23 +1,15 @@
 package net.mangolise.testgame;
 
 import net.hollowcube.polar.PolarLoader;
+import net.kyori.adventure.key.Key;
 import net.mangolise.gamesdk.BaseGame;
-import net.mangolise.gamesdk.features.AdminCommandsFeature;
 import net.mangolise.gamesdk.instance.InstanceAnalysis;
 import net.mangolise.gamesdk.log.Log;
-import net.mangolise.gamesdk.permissions.Permissions;
 import net.mangolise.testgame.combat.AttackSystem;
-import net.mangolise.testgame.commands.GiveModsCommand;
-import net.mangolise.testgame.mobs.TestZombie;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
-import net.minestom.server.entity.attribute.AttributeModifier;
-import net.minestom.server.entity.attribute.AttributeOperation;
-import net.minestom.server.event.GlobalEventHandler;
-import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
-import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
@@ -35,18 +27,23 @@ public class TestGame extends BaseGame<TestGame.Config> {
         super(config);
     }
 
+    public static void CreateRegistryEntries() {
+        DimensionType dimension = DimensionType.builder().ambientLight(15).build();
+        MinecraftServer.getDimensionTypeRegistry().register("test-game-dimension", dimension);
+    }
+
     @Override
     public void setup() {
         super.setup();
 
 //        MangoCombat.enableGlobal(new CombatConfig().withFakeDeath(true).withVoidDeath(true).withVoidLevel(-10));
 
-        DimensionType dimension = DimensionType.builder().ambientLight(15).build();
-        RegistryKey<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().register("test-game-dimension", dimension);
+        RegistryKey<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().getKey(Key.key("test-game-dimension"));
+        if (dim == null) {
+            throw new IllegalStateException("Dimension type 'test-game-dimension' not registered. Call CreateRegistryEntries() first.");
+        }
 
         AttackSystem.register();
-        
-        MinecraftServer.getCommandManager().register(new GiveModsCommand());
 
         PolarLoader loader;
         try {
@@ -85,21 +82,22 @@ public class TestGame extends BaseGame<TestGame.Config> {
         });
 
         // Player spawning
-        GlobalEventHandler events = MinecraftServer.getGlobalEventHandler();
-        events.addListener(AsyncPlayerConfigurationEvent.class, e -> {
-            var player = e.getPlayer();
-            Permissions.setPermission(player, "*", true);
-            e.setSpawningInstance(instance);
+        for (Player player : config.players) {
+            player.setInstance(instance);
 
             player.setGameMode(GameMode.SURVIVAL);
             player.setRespawnPoint(new Pos(36.79, 72.74, 20.48));
+            player.teleport(new Pos(36.79, 72.74, 20.48));
 
             player.getAttribute(Attribute.CAMERA_DISTANCE).setBaseValue(10.0);
             player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(10000.0);
-            
+
             // TODO: should we do this?
             player.getAttribute(Attribute.SCALE).setBaseValue(1.5);
-            player.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("scale-movement-bonus", 1.5, AttributeOperation.ADD_MULTIPLIED_BASE));
+
+            // Setting the base value instead of adding a modifier seems to reduce FOV effects.
+            //player.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("scale-movement-bonus", 1.5, AttributeOperation.ADD_MULTIPLIED_BASE));
+            player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1 * 1.5);
 
             player.getInventory().clear();
             player.getInventory().addItemStack(ItemStack.of(Material.BOW));
@@ -107,18 +105,15 @@ public class TestGame extends BaseGame<TestGame.Config> {
             player.getInventory().addItemStack(ItemStack.of(Material.BLAZE_ROD));
             player.getInventory().addItemStack(ItemStack.of(Material.STICK));
             player.getInventory().setItemStack(8, ItemStack.of(Material.ZOMBIE_SPAWN_EGG));
-        });
+        }
 
         Log.logger().info("Started game");
     }
 
     @Override
     public List<Feature<?>> features() {
-        return List.of(
-                // TODO: Remove admin commands feature
-                new AdminCommandsFeature()
-        );
+        return List.of();
     }
 
-    public record Config() { }
+    public record Config(Player[] players) { }
 }
