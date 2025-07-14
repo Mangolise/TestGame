@@ -14,20 +14,34 @@ import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.event.player.PlayerHandAnimationEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.item.Material;
+import net.minestom.server.tag.Tag;
+import net.minestom.server.timer.TaskSchedule;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 public final class AttackSystemImpl implements AttackSystem {
-    
+
     private final Map<Entity, Map<Class<? extends Mod>, Mod>> modifierNodes = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final Tag<Set<Weapon>> COOLDOWNS = Tag.Transient("testgame.attacksystem.weapon_cooldowns");
 
     public void use(Entity entity, Weapon weapon) {
         use(entity, weapon, tags -> {});
     }
 
     public void use(Entity entity, Weapon weapon, Consumer<Attack> tags) {
+        // entity needs a cooldown, we cant use defaults because defaults do not set the value
+        if (!entity.hasTag(COOLDOWNS)) {
+            entity.setTag(COOLDOWNS, new HashSet<>());
+        }
+
+        Set<Weapon> cooldowns = entity.getTag(COOLDOWNS);
+        if (cooldowns.contains(weapon)) {
+            return;
+        }
+
         Map<Class<? extends Mod>, Mod> nodes = modifierNodes.computeIfAbsent(entity, k -> new HashMap<>());
         List<Attack.Node> unsorted = new ArrayList<>(nodes.values());
         List<Attack.Node> sorted = sort(unsorted);
@@ -51,6 +65,24 @@ public final class AttackSystemImpl implements AttackSystem {
         
         // finish the attack processing
         weapon.doWeaponAttack(List.copyOf(attacks));
+
+        // get cooldown, we use the largest cooldown from all of the attacks
+        if (attacks.isEmpty()) {
+            entity.getTag(COOLDOWNS).remove(weapon);
+            return;
+        }
+
+        double cooldown = attacks.stream()
+                .map(attack -> attack.getTag(Attack.COOLDOWN))
+                .max(Double::compareTo).get();
+
+        cooldowns.add(weapon);
+        MinecraftServer.getSchedulerManager().scheduleTask(() -> {
+            cooldowns.remove(weapon);
+            if (cooldowns.isEmpty()) {
+                entity.removeTag(COOLDOWNS);
+            }
+        }, TaskSchedule.duration(Duration.ofNanos((long)(cooldown * 1e+9f))), TaskSchedule.stop());
     }
 
     @Override
