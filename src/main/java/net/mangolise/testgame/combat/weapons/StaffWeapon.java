@@ -3,9 +3,11 @@ package net.mangolise.testgame.combat.weapons;
 import net.krystilize.pathable.Path;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.text.Component;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.util.ThrottledScheduler;
+import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
@@ -64,7 +66,11 @@ public record StaffWeapon(int level) implements Weapon {
             var entityScale = entity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getBaseValue() : 1.0;
             Vec entityPos = new Vec(entity.getPosition().x(), entity.getPosition().y() + entity.getEyeHeight() * entityScale, entity.getPosition().z());
 
-            createLightningLine(playerPos, entityPos, user.getInstance());
+            Entity lightning = new Entity(EntityType.LIGHTNING_BOLT);
+            lightning.setInstance(user.getInstance(), entityPos);
+
+            user.getInstance().scheduler().scheduleTask(lightning::remove, TaskSchedule.millis(300), TaskSchedule.stop());
+
             user.playSound(Sound.sound(Key.key("minecraft:item.trident.thunder"), Sound.Source.NEUTRAL, 1.0f, 1f));
             user.playSound(Sound.sound(Key.key("minecraft:entity.lightning_bolt.impact"), Sound.Source.NEUTRAL, 1.0f, 1f));
 
@@ -99,7 +105,7 @@ public record StaffWeapon(int level) implements Weapon {
                     chainedEntities.contains(entity.getUuid()) ||
                     (Math.random() + attack.getTag(ARC_CHANCE)) / depth < 0.65 ||
                     entity.isRemoved() ||
-                    (entity instanceof LivingEntity living && living.isDead())
+                    (entity instanceof LivingEntity living && (living.isDead() || living.isInvulnerable()))
             ) {
                 continue;
             }
@@ -120,9 +126,9 @@ public record StaffWeapon(int level) implements Weapon {
     }
 
     private void createLightningLine(Vec start, Vec end, Instance instance) {
-        createDisplayEntity(start, end, instance, Block.LIGHT_BLUE_STAINED_GLASS, new Vec(0.4, 0.4));
-        createDisplayEntity(start, end, instance, Block.WHITE_STAINED_GLASS, new Vec(0.3, 0.3));
-        createDisplayEntity(start, end, instance, Block.CYAN_CONCRETE, new Vec(0.2, 0.2));
+        createDisplayEntity(start, end, instance, Block.GLASS, new Vec(0.2, 0.2));
+        createDisplayEntity(start, end, instance, Block.WHITE_STAINED_GLASS, new Vec(0.1, 0.1));
+        createDisplayEntity(start, end, instance, Block.SNOW_BLOCK, new Vec(0.05, 0.05));
 
         Path path = Path.line(start, end);
         for (Path.Context context : path.equalIterate(0.5)) {
@@ -133,45 +139,30 @@ public record StaffWeapon(int level) implements Weapon {
         }
     }
 
+    /**
+     * @param scale width = x, height = z, y is unused.
+     */
     private static void createDisplayEntity(Vec start, Vec end, Instance instance, Block type, Vec scale) {
-        Vec direction = end.sub(start);
-        Vec spawnPos = start.add(direction.div(2));
-
         Entity displayEntity = new Entity(EntityType.BLOCK_DISPLAY);
 
         displayEntity.editEntityMeta(BlockDisplayMeta.class, meta -> {
             meta.setBlockState(type);
-            meta.setScale(new Vec(end.distance(start), scale.x(), scale.z()));
-            meta.setLeftRotation(getRotationQuaternion(start, end));
+            meta.setScale(new Vec(scale.x(), scale.z(), start.distance(end)));
             meta.setHasNoGravity(true);
-            meta.setHasGlowingEffect(true);
-            meta.setGlowColorOverride(Color.CYAN.getRGB());
+            meta.setTranslation(scale.withY(scale.z()).withZ(0).div(-2));
             meta.setBrightness(100, 0);
         });
 
-        Vec centeredSpawnPos = new Vec(spawnPos.x() - (scale.x() * 0.5), spawnPos.y() - (scale.x() * 0.5), spawnPos.z());
+        Vec delta = end.sub(start);
+        Pos rotation = Pos.ZERO.withDirection(delta);
+
+        Pos centeredSpawnPos = new Pos(start.x(), start.y(), start.z(), rotation.yaw(), rotation.pitch());
         displayEntity.setInstance(instance, centeredSpawnPos);
 
         instance.scheduler().scheduleTask(() -> ThrottledScheduler.use(
                 instance, "staff-lightning-display", 10, displayEntity::remove),
                 TaskSchedule.millis(300), TaskSchedule.stop()
         );
-    }
-
-    private static float[] getRotationQuaternion(Vec from, Vec to) {
-        Vec direction = to.sub(from);
-        final Vec initialDirection = new Vec(1, 0, 0);
-
-        Vec rotationAxis = initialDirection.cross(direction).normalize();
-        double dot = initialDirection.dot(direction.normalize());
-        double finalAngle = Math.sin(Math.acos(dot) / 2.0);
-
-        return new float[]{
-            (float) (rotationAxis.x() * finalAngle),
-            (float) (rotationAxis.y() * finalAngle),
-            (float) (rotationAxis.z() * finalAngle),
-            (float) Math.cos(Math.acos(dot) / 2.0)
-        };
     }
 }
 
