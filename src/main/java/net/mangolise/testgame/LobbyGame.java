@@ -93,15 +93,9 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             inventoryItemInteract(e.getPlayer(), e.getClickedItem());
         });
 
-        world.eventNode().addListener(PlayerBlockInteractEvent.class, e -> {
-            inventoryItemInteract(e.getPlayer(), e.getPlayer().getItemInMainHand());
+        world.eventNode().addListener(PlayerUseItemEvent.class, e -> {
+            inventoryItemInteract(e.getPlayer(), e.getItemStack());
         });
-
-        world.eventNode().addListener(PlayerEntityInteractEvent.class, e -> {
-            inventoryItemInteract(e.getPlayer(), e.getPlayer().getItemInMainHand());
-        });
-
-        // TODO: Handle right clicking air
 
         world.eventNode().addListener(PlayerChatEvent.class, e -> {
             Player player = e.getPlayer();
