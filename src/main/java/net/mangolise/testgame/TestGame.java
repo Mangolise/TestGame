@@ -5,10 +5,13 @@ import net.kyori.adventure.key.Key;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.testgame.combat.AttackSystem;
+import net.mangolise.testgame.combat.mods.Mod;
+import net.mangolise.testgame.combat.mods.ModMenu;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -59,6 +62,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
         for (Player player : config.players) {
             joinPlayer(player);
         }
+
+        MinecraftServer.getGlobalEventHandler().addListener(PlayerUseItemEvent.class, ModMenu::onItemUseEvent);
 
         Log.logger().info("Started game");
     }

@@ -121,10 +121,6 @@ public final class AttackSystemImpl implements AttackSystem {
         MinecraftServer.getGlobalEventHandler().addListener(PlayerUseItemEvent.class, e -> {
             var player = e.getPlayer();
             onSwing(player, e.getItemStack().material());
-
-            if (player.getItemInHand(e.getHand()).material() == Material.BUNDLE) {
-                ModMenu.openModMenu(player);
-            }
         });
 
         MinecraftServer.getGlobalEventHandler().addListener(PlayerEntityInteractEvent.class, e -> {
