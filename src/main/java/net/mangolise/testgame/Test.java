@@ -45,9 +45,7 @@ public class Test {
                 new GiveBundleCommand()
         );
 
-        // TODO: Enable this for production, it's only disabled because env vars confuse Michael and Krystil is lazy.
-        //boolean oneGame = System.getenv("ONE_GAME") != null && System.getenv("ONE_GAME").equalsIgnoreCase("true");
-        boolean oneGame = System.getenv("ONE_GAME") == null || System.getenv("ONE_GAME").equalsIgnoreCase("true");
+        boolean oneGame = System.getenv("ONE_GAME") != null && System.getenv("ONE_GAME").equalsIgnoreCase("true");
         if (oneGame) {  // Start one game and join all players to it
             TestGame game = new TestGame(new TestGame.Config(new Player[0]));
             game.setup();
