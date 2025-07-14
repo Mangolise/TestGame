@@ -1,8 +1,11 @@
 package net.mangolise.testgame.combat.weapons;
 
 import net.krystilize.pathable.Path;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.util.ThrottledScheduler;
 import net.mangolise.testgame.util.Utils;
@@ -24,10 +27,12 @@ import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
+import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 /**
@@ -37,7 +42,9 @@ import java.util.function.Consumer;
 public record SnakeWeapon(int level) implements Weapon {
 
     public static final Tag<Double> ALIVE_TICKS = Tag.Double("testgame.attack.snake.aliveticks").defaultValue(20.0 * 3.0);
-    public static final Tag<Double> ACCELERATION = Tag.Double("testgame.attack.snake.acceleration").defaultValue(0.01);
+    
+    // blocks per second, per second
+    public static final Tag<Double> ACCELERATION = Tag.Double("testgame.attack.snake.acceleration").defaultValue(3.0);
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
@@ -127,7 +134,7 @@ public record SnakeWeapon(int level) implements Weapon {
             }
 
             // move towards the target
-            double speedBonus = msSinceLastHit * attack.getTag(SnakeWeapon.ACCELERATION);
+            double speedBonus = (msSinceLastHit / 1000.0) * attack.getTag(SnakeWeapon.ACCELERATION);
             Vec direction = target.getPosition().asVec().sub(pos).normalize();
             direction = direction.mul(speedBonus);
 
@@ -146,7 +153,22 @@ public record SnakeWeapon(int level) implements Weapon {
                 int childrenRemainingTicks = remainingTicks - 1;
                 ThrottledScheduler.use(instance, "snake-weapon-fork-attack", 4, () -> {
                     forkSnake(pos, childrenRemainingTicks);
-                    forkSnake(pos, childrenRemainingTicks);
+                    
+                    int numCrits = attack.copy(true).sampleCrits();
+                    for (int i = 0; i < numCrits; i++) {
+                        forkSnake(pos, childrenRemainingTicks);
+                    }
+                    if (numCrits > 0 && attack.getTag(Attack.USER) instanceof Player player) {
+                        player.playSound(Sound.sound(SoundEvent.BLOCK_NOTE_BLOCK_PLING.key(), Sound.Source.PLAYER, 0.5f, 1.0f));
+                        
+                        ThreadLocalRandom random = ThreadLocalRandom.current();
+                        TextColor color = TextColor.color(
+                                random.nextInt(255),
+                                random.nextInt(255),
+                                random.nextInt(255)
+                        );
+                        player.sendActionBar(Component.text("Snake fork!", color).decorate(TextDecoration.BOLD));
+                    }
                 });
 
                 // KILL this snake
@@ -179,7 +201,17 @@ public record SnakeWeapon(int level) implements Weapon {
 
             // create a new snake that forks from this one
             alreadyMarked.add(newTarget);
-            Snake forkedSnake = new Snake(instance, attack, Pos.fromPoint(pos), newTarget, remainingTicks, alreadyMarked);
+            
+            // every time we fork, lower the damage
+            Attack forkedAttack = attack.copy(true);
+            forkedAttack.updateTag(Attack.DAMAGE, damage -> damage * 0.9);
+            
+            // if the damage is really low, don't fork
+            if (forkedAttack.getTag(Attack.DAMAGE) < 0.1) {
+                return;
+            }
+            
+            Snake forkedSnake = new Snake(instance, forkedAttack, Pos.fromPoint(pos), newTarget, remainingTicks, alreadyMarked);
             forkedSnake.init();
         }
     }

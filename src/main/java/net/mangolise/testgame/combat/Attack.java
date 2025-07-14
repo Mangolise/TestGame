@@ -65,12 +65,6 @@ public class Attack implements Taggable {
 
         /**
          * The priority of this node in the attack chain.
-         * 0.5 = weapons
-         * 1.5 = stat modifiers
-         * 2.5 = additive modifiers
-         * 3.5 = multiplicative modifiers
-         * 4.5 = spawning effects (e.g. shoot a bomb every time you attack)
-         * e.t.c
          * @return the priority of this node
          */
         double priority();
@@ -79,7 +73,8 @@ public class Attack implements Taggable {
         double PRIORITY_STAT_MODIFIER = 1.5;
         double PRIORITY_ADDITIVE_MODIFIER = 2.5;
         double PRIORITY_MULTIPLICATIVE_MODIFIER = 3.5;
-        double PRIORITY_EFFECT_SPAWNER = 4.5;
+        double PRIORITY_POST_MODIFIER = 4.5;
+        double PRIORITY_EFFECT_SPAWNER = 5.5;
     }
 
     @Override

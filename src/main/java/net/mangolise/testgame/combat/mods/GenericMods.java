@@ -142,7 +142,66 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public double priority() {
-            return PRIORITY_STAT_MODIFIER;
+            return PRIORITY_POST_MODIFIER;
+        }
+    }
+    
+    record LuckyLeonard(int level) implements GenericMods {
+        @Override
+        public Rarity rarity() {
+            return Rarity.COMMON;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.GOLD_INGOT)
+                    .lore(
+                            Component.text("+ Adds to crit chance", NamedTextColor.GREEN),
+                            Component.text("    Added crit chance: 20% + (5% per level)", NamedTextColor.GREEN)
+                    )
+                    .build();
+        }
+
+        @Override
+        public void attack(Attack attack, Consumer<Attack> next) {
+            attack.updateTag(Attack.CRIT_CHANCE, crit -> crit + (0.2 + level * 0.05));
+
+            next.accept(attack);
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_ADDITIVE_MODIFIER;
+        }
+    }
+    
+    record QuickHands(int level) implements GenericMods {
+        @Override
+        public Rarity rarity() {
+            return Rarity.COMMON;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.LEATHER_HORSE_ARMOR)
+                    .lore(
+                            Component.text("+ Reduces cooldown", NamedTextColor.GREEN),
+                            Component.text("    Cooldown reduction: 30% + (10% per level)", NamedTextColor.GREEN)
+                    )
+                    .build();
+        }
+
+        @Override
+        public void attack(Attack attack, Consumer<Attack> next) {
+            double cooldownReduction = 0.3 + level * 0.1;
+            attack.updateTag(Attack.COOLDOWN, cooldown -> cooldown * (1.0 - cooldownReduction));
+
+            next.accept(attack);
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_ADDITIVE_MODIFIER;
         }
     }
 

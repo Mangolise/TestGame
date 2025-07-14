@@ -59,6 +59,12 @@ public abstract class HostileEntity extends EntityCreature implements Attackable
             if (instance == null) {
                 return;
             }
+            
+            if (this.position.y() < instance.getCachedDimensionType().minY() || this.position.y() > instance.getCachedDimensionType().maxY()) {
+                // if the entity is outside the world, remove it
+                this.remove();
+                return;
+            }
 
             Vec movementFinisher = new Vec(1, 0.1, 1);
             Vec movementVec = Vec.ZERO;
