@@ -1,11 +1,14 @@
 package net.mangolise.testgame.combat.weapons;
 
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.events.ProjectileCollideAnyEvent;
 import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.projectiles.VanillaProjectile;
 import net.mangolise.testgame.util.ThrottledScheduler;
+import net.minestom.server.collision.BoundingBox;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
@@ -13,6 +16,7 @@ import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.event.EventListener;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -49,7 +53,6 @@ public record CannonBallWeapon(int level) implements Weapon {
     }
 
     private void createCannonBall(Player user, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount) {
-        user.sendMessage(String.valueOf(splitCount));
         VanillaProjectile cannonBall = new VanillaProjectile(user, EntityType.BLOCK_DISPLAY);
         cannonBall.editEntityMeta(BlockDisplayMeta.class, meta -> {
             meta.setBlockState(Block.SMOOTH_BASALT);
@@ -58,12 +61,17 @@ public record CannonBallWeapon(int level) implements Weapon {
             meta.setTranslation(new Vec(-0.5));
         });
 
+        cannonBall.setBoundingBox(new BoundingBox(Vec.ZERO, scale));
+
         cannonBall.setInstance(user.getInstance(), position);
         cannonBall.setVelocity(velocity);
 
+        attack = attack.copy(false);
+        attack.updateTag(Attack.DAMAGE, damage -> damage * scale.x());
+
+        final Attack finalAttack = attack;
         cannonBall.eventNode().addListener(EventListener.builder(ProjectileCollideAnyEvent.class)
-                .handler(event -> onCannonBallCollide(event, user, cannonBall, attack, splitCount))
-                .expireCount(1)
+                .handler(event -> onCannonBallCollide(event, user, cannonBall, finalAttack, splitCount))
                 .expireWhen(ignored -> cannonBall.isRemoved())
                 .build());
     }
@@ -87,16 +95,31 @@ public record CannonBallWeapon(int level) implements Weapon {
             return;
         }
 
-        cannonBall.remove();
+        Instance instance = cannonBall.getInstance();
 
+        // explosion
+        double scale = ((BlockDisplayMeta)cannonBall.getEntityMeta()).getScale().x();
+        Attack explosionAttack = attack.copy(false);
+        explosionAttack.updateTag(Attack.DAMAGE, damage -> damage * 0.5);
+
+        for (Entity entity : instance.getNearbyEntities(cannonBall.getPosition(), 3 * scale)) {
+            if (entity instanceof AttackableMob mob) {
+                mob.applyAttack(DamageType.PLAYER_EXPLOSION, explosionAttack);
+            }
+        }
+
+        // split into children
         final int CHILD_COUNT = 6;
+        final double CHILD_SCALE_MOD = Math.pow(CHILD_COUNT, 1.0 / 3.0); // is this math right, idk
         for (int i = 0; i < CHILD_COUNT; i++) {
             double rotation = i * Math.TAU / CHILD_COUNT;
             Pos position = cannonBall.getPosition().withYaw((float) rotation);
             Vec velocity = new Vec(6, 12, 0).rotateAroundY(rotation);
 
+            instance.playSound(Sound.sound(Key.key("minecraft:entity.generic.explode"), Sound.Source.PLAYER, 0.1f, 2.5f + (float) Math.random() * 0.5f), position);
+
             ThrottledScheduler.use(user.getInstance(), "cannonball-weapon-ball-attack", 4, () -> {
-                createCannonBall(user, attack, position, velocity, new Vec(0.25), splitCount - 1);
+                createCannonBall(user, attack, position, velocity, new Vec(scale / CHILD_SCALE_MOD), splitCount - 1);
             });
         }
     }
