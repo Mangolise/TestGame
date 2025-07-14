@@ -72,8 +72,8 @@ public record StaffWeapon(int level) implements Weapon {
 
             user.getInstance().scheduler().scheduleTask(lightning::remove, TaskSchedule.millis(300), TaskSchedule.stop());
 
-            user.playSound(Sound.sound(Key.key("minecraft:item.trident.thunder"), Sound.Source.NEUTRAL, 1.0f, 1f));
-            user.playSound(Sound.sound(Key.key("minecraft:entity.lightning_bolt.impact"), Sound.Source.NEUTRAL, 1.0f, 1f));
+            user.playSound(Sound.sound(Key.key("minecraft:item.trident.thunder"), Sound.Source.NEUTRAL, 0.1f, 1f));
+            user.playSound(Sound.sound(Key.key("minecraft:entity.lightning_bolt.impact"), Sound.Source.NEUTRAL, 0.1f, 1f));
 
             chainAttack(chainedEntities, originalEntity, attack, 1.0);
         }

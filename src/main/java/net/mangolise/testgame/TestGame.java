@@ -83,6 +83,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
         player.getInventory().addItemStack(ItemStack.of(Material.SUNFLOWER));
         player.getInventory().addItemStack(ItemStack.of(Material.BLAZE_ROD));
         player.getInventory().addItemStack(ItemStack.of(Material.STICK));
+        player.getInventory().setItemStack(7, ItemStack.of(Material.CHICKEN_SPAWN_EGG));
         player.getInventory().setItemStack(8, ItemStack.of(Material.ZOMBIE_SPAWN_EGG));
     }
 

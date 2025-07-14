@@ -4,6 +4,7 @@ import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.mods.ModMenu;
 import net.mangolise.testgame.combat.weapons.*;
 import net.mangolise.testgame.mobs.AttackableMob;
+import net.mangolise.testgame.mobs.TestChickenJockey;
 import net.mangolise.testgame.mobs.TestZombie;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Entity;
@@ -165,6 +166,24 @@ public final class AttackSystemImpl implements AttackSystem {
                 TestZombie entity = new TestZombie();
                 double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.4;
                 double scale = Math.pow(1.0 / (0.8 * (speedMultiplier + 1.0)), 1.0 / 0.3);
+
+                entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
+
+                entity.setInstance(player.getInstance(), player.getPosition().add(Math.random() * 8.0, Math.random() * 64.0, Math.random() * 8.0));
+                entity.setTarget(player);
+                entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
+            }
+        } else if (material == Material.CHICKEN_SPAWN_EGG) {
+            for (int i = 0; i < 128; i++) {
+                TestChickenJockey entity = new TestChickenJockey();
+                
+                double statScaling = 1.5;
+                
+                double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.4;
+                double scale = Math.pow(1.0 / (0.8 * (speedMultiplier + 1.0)), 1.0 / 0.3);
+                
+                speedMultiplier *= statScaling;
+                scale *= statScaling;
 
                 entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
 

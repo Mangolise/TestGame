@@ -36,7 +36,6 @@ public record CannonBallWeapon(int level) implements Weapon {
     @Override
     public void doWeaponAttack(List<Attack> attacks) {
         for (Attack attack : attacks) {
-            // next == null means that we perform the attack
             Player user = (Player) attack.getTag(Attack.USER);
             if (user == null) {
                 throw new IllegalStateException("CannonBallBall attack called without a user set in the tags.");
