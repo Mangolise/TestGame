@@ -1,7 +1,11 @@
 package net.mangolise.testgame;
 
 import net.hollowcube.polar.PolarLoader;
+import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.AdminCommandsFeature;
 import net.minestom.server.MinecraftServer;
@@ -10,10 +14,11 @@ import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeInstance;
-import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
-import net.minestom.server.event.player.PlayerChatEvent;
-import net.minestom.server.event.player.PlayerSpawnEvent;
+import net.minestom.server.event.inventory.InventoryPreClickEvent;
+import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.registry.RegistryKey;
 import net.minestom.server.world.DimensionType;
 
@@ -25,7 +30,13 @@ import java.util.function.Consumer;
 public class LobbyGame extends BaseGame<LobbyGame.Config> {
     private Instance world;
 
-    protected LobbyGame(Config config) {
+    private static final ItemStack infoItem = ItemStack
+            .builder(Material.REDSTONE_TORCH)
+            .customName(Component.text("Information").color(TextColor.color(218, 89, 80)).decoration(TextDecoration.ITALIC, false))
+            .hideExtraTooltip()
+            .build();
+
+    public LobbyGame(Config config) {
         super(config);
     }
 
@@ -71,7 +82,26 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         world.eventNode().addListener(PlayerSpawnEvent.class, e -> {
             e.getPlayer().sendMessage("Welcome to the Lobby!");
             e.getPlayer().sendMessage("Type 'potato' in chat to start the game!");
+
+            displayBookToast(e.getPlayer());
+
+            e.getPlayer().getInventory().setItemStack(8, infoItem);  // Last hotbar slot
         });
+
+        world.eventNode().addListener(InventoryPreClickEvent.class, e -> {
+            e.setCancelled(true);
+            inventoryItemInteract(e.getPlayer(), e.getClickedItem());
+        });
+
+        world.eventNode().addListener(PlayerBlockInteractEvent.class, e -> {
+            inventoryItemInteract(e.getPlayer(), e.getPlayer().getItemInMainHand());
+        });
+
+        world.eventNode().addListener(PlayerEntityInteractEvent.class, e -> {
+            inventoryItemInteract(e.getPlayer(), e.getPlayer().getItemInMainHand());
+        });
+
+        // TODO: Handle right clicking air
 
         world.eventNode().addListener(PlayerChatEvent.class, e -> {
             Player player = e.getPlayer();
@@ -85,6 +115,25 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 player.sendMessage("Type 'potato' to start the game!");
             }
         });
+    }
+
+    private static void inventoryItemInteract(Player player, ItemStack item) {
+        if (item.equals(infoItem)) {
+            displayBookToast(player);
+        }
+    }
+
+    private static void displayBookToast(Player player) {
+        Book book = Book.builder()
+                .title(Component.text("Weird zombie game"))
+                .pages(
+                        Component.text("Welcome to a game!").color(TextColor.color(80, 182, 218)).decorate(TextDecoration.BOLD),
+                        Component.text("This game is a zombie survival game where you build up weapons with upgrades to defend against hordes of zombies."),
+                        Component.text("Made by CoPokBl, Calcilore, Krystilize and EclipsedMango")
+                                .decorate(TextDecoration.ITALIC)
+                ).build();
+
+        player.openBook(book);
     }
 
     @Override
