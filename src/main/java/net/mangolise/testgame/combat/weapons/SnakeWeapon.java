@@ -1,5 +1,8 @@
 package net.mangolise.testgame.combat.weapons;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.util.ThrottledScheduler;
 import net.mangolise.testgame.util.Utils;
 import net.mangolise.testgame.combat.Attack;
@@ -16,9 +19,12 @@ import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.tag.Tag;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.*;
 import java.util.function.Consumer;

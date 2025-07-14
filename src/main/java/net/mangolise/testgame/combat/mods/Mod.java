@@ -1,22 +1,18 @@
 package net.mangolise.testgame.combat.mods;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.mangolise.testgame.combat.Attack;
-import net.mangolise.testgame.combat.weapons.BowWeapon;
-import net.mangolise.testgame.combat.weapons.StaffWeapon;
-import net.minestom.server.component.DataComponent;
+import net.mangolise.testgame.util.Utils;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.Material;
-import org.jetbrains.annotations.UnknownNullability;
 
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
 
-public interface Mod extends Attack.Node {
+public sealed interface Mod extends Attack.Node permits GenericMods, SnakeWeaponMods, StaffWeaponMods {
 
     /**
      * The scaling factor for the experience needed to upgrade this mod
@@ -49,7 +45,7 @@ public interface Mod extends Attack.Node {
     }
 
     default Component name() {
-        return Component.text(this.getClass().getSimpleName());
+        return Component.text(Utils.getFullSimpleClassName(this.getClass())).color(this.rarity().color());
     }
 
     default List<Component> description() {
@@ -62,7 +58,15 @@ public interface Mod extends Attack.Node {
     enum Rarity {
         COMMON,
         RARE,
-        EPIC
+        EPIC;
+        
+        public TextColor color() {
+            return switch (this) {
+                case COMMON -> TextColor.color(NamedTextColor.GRAY);
+                case RARE -> TextColor.color(NamedTextColor.DARK_BLUE);
+                case EPIC -> TextColor.color(NamedTextColor.LIGHT_PURPLE);
+            };
+        }
     }
 
     interface Factory {
@@ -70,143 +74,24 @@ public interface Mod extends Attack.Node {
     }
 
     static List<Mod.Factory> values() {
-        return List.of(
-                DoubleAttack::new,
-                TripleAttack::new,
-                QuadAttack::new,
-                CritToDamage::new,
-                StaffWeapon.StaffArcChance::new
-        );
-    }
-    
-    record DoubleAttack(int level) implements Mod {
-        @Override
-        public Rarity rarity() {
-            return Rarity.COMMON;
-        }
-
-        @Override
-        public ItemStack item() {
-            return ItemStack.builder(Material.IRON_SWORD)
-                    .lore(
-                            Component.text("+ Attacks twice", NamedTextColor.GREEN),
-                            Component.text("- Damage multiplier: 0.5 + (0.1 per level)", NamedTextColor.RED)
-                    )
-                    .amount(2)
-                    .build();
-        }
-
-        @Override
-        public void attack(Attack attack, Consumer<Attack> next) {
-            attack.updateTag(Attack.DAMAGE, damage -> damage * (0.5 + level * 0.1));
-            
-            // attack twice
-            next.accept(attack);
-            next.accept(attack);
-        }
-
-        @Override
-        public double priority() {
-            return PRIORITY_WEAPON + 0.1; // this is essentially a weapon
-        }
-    }
-    
-    record TripleAttack(int level) implements Mod {
-        @Override
-        public Rarity rarity() {
-            return Rarity.RARE;
-        }
-
-        @Override
-        public ItemStack item() {
-            return ItemStack.builder(Material.DIAMOND_SWORD)
-                    .lore(
-                            Component.text("+ Attacks three times", NamedTextColor.GREEN),
-                            Component.text("- Damage multiplier: 0.33 + (0.1 per level)", NamedTextColor.RED)
-                    )
-                    .amount(3)
-                    .build();
-        }
-
-        @Override
-        public void attack(Attack attack, Consumer<Attack> next) {
-            attack.updateTag(Attack.DAMAGE, damage -> damage * (0.33 + level * 0.1));
-            
-            // attack three times
-            next.accept(attack);
-            next.accept(attack);
-            next.accept(attack);
-        }
-
-        @Override
-        public double priority() {
-            return PRIORITY_WEAPON + 0.2; // this is essentially a weapon
-        }
-    }
-    
-    record QuadAttack(int level) implements Mod {
-        @Override
-        public Rarity rarity() {
-            return Rarity.EPIC;
-        }
-
-        @Override
-        public ItemStack item() {
-            return ItemStack.builder(Material.NETHERITE_SWORD)
-                    .lore(
-                            Component.text("+ Attacks four times", NamedTextColor.GREEN),
-                            Component.text("- Damage multiplier: 0.25 + (0.1 per level)", NamedTextColor.RED)
-                    )
-                    .amount(4)
-                    .build();
-        }
-
-        @Override
-        public void attack(Attack attack, Consumer<Attack> next) {
-            attack.updateTag(Attack.DAMAGE, damage -> damage * (0.25 + level * 0.1));
-
-            // attack four times
-            next.accept(attack);
-            next.accept(attack);
-            next.accept(attack);
-            next.accept(attack);
+        List<Class<Mod>> subClasses = Utils.getAllRecordSubclasses(Mod.class);
+        List<Mod.Factory> factories = new ArrayList<>();
+        
+        for (Class<Mod> subClass : subClasses) {
+            try {
+                Constructor<Mod> constructor = subClass.getDeclaredConstructor(int.class);
+                factories.add((level) -> {
+                    try {
+                        return constructor.newInstance(level);
+                    } catch (ReflectiveOperationException e) {
+                        throw new RuntimeException("Failed to create instance of " + subClass.getName(), e);
+                    }
+                });
+            } catch (ReflectiveOperationException e) {
+                throw new RuntimeException("Failed to create factory for " + subClass.getName(), e);
+            }
         }
         
-        @Override
-        public double priority() {
-            return PRIORITY_WEAPON + 0.3; // this is essentially a weapon
-        }
-    }
-    
-    record CritToDamage(int level) implements Mod {
-        @Override
-        public Rarity rarity() {
-            return Rarity.COMMON;
-        }
-
-        @Override
-        public ItemStack item() {
-            return ItemStack.builder(Material.AMETHYST_SHARD)
-                    .lore(
-                            Component.text("+ Converts crit chance into damage", NamedTextColor.GREEN),
-                            Component.text("    Crit chance: 0.5 + (0.1 per level)", NamedTextColor.RED)
-                    )
-                    .build();
-        }
-    
-        @Override
-        public void attack(Attack attack, Consumer<Attack> next) {
-            double critChance = attack.getTag(Attack.CRIT_CHANCE);
-            double critDamage = critChance * (0.5 + level * 0.1);
-            attack.updateTag(Attack.DAMAGE, damage -> damage + critDamage);
-            attack.setTag(Attack.CRIT_CHANCE, 0.0); // remove crit chance
-
-            next.accept(attack);
-        }
-
-        @Override
-        public double priority() {
-            return PRIORITY_STAT_MODIFIER;
-        }
+        return factories;
     }
 }

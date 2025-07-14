@@ -165,35 +165,5 @@ public record StaffWeapon(int level) implements Weapon {
                 TaskSchedule.millis(300), TaskSchedule.stop()
         );
     }
-
-    public record StaffArcChance(int level) implements Mod {
-        @Override
-        public Rarity rarity() {
-            return Rarity.COMMON;
-        }
-
-        @Override
-        public ItemStack item() {
-            return ItemStack.builder(Material.END_ROD)
-                    .lore(
-                            Component.text("+ Adds to the chance for an arc to happen", NamedTextColor.GREEN),
-                            Component.text("    Arc chance Addition: 1.0 + (0.1 per level)", NamedTextColor.RED)
-                    )
-                    .amount(1)
-                    .build();
-        }
-
-        @Override
-        public void attack(Attack tags, @UnknownNullability Consumer<Attack> next) {
-            double arcChance = 1.0 + level;
-            tags.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + arcChance);
-            next.accept(tags);
-        }
-
-        @Override
-        public double priority() {
-            return PRIORITY_ADDITIVE_MODIFIER;
-        }
-    }
 }
 

@@ -22,24 +22,27 @@ public class ModMenu {
         double randomNum = Math.random();
 
         if (randomNum <= 0.2) {
+            var rarity = Mod.Rarity.EPIC;
             return ItemStack.builder(Material.PURPLE_BUNDLE)
-                    .customName(Component.text("Epic Upgrade Box").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.LIGHT_PURPLE))
+                    .customName(Component.text("Epic Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
                     .maxStackSize(64)
                     .build()
-                    .withTag(BUNDLE_RARITY, Mod.Rarity.EPIC);
+                    .withTag(BUNDLE_RARITY, rarity);
         } else if (randomNum <= 0.5) {
+            var rarity = Mod.Rarity.RARE;
             return ItemStack.builder(Material.BLUE_BUNDLE)
-                    .customName(Component.text("Rare Upgrade Box").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.DARK_BLUE))
+                    .customName(Component.text("Rare Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
                     .maxStackSize(64)
                     .build()
                     .withTag(BUNDLE_RARITY, Mod.Rarity.RARE);
         }
 
+        var rarity = Mod.Rarity.COMMON;
         return ItemStack.builder(Material.LIGHT_GRAY_BUNDLE)
-                .customName(Component.text("Common Upgrade Box").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GRAY))
+                .customName(Component.text("Common Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
                 .maxStackSize(64)
                 .build()
-                .withTag(BUNDLE_RARITY, Mod.Rarity.COMMON);
+                .withTag(BUNDLE_RARITY, rarity);
     }
 
     public static void onItemUseEvent(PlayerUseItemEvent e) {
