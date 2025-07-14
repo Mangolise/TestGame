@@ -3,6 +3,7 @@ package net.mangolise.testgame;
 import net.mangolise.gamesdk.permissions.Permissions;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.gamesdk.util.PerformanceTracker;
+import net.mangolise.testgame.commands.GiveBundleCommand;
 import net.mangolise.testgame.commands.GiveModsCommand;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
@@ -39,7 +40,10 @@ public class Test {
         LobbyGame.CreateRegistryEntries();
 
         // TODO: How should we handle this?
-        MinecraftServer.getCommandManager().register(new GiveModsCommand());
+        MinecraftServer.getCommandManager().register(
+                new GiveModsCommand(),
+                new GiveBundleCommand()
+        );
 
         // TODO: Enable this for production, it's only disabled because env vars confuse Michael and Krystil is lazy.
         //boolean oneGame = System.getenv("ONE_GAME") != null && System.getenv("ONE_GAME").equalsIgnoreCase("true");

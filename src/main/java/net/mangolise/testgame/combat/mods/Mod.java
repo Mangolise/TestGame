@@ -1,12 +1,19 @@
 package net.mangolise.testgame.combat.mods;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.BowWeapon;
 import net.mangolise.testgame.combat.weapons.StaffWeapon;
+import net.minestom.server.component.DataComponent;
+import net.minestom.server.component.DataComponents;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import org.jetbrains.annotations.UnknownNullability;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public interface Mod extends Attack.Node {
@@ -40,14 +47,52 @@ public interface Mod extends Attack.Node {
     default int maxLevel() {
         return 3;
     }
+
+    default Component name() {
+        return Component.text(this.getClass().getSimpleName());
+    }
+
+    default List<Component> description() {
+        return item().get(DataComponents.LORE);
+    }
+
+    Rarity rarity();
+    ItemStack item();
+
+    enum Rarity {
+        COMMON,
+        RARE,
+        EPIC
+    }
+
+    interface Factory {
+        Mod create(int level);
+    }
+
+    static List<Mod.Factory> values() {
+        return List.of(
+                DoubleAttack::new,
+                TripleAttack::new,
+                QuadAttack::new,
+                CritToDamage::new,
+                StaffWeapon.StaffArcChance::new
+        );
+    }
     
     record DoubleAttack(int level) implements Mod {
+        @Override
+        public Rarity rarity() {
+            return Rarity.COMMON;
+        }
 
         @Override
-        public Component description() {
-            return Component.text()
-                    .append(Component.text("+ Attacks twice", NamedTextColor.GREEN))
-                    .append(Component.text("- Damage multiplier: 0.5 + (0.1 per level)", NamedTextColor.RED))
+        public ItemStack item() {
+            return ItemStack.builder(Material.IRON_SWORD)
+                    .lore(
+                            Component.text("+ Attacks twice", NamedTextColor.GREEN),
+                            Component.text("- Damage multiplier: 0.5 + (0.1 per level)", NamedTextColor.RED)
+                    )
+                    .amount(2)
                     .build();
         }
 
@@ -67,12 +112,19 @@ public interface Mod extends Attack.Node {
     }
     
     record TripleAttack(int level) implements Mod {
+        @Override
+        public Rarity rarity() {
+            return Rarity.RARE;
+        }
 
         @Override
-        public Component description() {
-            return Component.text()
-                    .append(Component.text("+ Attacks three times", NamedTextColor.GREEN))
-                    .append(Component.text("- Damage multiplier: 0.33 + (0.1 per level)", NamedTextColor.RED))
+        public ItemStack item() {
+            return ItemStack.builder(Material.DIAMOND_SWORD)
+                    .lore(
+                            Component.text("+ Attacks three times", NamedTextColor.GREEN),
+                            Component.text("- Damage multiplier: 0.33 + (0.1 per level)", NamedTextColor.RED)
+                    )
+                    .amount(3)
                     .build();
         }
 
@@ -93,12 +145,19 @@ public interface Mod extends Attack.Node {
     }
     
     record QuadAttack(int level) implements Mod {
+        @Override
+        public Rarity rarity() {
+            return Rarity.EPIC;
+        }
 
         @Override
-        public Component description() {
-            return Component.text()
-                    .append(Component.text("+ Attacks four times", NamedTextColor.GREEN))
-                    .append(Component.text("- Damage multiplier: 0.25 + (0.1 per level)", NamedTextColor.RED))
+        public ItemStack item() {
+            return ItemStack.builder(Material.NETHERITE_SWORD)
+                    .lore(
+                            Component.text("+ Attacks four times", NamedTextColor.GREEN),
+                            Component.text("- Damage multiplier: 0.25 + (0.1 per level)", NamedTextColor.RED)
+                    )
+                    .amount(4)
                     .build();
         }
 
@@ -120,12 +179,18 @@ public interface Mod extends Attack.Node {
     }
     
     record CritToDamage(int level) implements Mod {
+        @Override
+        public Rarity rarity() {
+            return Rarity.COMMON;
+        }
 
         @Override
-        public Component description() {
-            return Component.text()
-                    .append(Component.text("+ Converts crit chance into damage", NamedTextColor.GREEN))
-                    .append(Component.text("    Crit chance: 0.5 + (0.1 per level)", NamedTextColor.RED))
+        public ItemStack item() {
+            return ItemStack.builder(Material.AMETHYST_SHARD)
+                    .lore(
+                            Component.text("+ Converts crit chance into damage", NamedTextColor.GREEN),
+                            Component.text("    Crit chance: 0.5 + (0.1 per level)", NamedTextColor.RED)
+                    )
                     .build();
         }
     
@@ -144,10 +209,4 @@ public interface Mod extends Attack.Node {
             return PRIORITY_STAT_MODIFIER;
         }
     }
-
-    default Component name() {
-        return Component.text(this.getClass().getSimpleName());
-    }
-
-    Component description();
 }

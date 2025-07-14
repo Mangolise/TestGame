@@ -1,6 +1,7 @@
 package net.mangolise.testgame.combat;
 
 import net.mangolise.testgame.combat.mods.Mod;
+import net.mangolise.testgame.combat.mods.ModMenu;
 import net.mangolise.testgame.combat.weapons.*;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.mobs.TestZombie;
@@ -87,6 +88,10 @@ public final class AttackSystemImpl implements AttackSystem {
         MinecraftServer.getGlobalEventHandler().addListener(PlayerUseItemEvent.class, e -> {
             var player = e.getPlayer();
             onSwing(player, e.getItemStack().material());
+
+            if (player.getItemInHand(e.getHand()).material() == Material.BUNDLE) {
+                ModMenu.openModMenu(player);
+            }
         });
 
         MinecraftServer.getGlobalEventHandler().addListener(PlayerEntityInteractEvent.class, e -> {

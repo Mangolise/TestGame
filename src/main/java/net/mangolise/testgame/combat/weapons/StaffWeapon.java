@@ -17,6 +17,8 @@ import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.tag.Tag;
@@ -165,12 +167,19 @@ public record StaffWeapon(int level) implements Weapon {
     }
 
     public record StaffArcChance(int level) implements Mod {
+        @Override
+        public Rarity rarity() {
+            return Rarity.COMMON;
+        }
 
         @Override
-        public Component description() {
-            return Component.text()
-                    .append(Component.text("+ Adds to the chance for an arc to happen", NamedTextColor.GREEN))
-                    .append(Component.text("    Arc chance Addition: 1.0 + (0.1 per level)", NamedTextColor.RED))
+        public ItemStack item() {
+            return ItemStack.builder(Material.END_ROD)
+                    .lore(
+                            Component.text("+ Adds to the chance for an arc to happen", NamedTextColor.GREEN),
+                            Component.text("    Arc chance Addition: 1.0 + (0.1 per level)", NamedTextColor.RED)
+                    )
+                    .amount(1)
                     .build();
         }
 
