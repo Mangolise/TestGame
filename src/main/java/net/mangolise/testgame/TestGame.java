@@ -3,7 +3,6 @@ package net.mangolise.testgame;
 import net.hollowcube.polar.PolarLoader;
 import net.kyori.adventure.key.Key;
 import net.mangolise.gamesdk.BaseGame;
-import net.mangolise.gamesdk.instance.InstanceAnalysis;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.minestom.server.MinecraftServer;
@@ -11,8 +10,6 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.instance.block.Block;
-import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.registry.RegistryKey;
@@ -30,7 +27,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
     }
 
     public static void CreateRegistryEntries() {
-        DimensionType dimension = DimensionType.builder().ambientLight(15).build();
+        DimensionType dimension = DimensionType.builder().build();
         MinecraftServer.getDimensionTypeRegistry().register("test-game-dimension", dimension);
     }
 
@@ -49,39 +46,14 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         PolarLoader loader;
         try {
-            loader = new PolarLoader(new FileInputStream("world.polar"));
+            loader = new PolarLoader(new FileInputStream("game.polar"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        var blocks = InstanceAnalysis.analyse(loader.world());
 
         instance = MinecraftServer.getInstanceManager().createInstanceContainer(dim, loader);
         instance.setTimeRate(0);
         instance.setTimeSynchronizationTicks(0);
-
-        blocks.forEach((blockStateId, points) -> {
-            Block block = Block.fromStateId(blockStateId);
-            if (block == null) {
-                Log.logger().warn("Unknown block state: " + blockStateId);
-                return;
-            }
-            
-            boolean isFullBlock = true;
-            for (BlockFace face : BlockFace.values()) {
-                if (!block.registry().collisionShape().isFaceFull(face)) {
-                    isFullBlock = false;
-                    break;
-                }
-            }
-            
-            if (isFullBlock) {
-                return;
-            }
-            
-            for (var point : points) {
-                instance.setBlock(point.blockX(), point.blockY(), point.blockZ(), Block.AIR);
-            }
-        });
 
         // Player spawning
         for (Player player : config.players) {
@@ -97,18 +69,14 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         player.setGameMode(GameMode.ADVENTURE);
         player.setAllowFlying(true); // TODO: Remove this
-        player.setRespawnPoint(new Pos(36.79, 72.74, 20.48));
-        player.teleport(new Pos(36.79, 72.74, 20.48));
-
-        player.getAttribute(Attribute.CAMERA_DISTANCE).setBaseValue(10.0);
-        player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(10000.0);
+        player.setRespawnPoint(new Pos(7.5, 0, 8.5));
+        player.teleport(new Pos(7.5, 0, 8.5));
 
         // TODO: should we do this?
-        player.getAttribute(Attribute.SCALE).setBaseValue(1.5);
-
         // Setting the base value instead of adding a modifier seems to reduce FOV effects.
         //player.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("scale-movement-bonus", 1.5, AttributeOperation.ADD_MULTIPLIED_BASE));
         player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1 * 1.5);
+        player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(10000.0);
 
         player.getInventory().clear();
         player.getInventory().addItemStack(ItemStack.of(Material.BOW));
