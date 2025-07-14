@@ -126,13 +126,14 @@ public final class AttackSystemImpl implements AttackSystem {
         } else if (material == Material.ZOMBIE_SPAWN_EGG) { // spawn zombies
             for (int i = 0; i < 128; i++) {
                 TestZombie entity = new TestZombie();
-                double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.3;
+                double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.4;
+                double scale = Math.pow(1.0 / (0.8 * (speedMultiplier + 1.0)), 1.0 / 0.3);
 
                 entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
 
                 entity.setInstance(player.getInstance(), player.getPosition().add(Math.random() * 8.0, Math.random() * 64.0, Math.random() * 8.0));
                 entity.setTarget(player);
-                entity.getAttribute(Attribute.SCALE).setBaseValue(0.5 * (1.0 / Math.pow(speedMultiplier, 0.4)));
+                entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
             }
         }
     }

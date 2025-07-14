@@ -95,7 +95,7 @@ public record CannonBallWeapon(int level) implements Weapon {
             Pos position = cannonBall.getPosition().withYaw((float) rotation);
             Vec velocity = new Vec(6, 12, 0).rotateAroundY(rotation);
 
-            ThrottledScheduler.use(user.getInstance(), "cannonball-weapon-ball-attack", 10, () -> {
+            ThrottledScheduler.use(user.getInstance(), "cannonball-weapon-ball-attack", 4, () -> {
                 createCannonBall(user, attack, position, velocity, new Vec(0.25), splitCount - 1);
             });
         }

@@ -45,6 +45,9 @@ public record StaffWeapon(int level) implements Weapon {
 
     @Override
     public void doWeaponAttack(List<Attack> attacks) {
+
+        Set<UUID> chainedEntities = new HashSet<>();
+        
         for (Attack attack : attacks) {
             // next == null means that we perform the attack
             Player user = attack.getTag(STAFF_USER);
@@ -54,8 +57,6 @@ public record StaffWeapon(int level) implements Weapon {
 
             // spawn spell
             AttackableMob originalEntity = attack.getTag(HIT_ENTITY);
-
-            Set<UUID> chainedEntities = new HashSet<>();
 
             Vec playerPos = new Vec(user.getPosition().x(), user.getPosition().y() + user.getEyeHeight() * user.getAttribute(Attribute.SCALE).getValue(), user.getPosition().z());
 
@@ -107,7 +108,7 @@ public record StaffWeapon(int level) implements Weapon {
             var entityScale = entity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getBaseValue() : 1.0;
 
             instance.scheduler().scheduleTask(() -> {
-                ThrottledScheduler.use(instance, "staff-weapon-chain-attack", 10, () -> {
+                ThrottledScheduler.use(instance, "staff-weapon-chain-attack", 4, () -> {
                     Vec start = originEntity.getPosition().asVec().add(0, originEntity.getEyeHeight() * originEntityScale, 0);
                     Vec end = entity.getPosition().asVec().add(0, entity.getEyeHeight() * entityScale, 0);
 

@@ -29,8 +29,8 @@ import java.util.function.Consumer;
  */
 public record SnakeWeapon(int level) implements Weapon {
 
-    public static final Tag<Double> SPEED = Tag.Double("testgame.attack.snake.speed").defaultValue(1.0);
     public static final Tag<Double> ALIVE_TICKS = Tag.Double("testgame.attack.snake.aliveticks").defaultValue(20.0 * 3.0);
+    public static final Tag<Double> ACCELERATION = Tag.Double("testgame.attack.snake.acceleration").defaultValue(0.01);
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
@@ -110,11 +110,18 @@ public record SnakeWeapon(int level) implements Weapon {
         }
 
         private void handleMoveTick(int tickMs) {
-            double speedBonus = msSinceLastHit * 0.01;
+            // if the target is dead, find a new target
+            if (target.isRemoved() || (target instanceof LivingEntity living && living.isDead())) {
+                forkSnake(pos, remainingTicks);
+                
+                // KILL this snake
+                remainingTicks = 0;
+            }
 
             // move towards the target
-            Vec direction = target.getPosition().asVec().sub(pos).normalize().mul(attack.getTag(SnakeWeapon.SPEED));
-            direction = direction.mul(1.0 + speedBonus);
+            double speedBonus = msSinceLastHit * attack.getTag(SnakeWeapon.ACCELERATION);
+            Vec direction = target.getPosition().asVec().sub(pos).normalize();
+            direction = direction.mul(speedBonus);
 
             // make it relative to the time
             direction = direction.mul(Math.max(tickMs, 1) / 1000.0);
@@ -128,7 +135,7 @@ public record SnakeWeapon(int level) implements Weapon {
 
                 // fork the snake
                 int childrenRemainingTicks = remainingTicks - 1;
-                ThrottledScheduler.use(instance, "snake-weapon-fork-attack", 10, () -> {
+                ThrottledScheduler.use(instance, "snake-weapon-fork-attack", 4, () -> {
                     forkSnake(pos, childrenRemainingTicks);
                     forkSnake(pos, childrenRemainingTicks);
                 });

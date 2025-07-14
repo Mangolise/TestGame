@@ -32,7 +32,14 @@ public class ThrottledScheduler {
         instance.setTag(tag, newScheduler);
         return newScheduler;
     }
-    
+
+    /**
+     * Schedules the given task to be run in the future, throttled by a certain amount of milliseconds per tick.
+     * @param instance the instance to use for scheduling
+     * @param name the name of the scheduler, used to identify it
+     * @param msPerTick the amount of milliseconds to throttle the scheduler by per tick
+     * @param task the task to be scheduled
+     */
     public static void use(Instance instance, String name, double msPerTick, Runnable task) {
         ThrottledScheduler scheduler = from(instance, name, msPerTick);
         scheduler.schedule(task);

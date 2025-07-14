@@ -12,6 +12,7 @@ import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.ai.goal.FollowTargetGoal;
 import net.minestom.server.entity.ai.goal.MeleeAttackGoal;
+import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.registry.RegistryKey;
@@ -99,6 +100,10 @@ public class TestZombie extends EntityCreature implements AttackableMob {
                 }
 
                 double force = 1.0 / (distance * distance);
+                
+                // increase the force based on the size of the other zombie
+                double otherScale = other.getAttribute(Attribute.SCALE).getValue();
+                force *= (otherScale * otherScale);
 
                 movementVec = movementVec.add(direction.mul(force));
             }
