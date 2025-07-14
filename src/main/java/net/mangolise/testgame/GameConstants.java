@@ -2,16 +2,18 @@ package net.mangolise.testgame;
 
 public class GameConstants {
     public static final String[] CREATORS = {
-        "iVec4",
-        "Krystilize",
-        "CoPokBl",
-        "Calcilore",
-        "TypoSquatter",
-        "Kalcilore"
+            "iVec4",
+            "Krystilize",
+            "CoPokBl",
+            "Calcilore",
+            "TypoSquatter",
+            "Kalcilore"
     };
 
     public static final String[] MINESTOM_OFFICIALS = {
-        "Bob"
+            "iam4722202468",
+            "themode911",
+            "notmattw"
     };
 
     public static final int GAME_QUEUE_MAX_PLAYERS = 4;
