@@ -4,10 +4,11 @@ import net.krystilize.pathable.Path;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
+import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.util.ThrottledScheduler;
-import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
@@ -17,19 +18,17 @@ import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
-import net.minestom.server.network.packet.server.play.SoundEffectPacket;
 import net.minestom.server.particle.Particle;
-import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.TaskSchedule;
+import org.jetbrains.annotations.UnknownNullability;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public record StaffWeapon(int level) implements Weapon {
-    
     public static final Tag<Player> STAFF_USER = Tag.Transient("testgame.attack.staff.user");
     public static final Tag<AttackableMob> HIT_ENTITY = Tag.Transient("testgame.attack.staff.hit_entity");
     public static final Tag<Double> ARC_CHANCE = Tag.Double("testgame.attack.staff.arc_chance").defaultValue(0.5);
@@ -48,7 +47,7 @@ public record StaffWeapon(int level) implements Weapon {
     @Override
     public void doWeaponAttack(List<Attack> attacks) {
 
-        Set<UUID> chainedEntities = new HashSet<>();
+        Set<UUID> chainedEntities = ConcurrentHashMap.newKeySet();
         
         for (Attack attack : attacks) {
             // next == null means that we perform the attack
@@ -163,6 +162,29 @@ public record StaffWeapon(int level) implements Weapon {
                 instance, "staff-lightning-display", 10, displayEntity::remove),
                 TaskSchedule.millis(300), TaskSchedule.stop()
         );
+    }
+
+    public record StaffArcChance(int level) implements Mod {
+
+        @Override
+        public Component description() {
+            return Component.text()
+                    .append(Component.text("+ Adds to the chance for an arc to happen", NamedTextColor.GREEN))
+                    .append(Component.text("    Arc chance Addition: 1.0 + (0.1 per level)", NamedTextColor.RED))
+                    .build();
+        }
+
+        @Override
+        public void attack(Attack tags, @UnknownNullability Consumer<Attack> next) {
+            double arcChance = 1.0 + level;
+            tags.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + arcChance);
+            next.accept(tags);
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_ADDITIVE_MODIFIER;
+        }
     }
 }
 

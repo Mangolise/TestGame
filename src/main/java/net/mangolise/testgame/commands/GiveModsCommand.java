@@ -2,6 +2,7 @@ package net.mangolise.testgame.commands;
 
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.mods.Mod;
+import net.mangolise.testgame.combat.weapons.StaffWeapon;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.entity.Player;
 
@@ -18,7 +19,7 @@ public class GiveModsCommand extends Command {
             AttackSystem.INSTANCE.add(player, new Mod.DoubleAttack(3));
             AttackSystem.INSTANCE.add(player, new Mod.TripleAttack(3));
             AttackSystem.INSTANCE.add(player, new Mod.QuadAttack(3));
-            AttackSystem.INSTANCE.add(player, new Mod.StaffArcChance(1));
+            AttackSystem.INSTANCE.add(player, new StaffWeapon.StaffArcChance(1));
 //            AttackSystem.INSTANCE.add(player, new Mod.CritToDamage(3));
         });
     }

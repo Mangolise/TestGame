@@ -9,7 +9,7 @@ import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.function.Consumer;
 
-public sealed interface Mod extends Attack.Node {
+public interface Mod extends Attack.Node {
 
     /**
      * The scaling factor for the experience needed to upgrade this mod
@@ -116,52 +116,6 @@ public sealed interface Mod extends Attack.Node {
         @Override
         public double priority() {
             return PRIORITY_WEAPON + 0.3; // this is essentially a weapon
-        }
-    }
-    
-    record BowVelocity(int level) implements Mod {
-
-        @Override
-        public Component description() {
-            return Component.text()
-                    .append(Component.text("+ Multiplies bow velocity", NamedTextColor.GREEN))
-                    .append(Component.text("    Velocity multiplier: 2.0 + (1.0 per level)", NamedTextColor.RED))
-                    .build();
-        }
-
-        @Override
-        public void attack(Attack attack, Consumer<Attack> next) {
-            double velocity = 2.0 + (1.0 * level);
-            attack.updateTag(BowWeapon.VELOCITY, velo -> velo * velocity);
-            next.accept(attack);
-        }
-
-        @Override
-        public double priority() {
-            return PRIORITY_STAT_MODIFIER;
-        }
-    }
-
-    record StaffArcChance(int level) implements Mod {
-
-        @Override
-        public Component description() {
-            return Component.text()
-                    .append(Component.text("+ Adds to the chance for an arc to happen", NamedTextColor.GREEN))
-                    .append(Component.text("    Arc chance Addition: 1.0 + (0.1 per level)", NamedTextColor.RED))
-                    .build();
-        }
-
-        @Override
-        public void attack(Attack tags, @UnknownNullability Consumer<Attack> next) {
-            double arcChance = 1.0 + level;
-            tags.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + arcChance);
-            next.accept(tags);
-        }
-
-        @Override
-        public double priority() {
-            return PRIORITY_ADDITIVE_MODIFIER;
         }
     }
     
