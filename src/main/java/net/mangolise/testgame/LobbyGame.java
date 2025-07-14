@@ -85,7 +85,8 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             e.getPlayer().sendMessage("Welcome to the Lobby!");
             e.getPlayer().sendMessage("Type 'potato' in chat to start the game!");
 
-            displayBookToast(e.getPlayer());
+            // TODO: Should this be enabled for production?
+//            displayBookToast(e.getPlayer());
 
             e.getPlayer().getInventory().setItemStack(8, infoItem);  // Last hotbar slot
         });

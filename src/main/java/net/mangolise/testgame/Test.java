@@ -5,7 +5,9 @@ import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.gamesdk.util.PerformanceTracker;
 import net.mangolise.testgame.commands.GiveModsCommand;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.entity.Player;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
+import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.extras.bungee.BungeeCordProxy;
 import net.minestom.server.extras.velocity.VelocityProxy;
 
@@ -39,11 +41,22 @@ public class Test {
         // TODO: How should we handle this?
         MinecraftServer.getCommandManager().register(new GiveModsCommand());
 
-        LobbyGame lobby = new LobbyGame(new LobbyGame.Config(ps -> {
-            TestGame game = new TestGame(new TestGame.Config(ps));
+        // TODO: Enable this for production, it's only disabled because env vars confuse Michael and Krystil is lazy.
+        //boolean oneGame = System.getenv("ONE_GAME") != null && System.getenv("ONE_GAME").equalsIgnoreCase("true");
+        boolean oneGame = System.getenv("ONE_GAME") == null || System.getenv("ONE_GAME").equalsIgnoreCase("true");
+        if (oneGame) {  // Start one game and join all players to it
+            TestGame game = new TestGame(new TestGame.Config(new Player[0]));
             game.setup();
-        }));
-        lobby.setup();
+
+            MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> e.setSpawningInstance(game.getInstance()));
+            MinecraftServer.getGlobalEventHandler().addListener(PlayerSpawnEvent.class, e -> game.joinPlayer(e.getPlayer()));
+        } else {  // Regular prod setup with lobby
+            LobbyGame lobby = new LobbyGame(new LobbyGame.Config(ps -> {
+                TestGame game = new TestGame(new TestGame.Config(ps));
+                game.setup();
+            }));
+            lobby.setup();
+        }
 
         server.start("0.0.0.0", GameSdkUtils.getConfiguredPort());
     }
