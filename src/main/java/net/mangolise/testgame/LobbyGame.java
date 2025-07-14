@@ -47,6 +47,8 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
 
     @Override
     public void setup() {
+        super.setup();
+
         RegistryKey<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().getKey(Key.key("test-game-dimension"));
         if (dim == null) {
             throw new IllegalStateException("Dimension type 'test-game-dimension' not registered. Call CreateRegistryEntries() first.");

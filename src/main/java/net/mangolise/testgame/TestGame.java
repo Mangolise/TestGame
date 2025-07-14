@@ -85,7 +85,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
         for (Player player : config.players) {
             player.setInstance(instance);
 
-            player.setGameMode(GameMode.SURVIVAL);
+            player.setGameMode(GameMode.ADVENTURE);
+            player.setAllowFlying(true); // TODO: Remove this
             player.setRespawnPoint(new Pos(36.79, 72.74, 20.48));
             player.teleport(new Pos(36.79, 72.74, 20.48));
 
