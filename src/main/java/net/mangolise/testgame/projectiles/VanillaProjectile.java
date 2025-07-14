@@ -38,7 +38,7 @@ public class VanillaProjectile extends Entity {
         return this.shooter;
     }
 
-    private double remainingParticleDistance = 0;
+    private double totalTravelled = 0;
 
     @Override
     public void tick(long time) {
@@ -54,13 +54,15 @@ public class VanillaProjectile extends Entity {
         // Create particles
         double step = 5;
 
-        double travelled = remainingParticleDistance;
-        remainingParticleDistance += to.distance(from);
+        double travelled = totalTravelled % step;
+        double distance = to.distance(from);
+        totalTravelled += distance;
 
-        while (travelled < remainingParticleDistance) {
+        while (travelled < distance) {
             Pos pos = from.add(to.sub(from).asVec().normalize().mul(travelled));
             ParticlePacket packet = new ParticlePacket(Particle.CRIT, pos, Vec.ZERO, 0, 1);
             sendPacketToViewers(packet);
+
             travelled += step;
         }
 
