@@ -36,7 +36,7 @@ public record CannonBallWeapon(int level) implements Weapon {
     @Override
     public void doWeaponAttack(List<Attack> attacks) {
         for (Attack attack : attacks) {
-            Player user = (Player) attack.getTag(Attack.USER);
+            LivingEntity user = (LivingEntity) attack.getTag(Attack.USER);
             if (user == null) {
                 throw new IllegalStateException("CannonBallBall attack called without a user set in the tags.");
             }
@@ -52,7 +52,7 @@ public record CannonBallWeapon(int level) implements Weapon {
         }
     }
 
-    private void createCannonBall(Player user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount) {
+    private void createCannonBall(LivingEntity user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount) {
         VanillaProjectile cannonBall = new VanillaProjectile(user, EntityType.BLOCK_DISPLAY);
         cannonBall.editEntityMeta(BlockDisplayMeta.class, meta -> {
             meta.setBlockState(Block.SMOOTH_BASALT);
@@ -81,7 +81,7 @@ public record CannonBallWeapon(int level) implements Weapon {
         return PRIORITY_WEAPON;
     }
 
-    private void onCannonBallCollide(ProjectileCollideAnyEvent event, Player user, VanillaProjectile cannonBall, Attack attack, int splitCount) {
+    private void onCannonBallCollide(ProjectileCollideAnyEvent event, LivingEntity user, VanillaProjectile cannonBall, Attack attack, int splitCount) {
         if (event instanceof ProjectileCollideEntityEvent eEvent) {
             if (!(eEvent.getTarget() instanceof AttackableMob target)) {
                 event.setCancelled(true);
