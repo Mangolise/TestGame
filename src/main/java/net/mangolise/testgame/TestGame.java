@@ -3,9 +3,9 @@ package net.mangolise.testgame;
 import net.hollowcube.polar.PolarLoader;
 import net.kyori.adventure.key.Key;
 import net.mangolise.gamesdk.BaseGame;
+import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.testgame.combat.AttackSystem;
-import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.mods.ModMenu;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.List;
 
 public class TestGame extends BaseGame<TestGame.Config> {
+    private static final Pos SPAWN = new Pos(7.5, 0, 8.5);
+
     private Instance instance;
 
     protected TestGame(Config config) {
@@ -70,12 +72,11 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
     public void joinPlayer(Player player) {
         // This is needed for the ONE_GAME option
-        if (player.getInstance() != instance) player.setInstance(instance);
+        if (player.getInstance() != instance) player.setInstance(instance, SPAWN);
 
         player.setGameMode(GameMode.ADVENTURE);
         player.setAllowFlying(true); // TODO: Remove this
-        player.setRespawnPoint(new Pos(7.5, 0, 8.5));
-        player.teleport(new Pos(7.5, 0, 8.5));
+        player.setRespawnPoint(SPAWN);
 
         // TODO: should we do this?
         // Setting the base value instead of adding a modifier seems to reduce FOV effects.
@@ -94,7 +95,9 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
     @Override
     public List<Feature<?>> features() {
-        return List.of();
+        return List.of(
+                new NoCollisionFeature()
+        );
     }
 
     public Instance getInstance() {

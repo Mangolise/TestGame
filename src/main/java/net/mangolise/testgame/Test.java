@@ -31,10 +31,9 @@ public class Test {
             VelocityProxy.enable(secret);
         }
 
-        // give every permission to every player
-        MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {
-            Permissions.setPermission(e.getPlayer(), "*", true);
-        });
+        // give every permission to every player, TODO: Remove this in production
+        MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e ->
+                Permissions.setPermission(e.getPlayer(), "*", true));
 
         TestGame.CreateRegistryEntries();
         LobbyGame.CreateRegistryEntries();

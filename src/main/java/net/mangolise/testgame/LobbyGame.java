@@ -6,10 +6,15 @@ import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.AdminCommandsFeature;
+import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.features.SignFeature;
 import net.mangolise.gamesdk.util.ChatUtil;
+import net.mangolise.testgame.commands.AcceptPartyInviteCommand;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
@@ -23,6 +28,7 @@ import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.registry.RegistryKey;
 import net.minestom.server.sound.SoundEvent;
+import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 import net.minestom.server.world.DimensionType;
@@ -30,12 +36,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 public class LobbyGame extends BaseGame<LobbyGame.Config> {
+    private static final Tag<Set<Player>> PARTY_MEMBERS_TAG = Tag.Transient("lobby.partymembers");
+    private static final Tag<Set<Player>> PARTY_MEMBER_INVITES_TAG = Tag.Transient("lobby.partyinvites");
+    private static final Tag<Player> JOINED_PARTY_TAG = Tag.Transient("lobby.joinedparty");
+
     private final ConcurrentLinkedQueue<Player> queue = new ConcurrentLinkedQueue<>();
     private @Nullable Task queueStartTask = null;
     private BossBar queueBossBar = BossBar.bossBar(
@@ -67,7 +76,32 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
 
     private static final ItemStack playWithPartyItem = ItemStack
             .builder(Material.IRON_SWORD)
-            .customName(ChatUtil.toComponent("&r&aPlay With Party &7(Right Click)"))
+            .customName(ChatUtil.toComponent("&r&aCreate Party &7(Right Click)"))
+            .hideExtraTooltip()
+            .build();
+
+    // Party inv items
+    private static final ItemStack startPartyGameItem = ItemStack
+            .builder(Material.IRON_SWORD)
+            .customName(ChatUtil.toComponent("&r&aStart Game &7(Right Click)"))
+            .hideExtraTooltip()
+            .build();
+
+    private static final ItemStack disbandPartyItem = ItemStack
+            .builder(Material.BARRIER)
+            .customName(ChatUtil.toComponent("&r&aDisband Party &7(Right Click)"))
+            .hideExtraTooltip()
+            .build();
+
+    private static final ItemStack leavePartyItem = ItemStack
+            .builder(Material.BARRIER)
+            .customName(ChatUtil.toComponent("&r&aLeave Party &7(Right Click)"))
+            .hideExtraTooltip()
+            .build();
+
+    private static final ItemStack invitePartyMemberItem = ItemStack
+            .builder(Material.VILLAGER_SPAWN_EGG)
+            .customName(ChatUtil.toComponent("&r&aInvite Party Member &7(Right Click Player)"))
             .hideExtraTooltip()
             .build();
 
@@ -83,6 +117,8 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     @Override
     public void setup() {
         super.setup();
+
+        MinecraftServer.getCommandManager().register(new AcceptPartyInviteCommand(this));
 
         RegistryKey<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().getKey(Key.key("lobby-dimension"));
         if (dim == null) {
@@ -122,11 +158,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             // TODO: Should this be enabled for production?
 //            displayBookToast(e.getPlayer());
 
-            // Slot index is just the hotbar index because Minestom's indexing different to the protocol's
-            e.getPlayer().getInventory().setItemStack(0, joinQueueItem);
-            e.getPlayer().getInventory().setItemStack(1, playSoloItem);
-            e.getPlayer().getInventory().setItemStack(2, playWithPartyItem);
-            e.getPlayer().getInventory().setItemStack(8, infoItem);
+            giveRegularItems(e.getPlayer());
         });
 
         world.eventNode().addListener(InventoryPreClickEvent.class, e -> {
@@ -137,6 +169,40 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         world.eventNode().addListener(PlayerUseItemEvent.class, e -> {
             inventoryItemInteract(e.getPlayer(), e.getItemStack());
         });
+
+        world.eventNode().addListener(PlayerEntityInteractEvent.class, e -> {
+            if (!e.getPlayer().getItemInMainHand().equals(invitePartyMemberItem)) {
+                return;
+            }
+
+            if (!(e.getTarget() instanceof Player target)) {
+                return;
+            }
+
+            Set<Player> invitees = e.getPlayer().getTag(PARTY_MEMBER_INVITES_TAG);
+            if (!invitees.add(target)) {
+                // it was already there
+                e.getPlayer().sendMessage(ChatUtil.toComponent("&cYou have already invited &6" + target.getUsername() + "&c to your party."));
+                return;
+            }
+
+            e.getPlayer().sendMessage(ChatUtil.toComponent("&aYou have invited &6" + target.getUsername() + "&a to your party!"));
+            target.sendMessage(ChatUtil.toComponent("&6" + e.getPlayer().getUsername() + "&a has invited you to their party!"));
+
+            Component acceptMessage = Component.text("Click here to accept the invite.")
+                    .color(NamedTextColor.GOLD)
+                    .hoverEvent(HoverEvent.showText(ChatUtil.toComponent("&aClick this to join their party!")))
+                    .clickEvent(ClickEvent.runCommand("/acceptpartyinvite " + e.getPlayer().getUsername()));
+            target.sendMessage(acceptMessage);
+        });
+    }
+
+    private void giveRegularItems(Player player) {
+        player.getInventory().clear();
+        player.getInventory().setItemStack(0, joinQueueItem);
+        player.getInventory().setItemStack(1, playSoloItem);
+        player.getInventory().setItemStack(2, playWithPartyItem);
+        player.getInventory().setItemStack(8, infoItem);
     }
 
     private void inventoryItemInteract(Player player, ItemStack item) {
@@ -148,9 +214,106 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         } else if (item.equals(joinQueueItem)) {
             enqueue(player);
         } else if (item.equals(playWithPartyItem)) {
-            player.sendMessage(ChatUtil.toComponent("&cThis feature is not implemented yet!"));
-            player.playSound(Sound.sound(SoundEvent.BLOCK_ANVIL_BREAK.key(), Sound.Source.MASTER, 0.5f, 1.0f));
+            player.setTag(PARTY_MEMBERS_TAG, new HashSet<>());
+            player.setTag(PARTY_MEMBER_INVITES_TAG, new HashSet<>());
+            player.sendMessage(ChatUtil.toComponent("&aParty created! Right click the Villager Spawn Egg to invite players!"));
+            player.playSound(Sound.sound(SoundEvent.ENTITY_PLAYER_LEVELUP.key(), Sound.Source.MASTER, 1.0f, 1.0f));
+
+            // Give them the party items
+            player.getInventory().clear();
+            player.getInventory().setItemStack(0, startPartyGameItem);
+            player.getInventory().setItemStack(1, invitePartyMemberItem);
+            player.getInventory().setItemStack(8, disbandPartyItem);
+        } else if (item.equals(disbandPartyItem)) {
+            Set<Player> partyMembers = player.getTag(PARTY_MEMBERS_TAG);
+            if (partyMembers == null) {
+                player.sendMessage(ChatUtil.toComponent("&cYou are not in a party!"));
+                return;
+            }
+
+            for (Player member : partyMembers) {
+                leaveParty(member);
+            }
+
+            player.sendMessage(ChatUtil.toComponent("&aParty disbanded!"));
+            player.removeTag(PARTY_MEMBERS_TAG);
+            giveRegularItems(player);
+        } else if (item.equals(startPartyGameItem)) {
+            Set<Player> partyMembers = player.getTag(PARTY_MEMBERS_TAG);
+            if (partyMembers == null || partyMembers.isEmpty()) {
+                player.sendMessage(ChatUtil.toComponent("&cYou are not in a party!"));
+                return;
+            }
+
+            partyMembers.add(player);
+            player.removeTag(PARTY_MEMBERS_TAG);
+            for (Player member : partyMembers) {
+                member.removeTag(JOINED_PARTY_TAG);
+                member.sendMessage(ChatUtil.toComponent("&aParty game starting with " + partyMembers.size() + " members!"));
+            }
+
+            // Start the game with the party members
+            config.startGameMethod.accept(partyMembers.toArray(new Player[0]));
+        } else if (item.equals(leavePartyItem)) {
+            leaveParty(player);
         }
+    }
+
+    public void tryJoinParty(Player player, String leader) {
+        Player partyLeader = MinecraftServer.getConnectionManager().findOnlinePlayer(leader);
+        if (partyLeader == null) {
+            player.sendMessage(ChatUtil.toComponent("&cPlayer not found!"));
+            return;
+        }
+
+        Set<Player> invites = partyLeader.getTag(PARTY_MEMBER_INVITES_TAG);
+        if (invites == null || !invites.contains(player)) {
+            player.sendMessage(ChatUtil.toComponent("&cYou have not been invited to this party!"));
+            return;
+        }
+
+        // They were invited, so we can join the party
+        Set<Player> partyMembers = partyLeader.getTag(PARTY_MEMBERS_TAG);
+        if (!partyMembers.add(player)) {
+            // They are already in the party
+            player.sendMessage(ChatUtil.toComponent("&cYou are already in this party!"));
+            return;
+        }
+        player.setTag(JOINED_PARTY_TAG, partyLeader);
+
+        for (Player member : partyMembers) {
+            member.sendMessage(ChatUtil.toComponent("&a" + player.getUsername() + " has joined the party!"));
+        }
+        partyLeader.sendMessage(ChatUtil.toComponent("&a" + player.getUsername() + " has joined your party!"));
+
+        player.getInventory().clear();
+        player.getInventory().setItemStack(8, leavePartyItem);
+    }
+
+    /**
+     * Makes the specified player leave the party they are in.
+     * @param player The player to leave the party.
+     */
+    private void leaveParty(Player player) {
+        Player partyLeader = player.getTag(JOINED_PARTY_TAG);
+        if (partyLeader == null) {
+            return;
+        }
+
+        // Remove the player from the party members
+        Set<Player> partyMembers = partyLeader.getTag(PARTY_MEMBERS_TAG);
+        if (partyMembers != null) {
+            partyMembers.remove(player);
+            player.setTag(PARTY_MEMBERS_TAG, partyMembers);
+
+            player.sendMessage(ChatUtil.toComponent("&cYou have left the party!"));
+            for (Player member : partyMembers) {
+                member.sendMessage(ChatUtil.toComponent("&c" + player.getUsername() + " has left the party!"));
+            }
+        }
+
+        player.removeTag(JOINED_PARTY_TAG);
+        giveRegularItems(player);
     }
 
     private void enqueue(Player player) {
@@ -266,7 +429,8 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 // TODO: Remove admin commands in production
                 new AdminCommandsFeature(),
                 new FancyChatFeature(),
-                new SignFeature()
+                new SignFeature(),
+                new NoCollisionFeature()
         );
     }
 
