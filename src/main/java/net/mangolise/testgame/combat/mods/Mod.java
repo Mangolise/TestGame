@@ -54,6 +54,7 @@ public sealed interface Mod extends Attack.Node permits GenericMods, SnakeWeapon
 
     Rarity rarity();
     ItemStack item();
+    int level();
 
     enum Rarity {
         COMMON,
@@ -78,20 +79,24 @@ public sealed interface Mod extends Attack.Node permits GenericMods, SnakeWeapon
         List<Mod.Factory> factories = new ArrayList<>();
         
         for (Class<Mod> subClass : subClasses) {
-            try {
-                Constructor<Mod> constructor = subClass.getDeclaredConstructor(int.class);
-                factories.add((level) -> {
-                    try {
-                        return constructor.newInstance(level);
-                    } catch (ReflectiveOperationException e) {
-                        throw new RuntimeException("Failed to create instance of " + subClass.getName(), e);
-                    }
-                });
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException("Failed to create factory for " + subClass.getName(), e);
-            }
+            factories.add(getFactory(subClass));
         }
         
         return factories;
+    }
+
+    static Mod.Factory getFactory(Class<? extends Mod> modClass) {
+        try {
+            Constructor<? extends Mod> constructor = modClass.getDeclaredConstructor(int.class);
+            return (level) -> {
+                try {
+                    return constructor.newInstance(level);
+                } catch (ReflectiveOperationException e) {
+                    throw new RuntimeException("Failed to create instance of " + modClass.getName(), e);
+                }
+            };
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to create factory for " + modClass.getName(), e);
+        }
     }
 }

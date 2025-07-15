@@ -35,6 +35,21 @@ public final class AttackSystemImpl implements AttackSystem {
         this.instance = instance;
     }
 
+    public Map<Class<? extends Mod>, Mod> getModifiers(Entity entity) {
+        return Collections.unmodifiableMap(modifierNodes.computeIfAbsent(entity, k -> new HashMap<>()));
+    }
+
+    public void upgradeMod(Entity entity, Class<? extends Mod> modClass) {
+        Map<Class<? extends Mod>, Mod> modifiers = modifierNodes.computeIfAbsent(entity, k -> new HashMap<>());
+        Mod mod = modifiers.get(modClass);
+
+        if (mod.level() >= mod.maxLevel()) {
+            throw new IllegalArgumentException("Mod is already max level.");
+        }
+
+        modifiers.put(modClass, Mod.getFactory(modClass).create(mod.level() + 1));
+    }
+
     public void use(Entity entity, Weapon weapon) {
         use(entity, weapon, tags -> {});
     }
