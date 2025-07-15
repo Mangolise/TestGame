@@ -13,9 +13,9 @@ import org.jetbrains.annotations.NotNull;
 import java.time.Duration;
 import java.util.List;
 
-public class TestZombie extends HostileEntity {
-    public TestZombie() {
-        super(EntityType.ZOMBIE);
+public class MeleeMob extends HostileEntity {
+    public MeleeMob(EntityType type) {
+        super(type);
 
         this.addAIGroup(
                 List.of(

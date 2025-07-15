@@ -2,14 +2,17 @@ package net.mangolise.testgame.combat;
 
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.weapons.*;
+import net.mangolise.testgame.mobs.ShooterMob;
 import net.mangolise.testgame.mobs.SpawnSystem;
-import net.mangolise.testgame.mobs.TestChickenJockey;
-import net.mangolise.testgame.mobs.TestZombie;
+import net.mangolise.testgame.mobs.MeleeJockeyMob;
+import net.mangolise.testgame.mobs.MeleeMob;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.entity.metadata.monster.zombie.DrownedMeta;
 import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.event.player.PlayerHandAnimationEvent;
@@ -198,7 +201,7 @@ public final class AttackSystemImpl implements AttackSystem {
             });
         } else if (material == Material.ZOMBIE_SPAWN_EGG) { // spawn zombies
             for (int i = 0; i < 128; i++) {
-                TestZombie entity = new TestZombie();
+                MeleeMob entity = new MeleeMob(EntityType.HUSK);
                 double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.4;
                 double scale = Math.pow(1.0 / (0.8 * (speedMultiplier + 1.0)), 1.0 / 0.3);
 
@@ -210,18 +213,37 @@ public final class AttackSystemImpl implements AttackSystem {
             }
         } else if (material == Material.CHICKEN_SPAWN_EGG) {
             for (int i = 0; i < 128; i++) {
-                TestChickenJockey entity = new TestChickenJockey();
-                
+                MeleeJockeyMob entity = new MeleeJockeyMob(EntityType.CHICKEN, EntityType.DROWNED);
+                entity.getRider().editEntityMeta(DrownedMeta.class, m -> m.setBaby(true));
+
                 double statScaling = 1.5;
-                
+
                 double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.4;
                 double scale = Math.pow(1.0 / (0.8 * (speedMultiplier + 1.0)), 1.0 / 0.3);
-                
+
                 speedMultiplier *= statScaling;
                 scale *= statScaling;
 
                 entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
-                
+
+                entity.setTarget(player);
+                entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
+                SpawnSystem.spawn(player.getInstance(), entity);
+            }
+        } else if (material == Material.SKELETON_SPAWN_EGG) {
+            for (int i = 0; i < 1; i++) {
+                ShooterMob entity = new ShooterMob(EntityType.SKELETON);
+
+                double statScaling = 1.5;
+
+                double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.4;
+                double scale = Math.pow(1.0 / (0.8 * (speedMultiplier + 1.0)), 1.0 / 0.3);
+
+                speedMultiplier *= statScaling;
+                scale *= statScaling;
+
+                entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
+
                 entity.setTarget(player);
                 entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
                 SpawnSystem.spawn(player.getInstance(), entity);

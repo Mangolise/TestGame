@@ -85,7 +85,7 @@ public class VanillaProjectile extends Entity {
         }
 
         if (from.samePoint(to)) {
-            return true;
+            return false;
         }
 
         BoundingBox boundingBox = getBoundingBox();

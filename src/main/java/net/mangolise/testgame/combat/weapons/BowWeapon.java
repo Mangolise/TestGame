@@ -4,6 +4,7 @@ import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.projectiles.VanillaProjectile;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.DamageType;
@@ -16,6 +17,7 @@ import java.util.function.Consumer;
 public record BowWeapon(int level) implements Weapon {
 
     public static final Tag<Double> VELOCITY = Tag.Double("testgame.attack.bow.velocity").defaultValue(48.0);
+    public static final Tag<Vec> AIM_DIRECTION = Tag.Structure("testgame.attack.bow.aim", Vec.class);
     
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
@@ -46,7 +48,9 @@ public record BowWeapon(int level) implements Weapon {
             var playerScale = user.getAttribute(Attribute.SCALE).getValue();
             arrow.setInstance(instance, user.getPosition().add(0, user.getEyeHeight() * playerScale, 0));
 
-            var velocity = user.getPosition().direction().mul(attack.getTag(VELOCITY));
+            Vec velocity = attack.hasTag(AIM_DIRECTION) ?
+                    attack.getTag(AIM_DIRECTION).normalize().mul(attack.getTag(VELOCITY)) :
+                    user.getPosition().direction().mul(attack.getTag(VELOCITY));
 
             double inaccuracy = attacks.size() - 1.0; // more attacks, more inaccuracy
             velocity = velocity.add((Math.random() - 0.5) * inaccuracy, (Math.random() - 0.5) * inaccuracy, (Math.random() - 0.5) * inaccuracy);

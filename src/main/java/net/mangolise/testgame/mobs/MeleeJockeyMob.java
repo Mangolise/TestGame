@@ -17,12 +17,12 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class TestChickenJockey extends HostileEntity {
+public class MeleeJockeyMob extends HostileEntity {
     
-    private final TestZombie rider;
+    private final MeleeMob rider;
     
-    public TestChickenJockey() {
-        super(EntityType.CHICKEN);
+    public MeleeJockeyMob(EntityType type, EntityType passenger) {
+        super(type);
 
         this.addAIGroup(
                 List.of(
@@ -35,7 +35,7 @@ public class TestChickenJockey extends HostileEntity {
         );
         
         // Create the rider entity (a zombie)
-        this.rider = new TestZombie();
+        this.rider = new MeleeMob(passenger);
     }
 
     @Override
@@ -68,5 +68,9 @@ public class TestChickenJockey extends HostileEntity {
             tags.setTag(Attack.USER, this);
             tags.setTag(Attack.TARGET, target);
         });
+    }
+
+    public MeleeMob getRider() {
+        return rider;
     }
 }
