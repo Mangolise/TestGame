@@ -26,9 +26,9 @@ import java.util.function.Consumer;
 
 public record StaffWeapon(int level) implements Weapon {
     public static final Tag<Player> STAFF_USER = Tag.Transient("testgame.attack.staff.user");
-    public static final Tag<AttackableMob> HIT_ENTITY = Tag.Transient("testgame.attack.staff.hit_entity");
     public static final Tag<Double> ARC_CHANCE = Tag.Double("testgame.attack.staff.arc_chance").defaultValue(0.5);
-    
+    public static final Tag<Double> ARC_RADIUS = Tag.Double("testgame.attack.staff.arc_radius").defaultValue(3.0);
+
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
         // staff has a staff damage of 6, and increases by 0.5 per level
@@ -53,7 +53,11 @@ public record StaffWeapon(int level) implements Weapon {
             }
 
             // spawn spell
-            AttackableMob originalEntity = attack.getTag(HIT_ENTITY);
+            Entity target = attack.getTag(Attack.TARGET);
+            if (!(target instanceof AttackableMob originalEntity)) {
+                return;
+            }
+
             EntityCreature entity = originalEntity.asEntity();
             double entityScale = entity.getAttribute(Attribute.SCALE).getValue();
             Vec entityPos = new Vec(entity.getPosition().x(), entity.getPosition().y() + entity.getEyeHeight() * entityScale, entity.getPosition().z());
@@ -91,7 +95,7 @@ public record StaffWeapon(int level) implements Weapon {
 
         Instance instance = originEntity.getInstance();
 
-        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), 3);
+        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), attack.getTag(ARC_RADIUS));
         for (Entity entity : entities) {
             if (!(entity instanceof AttackableMob mob) ||
                     chainedEntities.contains(entity.getUuid()) ||

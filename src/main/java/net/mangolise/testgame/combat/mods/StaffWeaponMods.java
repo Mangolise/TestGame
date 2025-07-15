@@ -23,18 +23,49 @@ public sealed interface StaffWeaponMods extends Mod {
             return ItemStack.builder(Material.BREEZE_ROD)
                     .customName(this.name())
                     .lore(
-                            Component.text("+ Adds to the chance for an arc to happen", NamedTextColor.GREEN),
-                            Component.text("    Arc chance Addition: 1.0 + (0.1 per level)", NamedTextColor.GREEN)
+                            Component.text("+ Arc Chance: +10% per level", NamedTextColor.GREEN)
                     )
                     .amount(1)
                     .build();
         }
 
         @Override
-        public void attack(Attack tags, @UnknownNullability Consumer<Attack> next) {
+        public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
             double arcChance = 1.0 + level;
-            tags.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + arcChance);
-            next.accept(tags);
+            attack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + arcChance);
+            next.accept(attack);
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_ADDITIVE_MODIFIER;
+        }
+    }
+
+    record ArcRadius(int level) implements StaffWeaponMods {
+        @Override
+        public Rarity rarity() {
+            return Rarity.RARE;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.NETHER_STAR)
+                    .customName(this.name())
+                    .lore(
+                            Component.text("+ Arc Distance: +1.0 block per level", NamedTextColor.GREEN),
+                            Component.text("- Damage: -0.5 damage", NamedTextColor.RED)
+                    )
+                    .amount(1)
+                    .build();
+        }
+
+        @Override
+        public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
+            double arcRadius = 3.0 + level;
+            attack.updateTag(StaffWeapon.ARC_RADIUS, arc -> arc + arcRadius);
+            attack.updateTag(Attack.DAMAGE, damage -> damage - 0.5);
+            next.accept(attack);
         }
 
         @Override

@@ -99,6 +99,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
         // Setting the base value instead of adding a modifier seems to reduce FOV effects.
         //player.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("scale-movement-bonus", 1.5, AttributeOperation.ADD_MULTIPLIED_BASE));
         player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1 * 1.5);
+
+        // TODO: this should be changed, only on weapons like the staff would this be big
         player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(10000.0);
 
         player.getInventory().clear();
@@ -106,6 +108,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
         player.getInventory().addItemStack(ItemStack.of(Material.SUNFLOWER));
         player.getInventory().addItemStack(ItemStack.of(Material.BLAZE_ROD));
         player.getInventory().addItemStack(ItemStack.of(Material.STICK));
+        player.getInventory().addItemStack(ItemStack.of(Material.MACE));
+        player.getInventory().addItemStack(ItemStack.of(Material.IRON_SWORD));
         player.getInventory().setItemStack(7, ItemStack.of(Material.CHICKEN_SPAWN_EGG));
         player.getInventory().setItemStack(8, ItemStack.of(Material.ZOMBIE_SPAWN_EGG));
     }

@@ -12,6 +12,7 @@ import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.event.player.PlayerHandAnimationEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
@@ -143,6 +144,40 @@ public final class AttackSystemImpl implements AttackSystem {
         instance.eventNode().addListener(PlayerUseItemEvent.class, e -> {
             var player = e.getPlayer();
             onSwing(player, e.getItemStack().material());
+
+            if (player.getItemInHand(e.getHand()).material() == Material.MACE) { // mace
+                MaceWeapon maceWeapon = new MaceWeapon(1);
+                AttackSystem.instance(player.getInstance()).use(player, maceWeapon, tags -> {
+                    tags.setTag(Attack.USER, player);
+                    tags.setTag(MaceWeapon.MACE_USER, player);
+                    tags.setTag(MaceWeapon.IS_LAUNCH_ATTACK, true);
+                });
+            }
+        });
+
+        instance.eventNode().addListener(EntityAttackEvent.class, e -> {
+            if (!(e.getEntity() instanceof Player player)) {
+                return;
+            }
+
+            if (player.getItemInHand(PlayerHand.MAIN).material() == Material.MACE) { // mace
+                MaceWeapon maceWeapon = new MaceWeapon(1);
+                AttackSystem.instance(player.getInstance()).use(player, maceWeapon, tags -> {
+                    tags.setTag(Attack.USER, player);
+                    tags.setTag(Attack.TARGET, e.getTarget());
+                    tags.setTag(MaceWeapon.MACE_USER, player);
+                    tags.setTag(MaceWeapon.IS_LAUNCH_ATTACK, false);
+                });
+            }
+
+            if (player.getItemInHand(PlayerHand.MAIN).material() == Material.IRON_SWORD) { // sword
+                SwordWeapon swordWeapon = new SwordWeapon(1);
+                AttackSystem.instance(player.getInstance()).use(player, swordWeapon, tags -> {
+                    tags.setTag(Attack.USER, player);
+                    tags.setTag(SwordWeapon.SWORD_USER, player);
+                    tags.setTag(Attack.TARGET, e.getTarget());
+                });
+            }
         });
 
         instance.eventNode().addListener(PlayerEntityInteractEvent.class, e -> {
@@ -154,9 +189,7 @@ public final class AttackSystemImpl implements AttackSystem {
                 AttackSystem.instance(instance).use(player, staffWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
                     tags.setTag(StaffWeapon.STAFF_USER, player);
-                    if (e.getTarget() instanceof AttackableMob target) {
-                        tags.setTag(StaffWeapon.HIT_ENTITY, target);
-                    }
+                    tags.setTag(Attack.TARGET, e.getTarget());
                 });
             }
         });

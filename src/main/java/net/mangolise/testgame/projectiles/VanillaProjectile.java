@@ -22,9 +22,9 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 
 public class VanillaProjectile extends Entity {
-    private final Player shooter;
+    private final Entity shooter;
 
-    public VanillaProjectile(@Nullable Player shooter, EntityType entityType) {
+    public VanillaProjectile(@Nullable Entity shooter, EntityType entityType) {
         super(entityType);
         this.shooter = shooter;
 
