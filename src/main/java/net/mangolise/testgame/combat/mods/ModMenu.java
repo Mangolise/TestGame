@@ -2,12 +2,10 @@ package net.mangolise.testgame.combat.mods;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
@@ -26,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ModMenu {
-
     public static Tag<Mod.Rarity> BUNDLE_RARITY = Tag.String("testgame.modmenu.rarity").map(Mod.Rarity::valueOf, Mod.Rarity::name);
     public static Tag<Boolean> BUNDLE_INVENTORY = Tag.Boolean("testgame.modmenu.bundle_inventory").defaultValue(false);
     public static Tag<Boolean> IS_BARRIER = Tag.Boolean("testgame.modmenu.is_barrier").defaultValue(false);

@@ -3,6 +3,7 @@ package net.mangolise.testgame;
 import net.hollowcube.polar.PolarLoader;
 import net.kyori.adventure.key.Key;
 import net.mangolise.gamesdk.BaseGame;
+import net.mangolise.gamesdk.features.ItemPickupFeature;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.ChatUtil;
@@ -104,6 +105,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
         player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(10000.0);
 
         player.getInventory().clear();
+
+        // TODO: remove this and make sure each weapon has a mod.
         player.getInventory().addItemStack(ItemStack.of(Material.BOW));
         player.getInventory().addItemStack(ItemStack.of(Material.SUNFLOWER));
         player.getInventory().addItemStack(ItemStack.of(Material.BLAZE_ROD));
@@ -127,7 +130,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
     public List<Feature<?>> features() {
         return List.of(
                 new NoCollisionFeature(),
-                new FindTheButtonFeature()
+                new FindTheButtonFeature(),
+                new ItemPickupFeature()
         );
     }
 
