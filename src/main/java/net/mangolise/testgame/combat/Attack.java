@@ -2,6 +2,8 @@ package net.mangolise.testgame.combat;
 
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.LivingEntity;
+import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagHandler;
 import net.minestom.server.tag.Taggable;
@@ -13,7 +15,7 @@ import java.util.function.Consumer;
 
 public class Attack implements Taggable {
 
-    public static final Tag<Entity> USER = Tag.Transient("testgame.attack.user");
+    public static final Tag<LivingEntity> USER = Tag.Transient("testgame.attack.user");
     public static final Tag<Entity> TARGET = Tag.Transient("testgame.attack.target");
     public static final Tag<Double> DAMAGE = Tag.Double("testgame.attack.damage").defaultValue(0.0);
     public static final Tag<Double> CRIT_CHANCE = Tag.Double("testgame.attack.crit_chance").defaultValue(0.0);
@@ -51,6 +53,14 @@ public class Attack implements Taggable {
             crits++;
         }
         return crits;
+    }
+
+    public boolean canTarget(AttackableMob entity) {
+        if (getTag(USER) instanceof Player) {
+            return !(entity instanceof Player);
+        } else {
+            return entity instanceof Player;
+        }
     }
 
     public interface Node {

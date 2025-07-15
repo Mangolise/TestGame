@@ -4,7 +4,7 @@ import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
-import net.minestom.server.entity.Player;
+import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.tag.Tag;
@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public record MaceWeapon(int level) implements Weapon {
-    public static final Tag<Player> MACE_USER = Tag.Transient("testgame.attack.mace.user");
     public static final Tag<Boolean> IS_LAUNCH_ATTACK = Tag.Boolean("testgame.attack.mace.is_launch_attack");
     public static final Tag<Double> SLAM_RADIUS = Tag.Double("testgame.attack.mace.slam_radius").defaultValue(3.5);
 
@@ -38,7 +37,7 @@ public record MaceWeapon(int level) implements Weapon {
     @Override
     public void doWeaponAttack(List<Attack> attacks) {
         for (Attack attack : attacks) {
-            Player user = attack.getTag(MACE_USER);
+            LivingEntity user = attack.getTag(Attack.USER);
             if (user == null) {
                 throw new IllegalStateException("MaceWeapon attack called without a user set in the tags.");
             }
@@ -49,7 +48,7 @@ public record MaceWeapon(int level) implements Weapon {
                 Collection<Entity> entities = instance.getNearbyEntities(user.getPosition(), attack.getTag(SLAM_RADIUS));
 
                 for (Entity entity : entities) {
-                    if (!(entity instanceof AttackableMob mob)) {
+                    if (!(entity instanceof AttackableMob mob && attack.canTarget(mob))) {
                         continue;
                     }
 
@@ -62,7 +61,7 @@ public record MaceWeapon(int level) implements Weapon {
             }
 
             Entity target = attack.getTag(Attack.TARGET);
-            if (!(target instanceof AttackableMob mob)) {
+            if (!(target instanceof AttackableMob mob && attack.canTarget(mob))) {
                 continue;
             }
 

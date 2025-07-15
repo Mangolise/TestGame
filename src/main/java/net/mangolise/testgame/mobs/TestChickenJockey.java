@@ -1,5 +1,9 @@
 package net.mangolise.testgame.mobs;
 
+import net.mangolise.testgame.combat.Attack;
+import net.mangolise.testgame.combat.AttackSystem;
+import net.mangolise.testgame.combat.weapons.CannonBallWeapon;
+import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
@@ -52,5 +56,17 @@ public class TestChickenJockey extends HostileEntity {
 
     @Override
     public void doTickUpdate(long time) {
+    }
+
+    Weapon weapon = new CannonBallWeapon(1);
+
+    @Override
+    public void attack(@NotNull Entity target, boolean swingHand) {
+        super.attack(target, swingHand);
+
+        AttackSystem.instance(target.getInstance()).use(this, weapon, tags -> {
+            tags.setTag(Attack.USER, this);
+            tags.setTag(Attack.TARGET, target);
+        });
     }
 }

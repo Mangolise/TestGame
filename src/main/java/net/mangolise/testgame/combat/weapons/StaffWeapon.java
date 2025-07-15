@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public record StaffWeapon(int level) implements Weapon {
-    public static final Tag<Player> STAFF_USER = Tag.Transient("testgame.attack.staff.user");
     public static final Tag<Double> ARC_CHANCE = Tag.Double("testgame.attack.staff.arc_chance").defaultValue(0.5);
     public static final Tag<Double> ARC_RADIUS = Tag.Double("testgame.attack.staff.arc_radius").defaultValue(3.0);
 
@@ -46,18 +45,18 @@ public record StaffWeapon(int level) implements Weapon {
         Set<UUID> chainedEntities = ConcurrentHashMap.newKeySet();
         
         for (Attack attack : attacks) {
-            Player user = attack.getTag(STAFF_USER);
+            LivingEntity user = attack.getTag(Attack.USER);
             if (user == null) {
                 throw new IllegalStateException("StaffWeapon attack called without a user set in the tags.");
             }
 
             // spawn spell
             Entity target = attack.getTag(Attack.TARGET);
-            if (!(target instanceof AttackableMob originalEntity)) {
+            if (!(target instanceof AttackableMob originalEntity && attack.canTarget(originalEntity))) {
                 return;
             }
 
-            EntityCreature entity = originalEntity.asEntity();
+            LivingEntity entity = originalEntity.asEntity();
             double entityScale = entity.getAttribute(Attribute.SCALE).getValue();
             Vec entityPos = new Vec(entity.getPosition().x(), entity.getPosition().y() + entity.getEyeHeight() * entityScale, entity.getPosition().z());
 
@@ -66,8 +65,7 @@ public record StaffWeapon(int level) implements Weapon {
 
             user.getInstance().scheduler().scheduleTask(lightning::remove, TaskSchedule.millis(300), TaskSchedule.stop());
 
-            user.playSound(Sound.sound(Key.key("minecraft:item.trident.thunder"), Sound.Source.NEUTRAL, 0.1f, 1f));
-            user.playSound(Sound.sound(Key.key("minecraft:entity.lightning_bolt.impact"), Sound.Source.NEUTRAL, 0.1f, 1f));
+            user.getInstance().playSound(Sound.sound(Key.key("minecraft:item.trident.thunder"), Sound.Source.NEUTRAL, 0.1f, 1f), entityPos);
 
             chainAttack(chainedEntities, originalEntity, attack, 1.0);
         }
@@ -83,7 +81,7 @@ public record StaffWeapon(int level) implements Weapon {
             return;
         }
 
-        EntityCreature originEntity = attackableMob.asEntity();
+        LivingEntity originEntity = attackableMob.asEntity();
         
         if (originEntity.isRemoved() || originEntity.isDead()) {
             return;
@@ -96,7 +94,7 @@ public record StaffWeapon(int level) implements Weapon {
 
         Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), attack.getTag(ARC_RADIUS));
         for (Entity entity : entities) {
-            if (!(entity instanceof AttackableMob mob) ||
+            if (!(entity instanceof AttackableMob mob && attack.canTarget(mob)) ||
                     chainedEntities.contains(entity.getUuid()) ||
                     (Math.random() + attack.getTag(ARC_CHANCE)) / depth < 0.65 ||
                     entity.isRemoved() ||
@@ -106,7 +104,7 @@ public record StaffWeapon(int level) implements Weapon {
             }
 
             var originEntityScale = originEntity.getAttribute(Attribute.SCALE).getValue();
-            var entityScale = entity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getValue() : 1.0;
+            var entityScale = ((LivingEntity)entity).getAttribute(Attribute.SCALE).getValue();
 
             instance.scheduler().scheduleTask(() -> {
                 ThrottledScheduler.use(instance, "staff-weapon-chain-attack", 4, () -> {

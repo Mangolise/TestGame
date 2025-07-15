@@ -1,13 +1,11 @@
 package net.mangolise.testgame.mobs;
 
 import net.mangolise.testgame.combat.Attack;
-import net.minestom.server.entity.Entity;
-import net.minestom.server.entity.EntityCreature;
 import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.registry.RegistryKey;
 
-public interface AttackableMob {
+public sealed interface AttackableMob permits HostileEntity, TestPlayer {
     void applyAttack(RegistryKey<DamageType> type, Attack attack);
-    EntityCreature asEntity();
+    LivingEntity asEntity();
 }

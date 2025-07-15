@@ -36,7 +36,7 @@ public record CannonBallWeapon(int level) implements Weapon {
     @Override
     public void doWeaponAttack(List<Attack> attacks) {
         for (Attack attack : attacks) {
-            LivingEntity user = (LivingEntity) attack.getTag(Attack.USER);
+            LivingEntity user = attack.getTag(Attack.USER);
             if (user == null) {
                 throw new IllegalStateException("CannonBallBall attack called without a user set in the tags.");
             }
@@ -66,9 +66,6 @@ public record CannonBallWeapon(int level) implements Weapon {
         cannonBall.setInstance(instance, position);
         cannonBall.setVelocity(velocity);
 
-        attack = attack.copy(false);
-        attack.updateTag(Attack.DAMAGE, damage -> damage * scale.x());
-
         final Attack finalAttack = attack;
         cannonBall.eventNode().addListener(EventListener.builder(ProjectileCollideAnyEvent.class)
                 .handler(event -> onCannonBallCollide(event, user, cannonBall, finalAttack, splitCount))
@@ -82,13 +79,17 @@ public record CannonBallWeapon(int level) implements Weapon {
     }
 
     private void onCannonBallCollide(ProjectileCollideAnyEvent event, LivingEntity user, VanillaProjectile cannonBall, Attack attack, int splitCount) {
+        double scale = ((BlockDisplayMeta)cannonBall.getEntityMeta()).getScale().x();
+
         if (event instanceof ProjectileCollideEntityEvent eEvent) {
-            if (!(eEvent.getTarget() instanceof AttackableMob target)) {
+            if (!(eEvent.getTarget() instanceof AttackableMob target && attack.canTarget(target))) {
                 event.setCancelled(true);
                 return;
             }
 
-            target.applyAttack(DamageType.FALLING_ANVIL, attack);
+            Attack attackCopy = attack.copy(false);
+            attackCopy.updateTag(Attack.DAMAGE, damage -> damage * scale);
+            target.applyAttack(DamageType.FALLING_ANVIL, attackCopy);
         }
 
         if (splitCount <= 0) {
@@ -98,12 +99,11 @@ public record CannonBallWeapon(int level) implements Weapon {
         Instance instance = cannonBall.getInstance();
 
         // explosion
-        double scale = ((BlockDisplayMeta)cannonBall.getEntityMeta()).getScale().x();
         Attack explosionAttack = attack.copy(false);
-        explosionAttack.updateTag(Attack.DAMAGE, damage -> damage * 0.5);
+        explosionAttack.updateTag(Attack.DAMAGE, damage -> damage * scale * 0.5);
 
         for (Entity entity : instance.getNearbyEntities(cannonBall.getPosition(), 3 * scale)) {
-            if (entity instanceof AttackableMob mob) {
+            if (entity instanceof AttackableMob mob && explosionAttack.canTarget(mob)) {
                 mob.applyAttack(DamageType.PLAYER_EXPLOSION, explosionAttack);
             }
         }

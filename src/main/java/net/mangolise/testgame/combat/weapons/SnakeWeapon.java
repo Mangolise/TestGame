@@ -8,7 +8,6 @@ import net.mangolise.testgame.util.ThrottledScheduler;
 import net.mangolise.testgame.util.Utils;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -42,7 +41,6 @@ public record SnakeWeapon(int level) implements Weapon {
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
-
         // modifiers only
         attack.setTag(Attack.DAMAGE, 1.0 + level * 0.5);
         attack.setTag(Attack.CRIT_CHANCE, 0.1 + level * 0.1);
@@ -53,7 +51,7 @@ public record SnakeWeapon(int level) implements Weapon {
 
     @Override
     public void doWeaponAttack(List<Attack> attacks) {
-        Set<Entity> alreadyMarked = Collections.newSetFromMap(new WeakHashMap<>());
+        Set<AttackableMob> alreadyMarked = Collections.newSetFromMap(new WeakHashMap<>());
         
         for (Attack attack : attacks) {
             // next == null means that we perform the attack
@@ -63,10 +61,10 @@ public record SnakeWeapon(int level) implements Weapon {
             }
 
             // find the closest damageable entity
-            Entity target = Utils.fastClosestEntity(user.getInstance(), user.getPosition(), entity ->
-                    entity instanceof AttackableMob &&
+            AttackableMob target = (AttackableMob) Utils.fastClosestEntity(user.getInstance(), user.getPosition(), entity ->
+                    entity instanceof AttackableMob mob &&
+                    attack.canTarget(mob) &&
                     entity != user &&
-                    !(entity instanceof Player) &&
                     !alreadyMarked.contains(entity)
             );
 
@@ -88,12 +86,12 @@ public record SnakeWeapon(int level) implements Weapon {
         return PRIORITY_WEAPON;
     }
 
-    static class Snake {
+    private static class Snake {
 
         private final Instance instance;
         private final Attack attack;
-        private final Entity target;
-        private final Set<Entity> alreadyMarked;
+        private final AttackableMob target;
+        private final Set<AttackableMob> alreadyMarked;
 
         private Pos pos;
         private int remainingTicks;
@@ -101,7 +99,7 @@ public record SnakeWeapon(int level) implements Weapon {
         private int msSinceLastHit = 0;
         private final Vec randomCurve = Vec.ONE.mul(Math.random()).sub(0.5, 0, 0.5).mul(0.1);
 
-        public Snake(Instance instance, Attack attack, Pos pos, Entity target, int remainingTicks, Set<Entity> alreadyMarked) {
+        public Snake(Instance instance, Attack attack, Pos pos, AttackableMob target, int remainingTicks, Set<AttackableMob> alreadyMarked) {
             this.instance = instance;
             this.attack = attack;
             this.pos = pos;
@@ -111,25 +109,26 @@ public record SnakeWeapon(int level) implements Weapon {
         }
 
         public void init() {
-            MinecraftServer.getGlobalEventHandler().addListener(EventListener.builder(InstanceTickEvent.class)
+            instance.eventNode().addListener(EventListener.builder(InstanceTickEvent.class)
                     .handler(event -> handleMoveTick(event.getDuration()))
-                    .filter(event -> event.getInstance() == instance)
                     .expireWhen(e -> !instance.isRegistered() || remainingTicks <= 0)
                     .build());
         }
 
         private void handleMoveTick(int tickMs) {
+            LivingEntity entity = target.asEntity();
+
             // if the target is dead, find a new target
-            if (target.isRemoved() || (target instanceof LivingEntity living && living.isDead())) {
+            if (entity.isRemoved() || entity.isDead()) {
                 forkSnake(pos, remainingTicks);
                 
-                // KILL this snake
+                // KILL this snake (peacefully)
                 remainingTicks = 0;
             }
 
             // move towards the target
             double speedBonus = (msSinceLastHit / 1000.0) * attack.getTag(SnakeWeapon.ACCELERATION);
-            Vec direction = target.getPosition().asVec().sub(pos).normalize();
+            Vec direction = entity.getPosition().asVec().sub(pos).normalize();
             direction = direction.mul(speedBonus);
 
             // make it relative to the time
@@ -139,7 +138,7 @@ public record SnakeWeapon(int level) implements Weapon {
             pos = pos.add(randomCurve);
 
             // check if we hit the target
-            if (target.getPosition().distanceSquared(pos) < speedBonus * speedBonus * 0.25) {
+            if (entity.getPosition().distanceSquared(pos) < speedBonus * speedBonus * 0.25) {
                 // hit the target
                 ((AttackableMob) target).applyAttack(DamageType.IN_WALL, attack);
 
@@ -165,12 +164,12 @@ public record SnakeWeapon(int level) implements Weapon {
                     }
                 });
 
-                // KILL this snake
+                // KILL this snake (with minimal pain)
                 remainingTicks = 0;
 
                 // spawn particles
-                var entityScale = target instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getValue() : 1.0;
-                ParticlePacket packet = new ParticlePacket(Particle.ANGRY_VILLAGER, pos.add(0, target.getEyeHeight() * entityScale, 0), Vec.ZERO, 0, 1);
+                var entityScale = entity.getAttribute(Attribute.SCALE).getValue();
+                ParticlePacket packet = new ParticlePacket(Particle.ANGRY_VILLAGER, pos.add(0, entity.getEyeHeight() * entityScale, 0), Vec.ZERO, 0, 1);
                 instance.sendGroupedPacket(packet);
             }
 
@@ -183,10 +182,10 @@ public record SnakeWeapon(int level) implements Weapon {
         }
 
         private void forkSnake(Point pos, int remainingTicks) {
-            var newTarget = Utils.fastClosestEntity(instance, pos, entity ->
-                    entity instanceof AttackableMob &&
-                            !alreadyMarked.contains(entity) &&
-                            !(entity instanceof Player)
+            AttackableMob newTarget = (AttackableMob) Utils.fastClosestEntity(instance, pos, entity ->
+                    entity instanceof AttackableMob mob &&
+                    attack.canTarget(mob) &&
+                    !alreadyMarked.contains(entity)
             );
 
             if (newTarget == null) {

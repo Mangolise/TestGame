@@ -9,7 +9,6 @@ import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.mods.ModMenu;
 import net.mangolise.testgame.util.Throttler;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
@@ -20,7 +19,7 @@ import net.minestom.server.item.Material;
 import net.minestom.server.registry.RegistryKey;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class HostileEntity extends EntityCreature implements AttackableMob {
+public abstract non-sealed class HostileEntity extends EntityCreature implements AttackableMob {
     public HostileEntity(@NotNull EntityType entityType) {
         super(entityType);
     }

@@ -4,7 +4,6 @@ import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.projectiles.VanillaProjectile;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.DamageType;
@@ -15,8 +14,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public record BowWeapon(int level) implements Weapon {
-    
-    public static final Tag<Player> BOW_USER = Tag.Transient("testgame.attack.bow.user");
+
     public static final Tag<Double> VELOCITY = Tag.Double("testgame.attack.bow.velocity").defaultValue(48.0);
     
     @Override
@@ -27,6 +25,8 @@ public record BowWeapon(int level) implements Weapon {
         // bow has a base crit change of 0.5, and increases by 0.1 per level
         attack.setTag(Attack.CRIT_CHANCE, 0.5 + level * 0.1);
 
+        attack.setTag(Attack.COOLDOWN, -100.0);
+
         next.accept(attack);
     }
 
@@ -34,7 +34,7 @@ public record BowWeapon(int level) implements Weapon {
     public void doWeaponAttack(List<Attack> attacks) {
         for (Attack attack : attacks) {
             // next == null means that we perform the attack
-            Player user = attack.getTag(BOW_USER);
+            LivingEntity user = attack.getTag(Attack.USER);
             if (user == null) {
                 throw new IllegalStateException("BowWeapon attack called without a user set in the tags.");
             }
@@ -53,13 +53,15 @@ public record BowWeapon(int level) implements Weapon {
 
             arrow.setVelocity(velocity);
 
-            MinecraftServer.getGlobalEventHandler().addListener(EventListener.builder(ProjectileCollideEntityEvent.class)
+            arrow.eventNode().addListener(EventListener.builder(ProjectileCollideEntityEvent.class)
                     .handler(event -> {
-                        AttackableMob target = (AttackableMob) event.getTarget();
-                        target.applyAttack(DamageType.ARROW, attack);
-                        arrow.remove();
+                        if (!(event.getTarget() instanceof AttackableMob mob && attack.canTarget(mob))) {
+                            event.setCancelled(true);
+                            return;
+                        }
+
+                        mob.applyAttack(DamageType.ARROW, attack);
                     })
-                    .filter(event -> event.getTarget() instanceof AttackableMob && event.getEntity() == arrow)
                     .expireCount(1)
                     .expireWhen(ignored -> arrow.isRemoved())
                     .build()

@@ -1,9 +1,7 @@
 package net.mangolise.testgame.combat;
 
 import net.mangolise.testgame.combat.mods.Mod;
-import net.mangolise.testgame.combat.mods.ModMenu;
 import net.mangolise.testgame.combat.weapons.*;
-import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.mobs.SpawnSystem;
 import net.mangolise.testgame.mobs.TestChickenJockey;
 import net.mangolise.testgame.mobs.TestZombie;
@@ -149,7 +147,6 @@ public final class AttackSystemImpl implements AttackSystem {
                 MaceWeapon maceWeapon = new MaceWeapon(1);
                 AttackSystem.instance(player.getInstance()).use(player, maceWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
-                    tags.setTag(MaceWeapon.MACE_USER, player);
                     tags.setTag(MaceWeapon.IS_LAUNCH_ATTACK, true);
                 });
             }
@@ -165,17 +162,7 @@ public final class AttackSystemImpl implements AttackSystem {
                 AttackSystem.instance(player.getInstance()).use(player, maceWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
                     tags.setTag(Attack.TARGET, e.getTarget());
-                    tags.setTag(MaceWeapon.MACE_USER, player);
                     tags.setTag(MaceWeapon.IS_LAUNCH_ATTACK, false);
-                });
-            }
-
-            if (player.getItemInHand(PlayerHand.MAIN).material() == Material.IRON_SWORD) { // sword
-                SwordWeapon swordWeapon = new SwordWeapon(1);
-                AttackSystem.instance(player.getInstance()).use(player, swordWeapon, tags -> {
-                    tags.setTag(Attack.USER, player);
-                    tags.setTag(SwordWeapon.SWORD_USER, player);
-                    tags.setTag(Attack.TARGET, e.getTarget());
                 });
             }
         });
@@ -188,7 +175,6 @@ public final class AttackSystemImpl implements AttackSystem {
                 StaffWeapon staffWeapon = new StaffWeapon(1);
                 AttackSystem.instance(instance).use(player, staffWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
-                    tags.setTag(StaffWeapon.STAFF_USER, player);
                     tags.setTag(Attack.TARGET, e.getTarget());
                 });
             }
@@ -201,7 +187,6 @@ public final class AttackSystemImpl implements AttackSystem {
             BowWeapon bowWeapon = new BowWeapon(1);
             AttackSystem.instance(player.getInstance()).use(player, bowWeapon, tags -> {
                 tags.setTag(Attack.USER, player);
-                tags.setTag(BowWeapon.BOW_USER, player);
             });
         } else if (material == Material.SUNFLOWER) { // CannonBallBall
             CannonBallWeapon weapon = new CannonBallWeapon(2);
@@ -210,7 +195,6 @@ public final class AttackSystemImpl implements AttackSystem {
             SnakeWeapon snakeWeapon = new SnakeWeapon(1);
             AttackSystem.instance(player.getInstance()).use(player, snakeWeapon, tags -> {
                 tags.setTag(Attack.USER, player);
-                tags.setTag(StaffWeapon.STAFF_USER, player);
             });
         } else if (material == Material.ZOMBIE_SPAWN_EGG) { // spawn zombies
             for (int i = 0; i < 128; i++) {

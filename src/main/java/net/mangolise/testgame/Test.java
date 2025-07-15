@@ -6,6 +6,7 @@ import net.mangolise.gamesdk.util.PerformanceTracker;
 import net.mangolise.testgame.commands.BenchmarkTestCommand;
 import net.mangolise.testgame.commands.GiveBundleCommand;
 import net.mangolise.testgame.commands.GiveModsCommand;
+import net.mangolise.testgame.mobs.TestPlayer;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
@@ -38,6 +39,8 @@ public class Test {
             Permissions.setPermission(e.getPlayer(), "*", true);
             e.getPlayer().updateViewableRule(p -> e.getPlayer().getGameMode() != GameMode.SPECTATOR);  // hide spectators
         });
+
+        MinecraftServer.getConnectionManager().setPlayerProvider(TestPlayer::new);
 
         TestGame.CreateRegistryEntries();
         LobbyGame.CreateRegistryEntries();

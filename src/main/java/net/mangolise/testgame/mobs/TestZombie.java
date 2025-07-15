@@ -1,8 +1,14 @@
 package net.mangolise.testgame.mobs;
 
+import net.mangolise.testgame.combat.Attack;
+import net.mangolise.testgame.combat.AttackSystem;
+import net.mangolise.testgame.combat.weapons.SnakeWeapon;
+import net.mangolise.testgame.combat.weapons.Weapon;
+import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.ai.goal.FollowTargetGoal;
 import net.minestom.server.entity.ai.goal.MeleeAttackGoal;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.util.List;
@@ -25,5 +31,17 @@ public class TestZombie extends HostileEntity {
 
     @Override
     public void doTickUpdate(long time) {
+    }
+
+    Weapon weapon = new SnakeWeapon(1);
+
+    @Override
+    public void attack(@NotNull Entity target, boolean swingHand) {
+        super.attack(target, swingHand);
+
+        AttackSystem.instance(target.getInstance()).use(this,weapon, tags -> {
+            tags.setTag(Attack.USER, this);
+            tags.setTag(Attack.TARGET, target);
+        });
     }
 }
