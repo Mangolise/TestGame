@@ -3,17 +3,23 @@ package net.mangolise.testgame.combat;
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.entity.Entity;
+import net.minestom.server.instance.Instance;
+import net.minestom.server.tag.Tag;
 
 import java.util.function.Consumer;
 
 public sealed interface AttackSystem permits AttackSystemImpl {
-    
-    AttackSystem INSTANCE = new AttackSystemImpl();
+
+    Tag<AttackSystem> ATTACK_SYSTEM_TAG = Tag.Transient("testgame.attacksystem.instance");
+
+    static AttackSystem instance(Instance instance) {
+        return instance.getTag(ATTACK_SYSTEM_TAG);
+    }
 
     void use(Entity entity, Weapon weapon);
     void use(Entity entity, Weapon weapon, Consumer<Attack> tags);
     
-    /**
+    /**z
      * Adds a mod to the entity.
      *
      * @param entity The entity to add the mod to.
@@ -22,9 +28,9 @@ public sealed interface AttackSystem permits AttackSystemImpl {
      */
     boolean add(Entity entity, Mod mod);
     
-    static void register() {
-        switch (INSTANCE) {
-            case AttackSystemImpl impl -> impl.init();
-        }
+    static void register(Instance instance) {
+        AttackSystemImpl attackSystem = new AttackSystemImpl(instance);
+        attackSystem.init();
+        instance.setTag(ATTACK_SYSTEM_TAG, attackSystem);
     }
 }

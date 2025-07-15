@@ -15,6 +15,7 @@ import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.event.player.PlayerHandAnimationEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.item.Material;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.TaskSchedule;
@@ -28,6 +29,11 @@ public final class AttackSystemImpl implements AttackSystem {
 
     private final Map<Entity, Map<Class<? extends Mod>, Mod>> modifierNodes = Collections.synchronizedMap(new WeakHashMap<>());
     private static final Tag<Set<Weapon>> COOLDOWNS = Tag.Transient("testgame.attacksystem.weapon_cooldowns");
+    private final Instance instance;
+
+    public AttackSystemImpl(Instance instance) {
+        this.instance = instance;
+    }
 
     public void use(Entity entity, Weapon weapon) {
         use(entity, weapon, tags -> {});
@@ -107,7 +113,7 @@ public final class AttackSystemImpl implements AttackSystem {
     }
     
     public void init() {
-        MinecraftServer.getGlobalEventHandler().addListener(PlayerHandAnimationEvent.class, e -> {
+        instance.eventNode().addListener(PlayerHandAnimationEvent.class, e -> {
             var player = e.getPlayer();
 
             if (e.getHand() == PlayerHand.OFF) {
@@ -119,18 +125,18 @@ public final class AttackSystemImpl implements AttackSystem {
             onSwing(player, item.material());
         });
 
-        MinecraftServer.getGlobalEventHandler().addListener(PlayerUseItemEvent.class, e -> {
+        instance.eventNode().addListener(PlayerUseItemEvent.class, e -> {
             var player = e.getPlayer();
             onSwing(player, e.getItemStack().material());
         });
 
-        MinecraftServer.getGlobalEventHandler().addListener(PlayerEntityInteractEvent.class, e -> {
+        instance.eventNode().addListener(PlayerEntityInteractEvent.class, e -> {
             Player player = e.getPlayer();
 
             // staff
             if (player.getItemInHand(e.getHand()).material() == Material.BLAZE_ROD) {
                 StaffWeapon staffWeapon = new StaffWeapon(1);
-                AttackSystem.INSTANCE.use(player, staffWeapon, tags -> {
+                AttackSystem.instance(instance).use(player, staffWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
                     tags.setTag(StaffWeapon.STAFF_USER, player);
                     if (e.getTarget() instanceof AttackableMob target) {
@@ -145,16 +151,16 @@ public final class AttackSystemImpl implements AttackSystem {
         // bow
         if (material == Material.BOW) {
             BowWeapon bowWeapon = new BowWeapon(1);
-            AttackSystem.INSTANCE.use(player, bowWeapon, tags -> {
+            AttackSystem.instance(player.getInstance()).use(player, bowWeapon, tags -> {
                 tags.setTag(Attack.USER, player);
                 tags.setTag(BowWeapon.BOW_USER, player);
             });
         } else if (material == Material.SUNFLOWER) { // CannonBallBall
             CannonBallWeapon weapon = new CannonBallWeapon(2);
-            AttackSystem.INSTANCE.use(player, weapon, tags -> tags.setTag(Attack.USER, player));
+            AttackSystem.instance(player.getInstance()).use(player, weapon, tags -> tags.setTag(Attack.USER, player));
         } else if (material == Material.STICK) { // staff
             SnakeWeapon snakeWeapon = new SnakeWeapon(1);
-            AttackSystem.INSTANCE.use(player, snakeWeapon, tags -> {
+            AttackSystem.instance(player.getInstance()).use(player, snakeWeapon, tags -> {
                 tags.setTag(Attack.USER, player);
                 tags.setTag(StaffWeapon.STAFF_USER, player);
             });

@@ -70,7 +70,7 @@ public class GiveModsCommand extends Command {
     
     private void giveMods(@NotNull Player player, List<Mod> mods) {
         for (Mod mod : mods) {
-            if (AttackSystem.INSTANCE.add(player, mod)) {
+            if (AttackSystem.instance(player.getInstance()).add(player, mod)) {
                 player.sendMessage(Component.text()
                         .append(Component.text("Gave you mod: "))
                         .append(mod.name()));

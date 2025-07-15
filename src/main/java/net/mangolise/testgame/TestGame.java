@@ -45,6 +45,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
         MinecraftServer.getDimensionTypeRegistry().register("test-game-dimension", dimension);
     }
 
+    // TODO: Unregister the instance when everyone leaves
     @Override
     public void setup() {
 //        MangoCombat.enableGlobal(new CombatConfig().withFakeDeath(true).withVoidDeath(true).withVoidLevel(-10));
@@ -53,8 +54,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
         if (dim == null) {
             throw new IllegalStateException("Dimension type 'test-game-dimension' not registered. Call CreateRegistryEntries() first.");
         }
-
-        AttackSystem.register();
 
         try {
             worldLoader = new PolarLoader(new FileInputStream("game.polar"));
@@ -65,6 +64,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
         instance = MinecraftServer.getInstanceManager().createInstanceContainer(dim, worldLoader);
         instance.setTimeRate(0);
         instance.setTimeSynchronizationTicks(0);
+
+        AttackSystem.register(instance);
 
         // Player spawning
         for (Player player : config.players) {
