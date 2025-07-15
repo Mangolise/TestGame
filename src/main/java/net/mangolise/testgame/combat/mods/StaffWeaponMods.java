@@ -54,7 +54,7 @@ public sealed interface StaffWeaponMods extends Mod {
                     .customName(this.name())
                     .lore(
                             Component.text("+ Arc Distance: +1.0 block per level", NamedTextColor.GREEN),
-                            Component.text("- Damage: -0.5", NamedTextColor.RED)
+                            Component.text("- Damage: -0.5 damage", NamedTextColor.RED)
                     )
                     .amount(1)
                     .build();
