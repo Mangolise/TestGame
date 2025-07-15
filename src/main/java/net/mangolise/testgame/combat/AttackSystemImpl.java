@@ -169,6 +169,15 @@ public final class AttackSystemImpl implements AttackSystem {
                     tags.setTag(MaceWeapon.IS_LAUNCH_ATTACK, false);
                 });
             }
+
+            if (player.getItemInHand(PlayerHand.MAIN).material() == Material.IRON_SWORD) { // sword
+                SwordWeapon swordWeapon = new SwordWeapon(1);
+                AttackSystem.instance(player.getInstance()).use(player, swordWeapon, tags -> {
+                    tags.setTag(Attack.USER, player);
+                    tags.setTag(SwordWeapon.SWORD_USER, player);
+                    tags.setTag(Attack.TARGET, e.getTarget());
+                });
+            }
         });
 
         instance.eventNode().addListener(PlayerEntityInteractEvent.class, e -> {
