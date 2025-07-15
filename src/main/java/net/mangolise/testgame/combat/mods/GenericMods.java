@@ -4,12 +4,15 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
+import net.mangolise.testgame.combat.weapons.BowWeapon;
+import net.mangolise.testgame.combat.weapons.MaceWeapon;
+import net.mangolise.testgame.combat.weapons.SnakeWeapon;
+import net.mangolise.testgame.mobs.JacobEntity;
 import net.minestom.server.entity.Player;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.sound.SoundEvent;
 
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
@@ -247,6 +250,45 @@ sealed public interface GenericMods extends Mod {
                 attack.updateTag(Attack.DAMAGE, damage -> damage * damageMultiplier);
                 next.accept(attack);
             }
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_STAT_MODIFIER;
+        }
+    }
+
+    record Jacob(int level) implements GenericMods {
+        @Override
+        public Rarity rarity() {
+            return Rarity.EPIC;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.GOAT_SPAWN_EGG)
+                    .customName(this.name())
+                    .lore(
+                            Component.text("+ Jacob joins your side", NamedTextColor.GREEN),
+                            Component.text("    Damage multiplier: 1.5 + (0.5 per level)", NamedTextColor.GREEN)
+                    )
+                    .build();
+        }
+
+        @Override
+        public void attack(Attack attack, Consumer<Attack> next) {
+            // still do the normal attack
+            next.accept(attack);
+            
+            // Every time we attack, spawn a jacob entity with the same weapon
+            double damageMultiplier = 1.5 + level * 0.5;
+            Attack jacobAttack = attack.copy(true);
+            jacobAttack.updateTag(Attack.DAMAGE, damage -> damage * damageMultiplier);
+            var user = attack.getTag(Attack.USER);
+            
+            // TODO: get the user's weapon via a new Attack.WEAPON tag
+            JacobEntity jacob = new JacobEntity(new SnakeWeapon(1), attack);
+            jacob.setInstance(user.getInstance(), user.getPosition());
         }
 
         @Override

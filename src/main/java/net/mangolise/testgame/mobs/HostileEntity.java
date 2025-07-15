@@ -58,11 +58,11 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
             super.tick(time);
             return;
         }
-        if (!this.isDead() && Throttler.shouldThrottle(this.instance, "testgame.hostileentity.tick", 20)) {
+        if (!this.isDead() && Throttler.shouldThrottle(this.instance, "testgame.hostileentity.tick", 40)) {
             return;
         }
 
-        Throttler.useTime(this.instance, "testgame.hostileentity.tick", 20, () -> {
+        Throttler.useTime(this.instance, "testgame.hostileentity.tick", 40, () -> {
             try {
                 super.tick(time);
             } catch (NullPointerException e) {

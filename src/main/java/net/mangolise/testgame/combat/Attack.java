@@ -1,6 +1,7 @@
 package net.mangolise.testgame.combat;
 
 import net.mangolise.testgame.mobs.AttackableMob;
+import net.mangolise.testgame.mobs.PlayerTeam;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.entity.Player;
@@ -56,10 +57,10 @@ public class Attack implements Taggable {
     }
 
     public boolean canTarget(AttackableMob entity) {
-        if (getTag(USER) instanceof Player) {
-            return !(entity instanceof Player);
+        if (getTag(USER) instanceof PlayerTeam) {
+            return !(entity instanceof PlayerTeam);
         } else {
-            return entity instanceof Player;
+            return entity instanceof PlayerTeam;
         }
     }
 

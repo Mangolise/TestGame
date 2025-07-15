@@ -12,7 +12,7 @@ import net.minestom.server.network.player.PlayerConnection;
 import net.minestom.server.registry.RegistryKey;
 import org.jetbrains.annotations.NotNull;
 
-public final class TestPlayer extends Player implements AttackableMob {
+public final class TestPlayer extends Player implements AttackableMob, PlayerTeam {
     public TestPlayer(@NotNull PlayerConnection playerConnection, @NotNull GameProfile gameProfile) {
         super(playerConnection, gameProfile);
     }
