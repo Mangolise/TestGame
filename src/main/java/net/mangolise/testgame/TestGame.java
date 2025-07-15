@@ -11,6 +11,7 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.event.item.ItemDropEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
@@ -66,6 +67,9 @@ public class TestGame extends BaseGame<TestGame.Config> {
         }
 
         MinecraftServer.getGlobalEventHandler().addListener(PlayerUseItemEvent.class, ModMenu::onItemUseEvent);
+        instance.eventNode().addListener(ItemDropEvent.class, e -> {
+            e.setCancelled(true);
+        });
 
         Log.logger().info("Started game");
     }
