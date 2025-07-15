@@ -2,8 +2,6 @@ package net.mangolise.testgame.mobs;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.mods.Mod;
@@ -14,10 +12,16 @@ import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.entity.damage.DamageType;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.Material;
+import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
+import net.minestom.server.entity.metadata.item.ItemEntityMeta;
+import net.minestom.server.event.entity.EntityDespawnEvent;
+import net.minestom.server.event.item.PickupItemEvent;
+import net.minestom.server.instance.block.Block;
 import net.minestom.server.registry.RegistryKey;
 import org.jetbrains.annotations.NotNull;
+
+import java.awt.*;
+import java.util.Set;
 
 public abstract non-sealed class HostileEntity extends EntityCreature implements AttackableMob {
     public HostileEntity(@NotNull EntityType entityType) {
@@ -131,36 +135,58 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
     protected void refreshIsDead(boolean isDead) {
         super.refreshIsDead(isDead);
 
-        double randomNum = Math.random();
+        double random = Math.random();
 
-        ItemStack item;
-
-        if (randomNum <= 0.2) {
-            var rarity = Mod.Rarity.EPIC;
-            item = ItemStack.builder(Material.PURPLE_BUNDLE)
-                    .customName(Component.text("Epic Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
-                    .maxStackSize(64)
-                    .build()
-                    .withTag(ModMenu.BUNDLE_RARITY, rarity);
-        } else if (randomNum <= 0.5) {
-            var rarity = Mod.Rarity.RARE;
-            item = ItemStack.builder(Material.BLUE_BUNDLE)
-                    .customName(Component.text("Rare Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
-                    .maxStackSize(64)
-                    .build()
-                    .withTag(ModMenu.BUNDLE_RARITY, Mod.Rarity.RARE);
-        } else {
-            var rarity = Mod.Rarity.COMMON;
-            item = ItemStack.builder(Material.LIGHT_GRAY_BUNDLE)
-                    .customName(Component.text("Common Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
-                    .maxStackSize(64)
-                    .build()
-                    .withTag(ModMenu.BUNDLE_RARITY, rarity);
-        }
-
-        if (isDead) {
-            ItemEntity itemEntity = GameSdkUtils.dropItem(instance, this.position, item);
+        if (isDead && random <= 0.1) {
+            ItemEntity itemEntity = GameSdkUtils.dropItem(instance, this.position, ModMenu.createBundleItem());
             itemEntity.setPickable(true);
+            itemEntity.setGlowing(true);
+
+            Entity displayEntity = createDisplayEntity(itemEntity);
+            itemEntity.addPassenger(displayEntity);
+
+            itemEntity.eventNode().addListener(EntityDespawnEvent.class, e -> {
+                e.getEntity().getPassengers().stream().findAny().ifPresent(Entity::remove);
+            });
         }
+    }
+
+    private Entity createDisplayEntity(ItemEntity itemEntity) {
+        Entity entity = new Entity(EntityType.BLOCK_DISPLAY);
+
+        Mod.Rarity rarity = itemEntity.getItemStack().getTag(ModMenu.BUNDLE_RARITY);
+
+        Vec scale = new Vec(0.1, 50, 0.1);
+
+        if (rarity == Mod.Rarity.EPIC) {
+            entity.editEntityMeta(BlockDisplayMeta.class, meta -> {
+                meta.setBlockState(Block.PURPLE_STAINED_GLASS);
+                meta.setScale(scale);
+                meta.setHasNoGravity(true);
+                meta.setHasGlowingEffect(true);
+                meta.setGlowColorOverride(Color.MAGENTA.getRGB());
+                meta.setTranslation(scale.withY(0).div(-2));
+            });
+        } else if (rarity == Mod.Rarity.RARE) {
+            entity.editEntityMeta(BlockDisplayMeta.class, meta -> {
+                meta.setBlockState(Block.BLUE_STAINED_GLASS);
+                meta.setScale(scale);
+                meta.setHasNoGravity(true);
+                meta.setHasGlowingEffect(true);
+                meta.setGlowColorOverride(Color.BLUE.getRGB());
+                meta.setTranslation(scale.withY(0).div(-2));
+            });
+        } else {
+            entity.editEntityMeta(BlockDisplayMeta.class, meta -> {
+                meta.setBlockState(Block.LIGHT_GRAY_STAINED_GLASS);
+                meta.setScale(scale);
+                meta.setHasNoGravity(true);
+                meta.setHasGlowingEffect(true);
+                meta.setGlowColorOverride(Color.GRAY.getRGB());
+                meta.setTranslation(scale.withY(0).div(-2));
+            });
+        }
+
+        return entity;
     }
 }

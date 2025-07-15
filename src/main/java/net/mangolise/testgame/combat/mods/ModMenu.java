@@ -32,7 +32,7 @@ public class ModMenu {
     public static ItemStack createBundleItem() {
         double randomNum = Math.random();
 
-        if (randomNum <= 0.2) {
+        if (randomNum <= 0.15) {
             var rarity = Mod.Rarity.EPIC;
             return ItemStack.builder(Material.PURPLE_BUNDLE)
                     .customName(Component.text("Epic Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
