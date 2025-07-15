@@ -1,12 +1,9 @@
 package net.mangolise.testgame.combat.weapons;
 
-import net.krystilize.pathable.Path;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.util.ThrottledScheduler;
 import net.mangolise.testgame.util.Utils;
 import net.mangolise.testgame.combat.Attack;
@@ -23,13 +20,10 @@ import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
-import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -69,7 +63,7 @@ public record SnakeWeapon(int level) implements Weapon {
             }
 
             // find the closest damageable entity
-            Entity target = Utils.closestEntity(user.getInstance(), user.getPosition(), entity ->
+            Entity target = Utils.fastClosestEntity(user.getInstance(), user.getPosition(), entity ->
                     entity instanceof AttackableMob &&
                     entity != user &&
                     !(entity instanceof Player) &&
@@ -189,7 +183,7 @@ public record SnakeWeapon(int level) implements Weapon {
         }
 
         private void forkSnake(Point pos, int remainingTicks) {
-            var newTarget = Utils.closestEntity(instance, pos, entity ->
+            var newTarget = Utils.fastClosestEntity(instance, pos, entity ->
                     entity instanceof AttackableMob &&
                             !alreadyMarked.contains(entity) &&
                             !(entity instanceof Player)

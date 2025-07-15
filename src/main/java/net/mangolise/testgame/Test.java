@@ -3,6 +3,7 @@ package net.mangolise.testgame;
 import net.mangolise.gamesdk.permissions.Permissions;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.gamesdk.util.PerformanceTracker;
+import net.mangolise.testgame.commands.BenchmarkTestCommand;
 import net.mangolise.testgame.commands.GiveBundleCommand;
 import net.mangolise.testgame.commands.GiveModsCommand;
 import net.minestom.server.MinecraftServer;
@@ -44,7 +45,8 @@ public class Test {
         // TODO: How should we handle this?
         MinecraftServer.getCommandManager().register(
                 new GiveModsCommand(),
-                new GiveBundleCommand()
+                new GiveBundleCommand(),
+                new BenchmarkTestCommand()
         );
 
         boolean oneGame = System.getenv("ONE_GAME") != null && System.getenv("ONE_GAME").equalsIgnoreCase("true");
