@@ -16,6 +16,7 @@ import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.item.ItemDropEvent;
+import net.minestom.server.event.player.PlayerDisconnectEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
@@ -25,11 +26,13 @@ import net.minestom.server.world.DimensionType;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 
 public class TestGame extends BaseGame<TestGame.Config> {
     private static final Pos SPAWN = new Pos(7.5, 0, 8.5);
     private static final PolarLoader worldLoader;
+    private final Set<UUID> players = new HashSet<>();
 
     static {
         try {
@@ -41,6 +44,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
     private Instance instance;
     private Runnable endCallback;
+    private Consumer<Player> kickFromGameConsumer = ignored -> {};
 
     protected TestGame(Config config, Runnable endCallback) {
         super(config);
@@ -59,8 +63,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
     // TODO: Unregister the instance when everyone leaves
     @Override
     public void setup() {
-//        MangoCombat.enableGlobal(new CombatConfig().withFakeDeath(true).withVoidDeath(true).withVoidLevel(-10));
-
         RegistryKey<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().getKey(Key.key("test-game-dimension"));
         if (dim == null) {
             throw new IllegalStateException("Dimension type 'test-game-dimension' not registered. Call CreateRegistryEntries() first.");
@@ -86,6 +88,24 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         super.setup();  // do this after the instance is set up so that features can access it
         Log.logger().info("Started game");
+    }
+
+    public void end() {
+        Log.logger().info("Ending game");
+        if (endCallback != null) {
+            endCallback.run();
+        }
+
+        // kick spectators
+        for (Player player : instance.getPlayers()) {
+            kickFromGameConsumer.accept(player);
+        }
+
+        if (instance != null && instance.isRegistered()) {
+            MinecraftServer.getInstanceManager().unregisterInstance(instance);
+        } else {
+            Log.logger().warn("Instance was not registered or already closed");
+        }
     }
 
     public void joinPlayer(Player player) {
@@ -115,6 +135,20 @@ public class TestGame extends BaseGame<TestGame.Config> {
         player.getInventory().addItemStack(ItemStack.of(Material.IRON_SWORD));
         player.getInventory().setItemStack(7, ItemStack.of(Material.CHICKEN_SPAWN_EGG));
         player.getInventory().setItemStack(8, ItemStack.of(Material.ZOMBIE_SPAWN_EGG));
+
+        player.eventNode().addListener(PlayerDisconnectEvent.class, e -> {
+            leavePlayer(e.getPlayer());
+        });
+
+        players.add(player.getUuid());
+    }
+
+    public void leavePlayer(Player player) {
+        Log.logger().info("Player {} left a game", player.getUsername());
+        if (instance.getPlayers().stream().noneMatch(p -> p.getGameMode() != GameMode.SPECTATOR) && GameConstants.END_EMPTY_GAMES) {
+            Log.logger().info("No players left, ending game");
+            end();
+        }
     }
 
     public void addSpectator(Player player) {
@@ -145,6 +179,14 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
     public void setEndCallback(Runnable endCallback) {
         this.endCallback = endCallback;
+    }
+
+    public void setKickFromGameConsumer(Consumer<Player> kickFromGameConsumer) {
+        this.kickFromGameConsumer = kickFromGameConsumer;
+    }
+
+    public Set<UUID> players() {
+        return Collections.unmodifiableSet(players);
     }
 
     public record Config(Player[] players) { }

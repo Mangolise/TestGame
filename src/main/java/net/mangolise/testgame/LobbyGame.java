@@ -97,6 +97,12 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             .hideExtraTooltip()
             .build();
 
+    private static final ItemStack rejoinItem = ItemStack
+            .builder(Material.BLUE_BED)
+            .customName(ChatUtil.toComponent("&r&aRejoin Game &7(Right Click)"))
+            .hideExtraTooltip()
+            .build();
+
     // Party inv items
     private static final ItemStack startPartyGameItem = ItemStack
             .builder(Material.IRON_SWORD)
@@ -232,8 +238,10 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         TestGame game = new TestGame(new TestGame.Config(players));
         game.setup();
         games.add(game);
-        game.setEndCallback(() -> {
-            games.remove(game);
+        game.setEndCallback(() -> games.remove(game));
+        game.setKickFromGameConsumer(player -> {
+            addPlayer(player);
+            player.sendMessage(ChatUtil.toComponent("&cThe game has ended! You have been returned to the lobby."));
         });
     }
 
@@ -242,6 +250,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         player.getInventory().setItemStack(0, joinQueueItem);
         player.getInventory().setItemStack(1, playSoloItem);
         player.getInventory().setItemStack(2, playWithPartyItem);
+        player.getInventory().setItemStack(6, rejoinItem);
         player.getInventory().setItemStack(7, spectateItem);
         player.getInventory().setItemStack(8, infoItem);
     }
@@ -328,6 +337,16 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 });
             }
             player.openInventory(menu.getInventory());
+        } else if (item.equals(rejoinItem)) {
+            // Check if the player is in a game
+            for (TestGame game : games) {
+                if (game.players().contains(player.getUuid())) {
+                    player.sendMessage(ChatUtil.toComponent("&aRejoining your game..."));
+                    game.joinPlayer(player);
+                    return;
+                }
+            }
+            player.sendMessage(ChatUtil.toComponent("&cCould not find a game to rejoin! If everyone left, the game likely ended."));
         }
     }
 
@@ -501,6 +520,15 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 ).build();
 
         player.openBook(book);
+    }
+
+    public @Nullable TestGame gameByInstance(Instance instance) {
+        for (TestGame game : games) {
+            if (game.instance().equals(instance)) {
+                return game;
+            }
+        }
+        return null;
     }
 
     @Override
