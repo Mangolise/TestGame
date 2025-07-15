@@ -6,6 +6,7 @@ import net.mangolise.gamesdk.util.PerformanceTracker;
 import net.mangolise.testgame.commands.GiveBundleCommand;
 import net.mangolise.testgame.commands.GiveModsCommand;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
@@ -32,8 +33,10 @@ public class Test {
         }
 
         // give every permission to every player, TODO: Remove this in production
-        MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e ->
-                Permissions.setPermission(e.getPlayer(), "*", true));
+        MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {
+            Permissions.setPermission(e.getPlayer(), "*", true);
+            e.getPlayer().updateViewableRule(p -> e.getPlayer().getGameMode() != GameMode.SPECTATOR);  // hide spectators
+        });
 
         TestGame.CreateRegistryEntries();
         LobbyGame.CreateRegistryEntries();
@@ -52,10 +55,7 @@ public class Test {
             MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> e.setSpawningInstance(game.instance()));
             MinecraftServer.getGlobalEventHandler().addListener(PlayerSpawnEvent.class, e -> game.joinPlayer(e.getPlayer()));
         } else {  // Regular prod setup with lobby
-            LobbyGame lobby = new LobbyGame(new LobbyGame.Config(ps -> {
-                TestGame game = new TestGame(new TestGame.Config(ps));
-                game.setup();
-            }));
+            LobbyGame lobby = new LobbyGame(new LobbyGame.Config());
             lobby.setup();
         }
 

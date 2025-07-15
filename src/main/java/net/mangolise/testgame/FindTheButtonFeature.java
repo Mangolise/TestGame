@@ -5,9 +5,9 @@ import net.mangolise.gamesdk.Game;
 import net.mangolise.gamesdk.instance.InstanceAnalysis;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.ChatUtil;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.player.PlayerBlockInteractEvent;
 import net.minestom.server.instance.block.Block;
@@ -28,7 +28,11 @@ public class FindTheButtonFeature implements Game.Feature<TestGame> {
         BUTTONS = blocksMap.size();
         Log.logger().info("Found {} buttons", BUTTONS);
 
-        MinecraftServer.getGlobalEventHandler().addListener(PlayerBlockInteractEvent.class, e -> {
+        context.game().instance().eventNode().addListener(PlayerBlockInteractEvent.class, e -> {
+            if (e.getPlayer().getGameMode() == GameMode.SPECTATOR) {
+                return;  // spectators cannot play the game
+            }
+
             if (!e.getBlock().name().endsWith("_button")) {
                 return;
             }

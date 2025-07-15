@@ -14,24 +14,31 @@ import net.mangolise.gamesdk.features.AdminCommandsFeature;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.features.SignFeature;
 import net.mangolise.gamesdk.util.ChatUtil;
+import net.mangolise.gamesdk.util.InventoryMenu;
 import net.mangolise.testgame.commands.AcceptPartyInviteCommand;
+import net.mangolise.testgame.commands.LeaveCommand;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.PlayerSkin;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeInstance;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.component.HeadProfile;
 import net.minestom.server.registry.RegistryKey;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 import net.minestom.server.world.DimensionType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.FileInputStream;
@@ -41,6 +48,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 public class LobbyGame extends BaseGame<LobbyGame.Config> {
+    private static final Pos SPAWN = new Pos(5, 66.5, 6);
+
     private static final Tag<Set<Player>> PARTY_MEMBERS_TAG = Tag.Transient("lobby.partymembers");
     private static final Tag<Set<Player>> PARTY_MEMBER_INVITES_TAG = Tag.Transient("lobby.partyinvites");
     private static final Tag<Player> JOINED_PARTY_TAG = Tag.Transient("lobby.joinedparty");
@@ -55,6 +64,8 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     );
     private int queueRemainingTime = 0;
     private Instance world;
+    private final List<TestGame> games = new ArrayList<>();
+    private static final @NotNull PlayerSkin defaultSkin = Objects.requireNonNull(PlayerSkin.fromUsername("Technoblade"));
 
     private static final ItemStack infoItem = ItemStack
             .builder(Material.REDSTONE_TORCH)
@@ -77,6 +88,12 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     private static final ItemStack playWithPartyItem = ItemStack
             .builder(Material.IRON_SWORD)
             .customName(ChatUtil.toComponent("&r&aCreate Party &7(Right Click)"))
+            .hideExtraTooltip()
+            .build();
+
+    private static final ItemStack spectateItem = ItemStack
+            .builder(Material.SPYGLASS)
+            .customName(ChatUtil.toComponent("&r&aSpectate Game &7(Right Click)"))
             .hideExtraTooltip()
             .build();
 
@@ -120,11 +137,28 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         MinecraftServer.getDimensionTypeRegistry().register("lobby-dimension", dimension);
     }
 
+    public void addPlayer(Player player) {
+        if (player.getInstance() != world) {
+            player.setInstance(world, SPAWN);
+        }
+
+        player.setGameMode(GameMode.ADVENTURE);
+        player.setRespawnPoint(SPAWN);
+
+        // Reset all attributes to their default values
+        for (AttributeInstance attribute : player.getAttributes()) {
+            attribute.clearModifiers();
+        }
+        player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1);  // Set by the game, so we must manually reset it
+        giveRegularItems(player);
+    }
+
     @Override
     public void setup() {
         super.setup();
 
         MinecraftServer.getCommandManager().register(new AcceptPartyInviteCommand(this));
+        MinecraftServer.getCommandManager().register(new LeaveCommand(this));
 
         RegistryKey<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().getKey(Key.key("lobby-dimension"));
         if (dim == null) {
@@ -143,28 +177,16 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         world.setTimeSynchronizationTicks(0);
 
         MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {
-            Player player = e.getPlayer();
             e.setSpawningInstance(world);
-
-            player.setGameMode(GameMode.ADVENTURE);
-            player.setRespawnPoint(new Pos(5, 66.5, 6));
-
-            // Reset all attributes to their default values
-            for (AttributeInstance attribute : player.getAttributes()) {
-                attribute.clearModifiers();
-            }
-            player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1);  // Set by the game, so we must manually reset it
-
-            player.getInventory().clear();
+            e.getPlayer().eventNode().addListener(PlayerDisconnectEvent.class, dc -> {
+                queue.remove(dc.getPlayer());
+                updateQueueBossBar();
+            });
         });
 
         world.eventNode().addListener(PlayerSpawnEvent.class, e -> {
-            e.getPlayer().sendMessage(ChatUtil.toComponent("&aWelcome!"));
-
-            // TODO: Should this be enabled for production?
-//            displayBookToast(e.getPlayer());
-
-            giveRegularItems(e.getPlayer());
+            addPlayer(e.getPlayer());
+            e.getPlayer().teleport(SPAWN);
         });
 
         world.eventNode().addListener(InventoryPreClickEvent.class, e -> {
@@ -203,11 +225,21 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         });
     }
 
+    private void startGame(Player[] players) {
+        TestGame game = new TestGame(new TestGame.Config(players));
+        game.setup();
+        games.add(game);
+        game.setEndCallback(() -> {
+            games.remove(game);
+        });
+    }
+
     private void giveRegularItems(Player player) {
         player.getInventory().clear();
         player.getInventory().setItemStack(0, joinQueueItem);
         player.getInventory().setItemStack(1, playSoloItem);
         player.getInventory().setItemStack(2, playWithPartyItem);
+        player.getInventory().setItemStack(7, spectateItem);
         player.getInventory().setItemStack(8, infoItem);
     }
 
@@ -216,7 +248,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             displayBookToast(player);
         } else if (item.equals(playSoloItem)) {
             player.sendMessage(ChatUtil.toComponent("&aJoining a solo game..."));
-            config.startGameMethod.accept(new Player[]{player});
+            startGame(new Player[]{player});
         } else if (item.equals(joinQueueItem)) {
             enqueue(player);
         } else if (item.equals(playWithPartyItem)) {
@@ -259,7 +291,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             }
 
             // Start the game with the party members
-            config.startGameMethod.accept(partyMembers.toArray(new Player[0]));
+            startGame(partyMembers.toArray(new Player[0]));
         } else if (item.equals(leavePartyItem)) {
             leaveParty(player);
         } else if (item.equals(leaveQueueItem)) {
@@ -272,6 +304,27 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             } else {
                 player.sendMessage(ChatUtil.toComponent("&cYou are not in the queue!"));
             }
+        } else if (item.equals(spectateItem)) {
+            InventoryMenu menu = new InventoryMenu(InventoryType.CHEST_6_ROW, ChatUtil.toComponent("&a&lOngoing Games"));
+            for (TestGame game : games) {
+                List<Component> lore = new ArrayList<>();  // will contain the player names
+                for (Player p : game.instance().getPlayers()) {
+                    lore.add(ChatUtil.toComponent("&r&7" + p.getUsername()));
+                }
+                PlayerSkin iconSkin = game.instance().getPlayers().stream().findFirst().get().getSkin();
+                if (iconSkin == null) {
+                    iconSkin = defaultSkin;
+                }
+                ItemStack icon = ItemStack
+                        .of(Material.PLAYER_HEAD)
+                        .with(DataComponents.PROFILE, new HeadProfile(iconSkin))
+                        .withLore(lore)
+                        .withCustomName(ChatUtil.toComponent("&r&bGame: " + game.instance().getPlayers().size() + " players"));
+                menu.addMenuItem(icon).onLeftClick(e -> {
+                    game.addSpectator(e.player());
+                });
+            }
+            player.openInventory(menu.getInventory());
         }
     }
 
@@ -415,7 +468,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         if (players.isEmpty()) {
             return;
         }
-        config.startGameMethod.accept(players.toArray(new Player[0]));
+        startGame(players.toArray(new Player[0]));
 
         // Check if we can start another game immediately
         if (players.size() >= GameConstants.GAME_QUEUE_MAX_PLAYERS) {
@@ -458,5 +511,5 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         );
     }
 
-    public record Config(Consumer<Player[]> startGameMethod) { }
+    public record Config() { }
 }

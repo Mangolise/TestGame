@@ -5,6 +5,7 @@ import net.kyori.adventure.key.Key;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.log.Log;
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.mods.ModMenu;
 import net.minestom.server.MinecraftServer;
@@ -28,9 +29,15 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
     private Instance instance;
     private PolarLoader worldLoader;
+    private Runnable endCallback;
+
+    protected TestGame(Config config, Runnable endCallback) {
+        super(config);
+        this.endCallback = endCallback;
+    }
 
     protected TestGame(Config config) {
-        super(config);
+        this(config, () -> {});
     }
 
     public static void CreateRegistryEntries() {
@@ -96,6 +103,15 @@ public class TestGame extends BaseGame<TestGame.Config> {
         player.getInventory().setItemStack(8, ItemStack.of(Material.ZOMBIE_SPAWN_EGG));
     }
 
+    public void addSpectator(Player player) {
+        player.setGameMode(GameMode.SPECTATOR);
+        player.setAllowFlying(true);
+        player.setRespawnPoint(SPAWN);
+        player.setInstance(instance, SPAWN);
+        player.sendMessage(ChatUtil.toComponent("&cYou are now a spectator! You can fly around freely."));
+        player.sendMessage(ChatUtil.toComponent("&cTo leave type &6/leave&c."));
+    }
+
     @Override
     public List<Feature<?>> features() {
         return List.of(
@@ -110,6 +126,10 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
     public PolarLoader worldLoader() {
         return worldLoader;
+    }
+
+    public void setEndCallback(Runnable endCallback) {
+        this.endCallback = endCallback;
     }
 
     public record Config(Player[] players) { }
