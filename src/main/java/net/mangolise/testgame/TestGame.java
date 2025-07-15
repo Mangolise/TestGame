@@ -144,7 +144,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
     public void leavePlayer(Player player) {
         Log.logger().info("Player {} left a game", player.getUsername());
-        if (instance.getPlayers().stream().noneMatch(p -> p.getGameMode() != GameMode.SPECTATOR) && GameConstants.END_EMPTY_GAMES) {
+        if (instance.getPlayers().stream().filter(p -> p != player).noneMatch(p -> p.getGameMode() != GameMode.SPECTATOR) && GameConstants.END_EMPTY_GAMES) {
             Log.logger().info("No players left, ending game");
             end();
         }
