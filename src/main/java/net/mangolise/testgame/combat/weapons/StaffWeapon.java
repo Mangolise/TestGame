@@ -3,10 +3,7 @@ package net.mangolise.testgame.combat.weapons;
 import net.krystilize.pathable.Path;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
-import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.util.ThrottledScheduler;
 import net.minestom.server.coordinate.Pos;
@@ -17,13 +14,10 @@ import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.TaskSchedule;
-import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.*;
 import java.util.List;
@@ -148,7 +142,6 @@ public record StaffWeapon(int level) implements Weapon {
             meta.setScale(new Vec(scale.x(), scale.z(), start.distance(end)));
             meta.setHasNoGravity(true);
             meta.setTranslation(scale.withY(scale.z()).withZ(0).div(-2));
-            meta.setBrightness(100, 0);
         });
 
         Vec delta = end.sub(start);
