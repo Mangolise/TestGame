@@ -105,6 +105,12 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             .hideExtraTooltip()
             .build();
 
+    private static final ItemStack leaveQueueItem = ItemStack
+            .builder(Material.BARRIER)
+            .customName(ChatUtil.toComponent("&r&aLeave Queue &7(Right Click)"))
+            .hideExtraTooltip()
+            .build();
+
     public LobbyGame(Config config) {
         super(config);
     }
@@ -256,6 +262,16 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             config.startGameMethod.accept(partyMembers.toArray(new Player[0]));
         } else if (item.equals(leavePartyItem)) {
             leaveParty(player);
+        } else if (item.equals(leaveQueueItem)) {
+            if (queue.remove(player)) {
+                player.sendMessage(ChatUtil.toComponent("&cYou have left the queue!"));
+                player.playSound(Sound.sound(SoundEvent.BLOCK_ANVIL_BREAK.key(), Sound.Source.MASTER, 0.1f, 1.0f));
+                giveRegularItems(player);
+                player.hideBossBar(queueBossBar);
+                updateQueueBossBar();
+            } else {
+                player.sendMessage(ChatUtil.toComponent("&cYou are not in the queue!"));
+            }
         }
     }
 
@@ -317,9 +333,17 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     }
 
     private void enqueue(Player player) {
+        if (queue.contains(player)) {
+            player.sendMessage(ChatUtil.toComponent("&cYou are already in the queue!"));
+            return;
+        }
+
         queue.add(player);
         player.sendMessage(ChatUtil.toComponent("&aYou have joined the queue!"));
         player.playSound(Sound.sound(SoundEvent.ENTITY_EXPERIENCE_ORB_PICKUP.key(), Sound.Source.MASTER, 1.0f, 1.0f));
+
+        player.getInventory().clear();
+        player.getInventory().setItemStack(8, leaveQueueItem);
 
         updateQueueBossBar();
 
