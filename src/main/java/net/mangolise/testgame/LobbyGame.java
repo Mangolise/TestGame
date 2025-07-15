@@ -226,6 +226,9 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     }
 
     private void startGame(Player[] players) {
+        for (Player player : players) {
+            player.sendMessage(ChatUtil.toComponent("&aSending you into the game..."));
+        }
         TestGame game = new TestGame(new TestGame.Config(players));
         game.setup();
         games.add(game);
