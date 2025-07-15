@@ -49,7 +49,7 @@ public class Test {
             TestGame game = new TestGame(new TestGame.Config(new Player[0]));
             game.setup();
 
-            MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> e.setSpawningInstance(game.getInstance()));
+            MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> e.setSpawningInstance(game.instance()));
             MinecraftServer.getGlobalEventHandler().addListener(PlayerSpawnEvent.class, e -> game.joinPlayer(e.getPlayer()));
         } else {  // Regular prod setup with lobby
             LobbyGame lobby = new LobbyGame(new LobbyGame.Config(ps -> {

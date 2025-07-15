@@ -27,6 +27,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
     private static final Pos SPAWN = new Pos(7.5, 0, 8.5);
 
     private Instance instance;
+    private PolarLoader worldLoader;
 
     protected TestGame(Config config) {
         super(config);
@@ -39,8 +40,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
     @Override
     public void setup() {
-        super.setup();
-
 //        MangoCombat.enableGlobal(new CombatConfig().withFakeDeath(true).withVoidDeath(true).withVoidLevel(-10));
 
         RegistryKey<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().getKey(Key.key("test-game-dimension"));
@@ -50,14 +49,13 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         AttackSystem.register();
 
-        PolarLoader loader;
         try {
-            loader = new PolarLoader(new FileInputStream("game.polar"));
+            worldLoader = new PolarLoader(new FileInputStream("game.polar"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        instance = MinecraftServer.getInstanceManager().createInstanceContainer(dim, loader);
+        instance = MinecraftServer.getInstanceManager().createInstanceContainer(dim, worldLoader);
         instance.setTimeRate(0);
         instance.setTimeSynchronizationTicks(0);
 
@@ -71,6 +69,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
             e.setCancelled(true);
         });
 
+        super.setup();  // do this after the instance is set up so that features can access it
         Log.logger().info("Started game");
     }
 
@@ -100,12 +99,17 @@ public class TestGame extends BaseGame<TestGame.Config> {
     @Override
     public List<Feature<?>> features() {
         return List.of(
-                new NoCollisionFeature()
+                new NoCollisionFeature(),
+                new FindTheButtonFeature()
         );
     }
 
-    public Instance getInstance() {
+    public Instance instance() {
         return instance;
+    }
+
+    public PolarLoader worldLoader() {
+        return worldLoader;
     }
 
     public record Config(Player[] players) { }
