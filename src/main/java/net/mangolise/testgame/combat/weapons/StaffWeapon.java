@@ -28,7 +28,8 @@ public record StaffWeapon(int level) implements Weapon {
     public static final Tag<Player> STAFF_USER = Tag.Transient("testgame.attack.staff.user");
     public static final Tag<AttackableMob> HIT_ENTITY = Tag.Transient("testgame.attack.staff.hit_entity");
     public static final Tag<Double> ARC_CHANCE = Tag.Double("testgame.attack.staff.arc_chance").defaultValue(0.5);
-    
+    public static final Tag<Double> ARC_RADIUS = Tag.Double("testgame.attack.staff.arc_radius").defaultValue(0.5);
+
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
         // staff has a staff damage of 6, and increases by 0.5 per level
@@ -91,7 +92,7 @@ public record StaffWeapon(int level) implements Weapon {
 
         Instance instance = originEntity.getInstance();
 
-        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), 3);
+        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), attack.getTag(ARC_RADIUS));
         for (Entity entity : entities) {
             if (!(entity instanceof AttackableMob mob) ||
                     chainedEntities.contains(entity.getUuid()) ||
