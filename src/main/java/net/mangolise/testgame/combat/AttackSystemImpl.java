@@ -4,6 +4,7 @@ import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.mods.ModMenu;
 import net.mangolise.testgame.combat.weapons.*;
 import net.mangolise.testgame.mobs.AttackableMob;
+import net.mangolise.testgame.mobs.SpawnSystem;
 import net.mangolise.testgame.mobs.TestChickenJockey;
 import net.mangolise.testgame.mobs.TestZombie;
 import net.minestom.server.MinecraftServer;
@@ -165,9 +166,9 @@ public final class AttackSystemImpl implements AttackSystem {
 
                 entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
 
-                entity.setInstance(player.getInstance(), player.getPosition().add(Math.random() * 8.0, Math.random() * 64.0, Math.random() * 8.0));
                 entity.setTarget(player);
                 entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
+                SpawnSystem.spawn(player.getInstance(), entity);
             }
         } else if (material == Material.CHICKEN_SPAWN_EGG) {
             for (int i = 0; i < 128; i++) {
@@ -182,10 +183,10 @@ public final class AttackSystemImpl implements AttackSystem {
                 scale *= statScaling;
 
                 entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
-
-                entity.setInstance(player.getInstance(), player.getPosition().add(Math.random() * 8.0, Math.random() * 64.0, Math.random() * 8.0));
+                
                 entity.setTarget(player);
                 entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
+                SpawnSystem.spawn(player.getInstance(), entity);
             }
         }
     }

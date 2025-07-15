@@ -52,7 +52,18 @@ public abstract class HostileEntity extends EntityCreature implements Attackable
         }
 
         Throttler.useTime(this.instance, "testgame.hostileentity.tick", 20, () -> {
-            super.tick(time);
+            try {
+                super.tick(time);
+            } catch (NullPointerException e) {
+                // TODO: (after the jam) report this bug
+//                java.lang.NullPointerException: Unloaded chunk at -129,16,129
+//                at net.minestom.server.instance.Instance.getBlock(Instance.java:720)
+//                at net.minestom.server.entity.pathfinding.generators.GroundNodeGenerator.gravitySnap(GroundNodeGenerator.java:123)
+                if (e.getMessage() != null && e.getMessage().contains("Unloaded chunk at")) {
+                    // this is a known issue, we can safely ignore it
+                    return;
+                }
+            }
 
             var instance = this.getInstance();
 
