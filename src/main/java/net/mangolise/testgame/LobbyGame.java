@@ -311,7 +311,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 for (Player p : game.instance().getPlayers()) {
                     lore.add(ChatUtil.toComponent("&r&7" + p.getUsername()));
                 }
-                PlayerSkin iconSkin = game.instance().getPlayers().stream().findFirst().get().getSkin();
+                PlayerSkin iconSkin = !game.instance().getPlayers().isEmpty() ? game.instance().getPlayers().stream().findFirst().get().getSkin() : null;
                 if (iconSkin == null) {
                     iconSkin = defaultSkin;
                 }

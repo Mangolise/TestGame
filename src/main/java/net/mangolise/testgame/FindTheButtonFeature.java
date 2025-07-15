@@ -20,14 +20,17 @@ import java.util.Map;
 
 public class FindTheButtonFeature implements Game.Feature<TestGame> {
     private static final Tag<List<BlockVec>> FOUND_BUTTONS_TAG = Tag.Transient("found_buttons");
-    private static int BUTTONS;
+    private static final int BUTTONS;
+
+    static {
+        Log.logger().info("Scanning for buttons...");
+        Map<Point, Block> blocksMap = InstanceAnalysis.scanForBlocks(TestGame.worldLoader().world(), b -> b.name().endsWith("_button"));
+        BUTTONS = blocksMap.size();
+        Log.logger().info("Found {} buttons", BUTTONS);
+    }
 
     @Override
     public void setup(Context<TestGame> context) {
-        Map<Point, Block> blocksMap = InstanceAnalysis.scanForBlocks(context.game().worldLoader().world(), b -> b.name().endsWith("_button"));
-        BUTTONS = blocksMap.size();
-        Log.logger().info("Found {} buttons", BUTTONS);
-
         context.game().instance().eventNode().addListener(PlayerBlockInteractEvent.class, e -> {
             if (e.getPlayer().getGameMode() == GameMode.SPECTATOR) {
                 return;  // spectators cannot play the game

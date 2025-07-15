@@ -26,9 +26,17 @@ import java.util.List;
 
 public class TestGame extends BaseGame<TestGame.Config> {
     private static final Pos SPAWN = new Pos(7.5, 0, 8.5);
+    private static final PolarLoader worldLoader;
+
+    static {
+        try {
+            worldLoader = new PolarLoader(new FileInputStream("game.polar"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private Instance instance;
-    private PolarLoader worldLoader;
     private Runnable endCallback;
 
     protected TestGame(Config config, Runnable endCallback) {
@@ -53,12 +61,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
         RegistryKey<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().getKey(Key.key("test-game-dimension"));
         if (dim == null) {
             throw new IllegalStateException("Dimension type 'test-game-dimension' not registered. Call CreateRegistryEntries() first.");
-        }
-
-        try {
-            worldLoader = new PolarLoader(new FileInputStream("game.polar"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
         instance = MinecraftServer.getInstanceManager().createInstanceContainer(dim, worldLoader);
@@ -125,7 +127,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
         return instance;
     }
 
-    public PolarLoader worldLoader() {
+    public static PolarLoader worldLoader() {
         return worldLoader;
     }
 
