@@ -175,7 +175,7 @@ public record SnakeWeapon(int level) implements Weapon {
                 remainingTicks = 0;
 
                 // spawn particles
-                var entityScale = target instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getBaseValue() : 1.0;
+                var entityScale = target instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getValue() : 1.0;
                 ParticlePacket packet = new ParticlePacket(Particle.ANGRY_VILLAGER, pos.add(0, target.getEyeHeight() * entityScale, 0), Vec.ZERO, 0, 1);
                 instance.sendGroupedPacket(packet);
             }

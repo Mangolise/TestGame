@@ -1,7 +1,6 @@
 package net.mangolise.testgame.combat.mods;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.player.PlayerUseItemEvent;
@@ -13,6 +12,7 @@ import net.minestom.server.tag.Tag;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ModMenu {
 
@@ -55,18 +55,66 @@ public class ModMenu {
 
     public static void openModMenu(Player player, ItemStack item) {
         Inventory inventory = new Inventory(InventoryType.CHEST_1_ROW, "Mods Menu");
-        player.openInventory(inventory);
-    }
 
-    private static List<Mod> createRandomUpgrades(Inventory inventory, ItemStack item) {
-        List<Mod> mods = new ArrayList<>();
+        List<Mod> selectedMods = new ArrayList<>();
 
-        for (int i = 0; i < Mod.values().size(); i++) {
-            if (Mod.values().get(i).create(0).rarity() == item.getTag(BUNDLE_RARITY)) {
-                mods.add(Mod.values().get(i).create(0));
+        while (selectedMods.size() < 3) {
+            Mod mod = sampleUpgrade(item);
+
+            if (!selectedMods.contains(mod)) {
+                selectedMods.add(mod);
             }
         }
 
-        return mods;
+        for (Mod selectedMod : selectedMods) {
+            inventory.addItemStack(selectedMod.item());
+        }
+
+        player.openInventory(inventory);
+    }
+
+    private static final Map<Mod.Rarity, Map<Mod.Rarity, Number>> rarityToRarityDropChance = Map.ofEntries(
+            Map.entry(Mod.Rarity.COMMON, Map.of(
+                    Mod.Rarity.COMMON, 90,
+                    Mod.Rarity.RARE, 10,
+                    Mod.Rarity.EPIC, 1
+            )),
+            Map.entry(Mod.Rarity.RARE, Map.of(
+                    Mod.Rarity.COMMON, 10,
+                    Mod.Rarity.RARE, 85,
+                    Mod.Rarity.EPIC, 5
+            )),
+            Map.entry(Mod.Rarity.EPIC, Map.of(
+                    Mod.Rarity.COMMON, 5,
+                    Mod.Rarity.RARE, 15,
+                    Mod.Rarity.EPIC, 80
+            ))
+    );
+
+    private static Mod sampleUpgrade(ItemStack item) {
+        Map<Mod.Rarity, Number> rarityChance = rarityToRarityDropChance.get(item.getTag(BUNDLE_RARITY));
+        double sampleValue = (Math.random() * rarityChance.values().stream().mapToDouble(Number::doubleValue).sum());
+
+        Mod.Rarity rarity = Mod.Rarity.COMMON;
+
+        for (Map.Entry<Mod.Rarity, Number> entry : rarityChance.entrySet()) {
+            if (sampleValue < entry.getValue().doubleValue()) {
+                rarity = entry.getKey();
+                break;
+            }
+
+            sampleValue -= entry.getValue().doubleValue();
+        }
+
+        List<Mod> mods = new ArrayList<>();
+
+        for (Mod.Factory value : Mod.values()) {
+            if (value.create(0).rarity() == rarity) {
+                mods.add(value.create(1));
+            }
+        }
+
+        double random = Math.random() * mods.size();
+        return mods.get((int) random);
     }
 }

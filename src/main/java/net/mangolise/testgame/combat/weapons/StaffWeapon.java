@@ -60,11 +60,8 @@ public record StaffWeapon(int level) implements Weapon {
 
             // spawn spell
             AttackableMob originalEntity = attack.getTag(HIT_ENTITY);
-
-            Vec playerPos = new Vec(user.getPosition().x(), user.getPosition().y() + user.getEyeHeight() * user.getAttribute(Attribute.SCALE).getValue(), user.getPosition().z());
-
-            Entity entity = originalEntity.asEntity();
-            var entityScale = entity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getBaseValue() : 1.0;
+            EntityCreature entity = originalEntity.asEntity();
+            double entityScale = entity.getAttribute(Attribute.SCALE).getValue();
             Vec entityPos = new Vec(entity.getPosition().x(), entity.getPosition().y() + entity.getEyeHeight() * entityScale, entity.getPosition().z());
 
             Entity lightning = new Entity(EntityType.LIGHTNING_BOLT);
@@ -89,9 +86,9 @@ public record StaffWeapon(int level) implements Weapon {
             return;
         }
 
-        Entity originEntity = attackableMob.asEntity();
+        EntityCreature originEntity = attackableMob.asEntity();
         
-        if (originEntity.isRemoved() || (originEntity instanceof LivingEntity living && living.isDead())) {
+        if (originEntity.isRemoved() || originEntity.isDead()) {
             return;
         }
 
@@ -106,13 +103,13 @@ public record StaffWeapon(int level) implements Weapon {
                     chainedEntities.contains(entity.getUuid()) ||
                     (Math.random() + attack.getTag(ARC_CHANCE)) / depth < 0.65 ||
                     entity.isRemoved() ||
-                    (entity instanceof LivingEntity living && (living.isDead() || living.isInvulnerable()))
+                    (mob.asEntity().isDead() || mob.asEntity().isInvulnerable())
             ) {
                 continue;
             }
 
-            var originEntityScale = originEntity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getBaseValue() : 1.0;
-            var entityScale = entity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getBaseValue() : 1.0;
+            var originEntityScale = originEntity.getAttribute(Attribute.SCALE).getValue();
+            var entityScale = entity instanceof LivingEntity living ? living.getAttribute(Attribute.SCALE).getValue() : 1.0;
 
             instance.scheduler().scheduleTask(() -> {
                 ThrottledScheduler.use(instance, "staff-weapon-chain-attack", 4, () -> {
@@ -155,6 +152,10 @@ public record StaffWeapon(int level) implements Weapon {
         });
 
         Vec delta = end.sub(start);
+        if (delta.length() < 0.1) {
+            return;
+        }
+
         Pos rotation = Pos.ZERO.withDirection(delta);
 
         Pos centeredSpawnPos = new Pos(start.x(), start.y(), start.z(), rotation.yaw(), rotation.pitch());

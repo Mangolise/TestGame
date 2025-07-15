@@ -45,7 +45,7 @@ public sealed interface Mod extends Attack.Node permits GenericMods, SnakeWeapon
     }
 
     default Component name() {
-        return Component.text(Utils.getFullSimpleClassName(this.getClass())).color(this.rarity().color());
+        return Component.text(this.getClass().getSimpleName()).color(this.rarity().color());
     }
 
     default List<Component> description() {

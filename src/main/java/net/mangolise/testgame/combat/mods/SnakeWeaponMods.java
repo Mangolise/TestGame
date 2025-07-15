@@ -19,10 +19,11 @@ public sealed interface SnakeWeaponMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.END_ROD)
+            return ItemStack.builder(Material.IRON_BOOTS)
+                    .customName(this.name())
                     .lore(
                             Component.text("+ Multiplies the acceleration of your snakes", NamedTextColor.GREEN),
-                            Component.text("    Acceleration Multiplication: 1.0 + (1.0 per level)", NamedTextColor.RED)
+                            Component.text("    Acceleration Multiplication: 1.0 + (1.0 per level)", NamedTextColor.GREEN)
                     )
                     .amount(1)
                     .build();

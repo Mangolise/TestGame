@@ -20,10 +20,11 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.END_ROD)
+            return ItemStack.builder(Material.BREEZE_ROD)
+                    .customName(this.name())
                     .lore(
                             Component.text("+ Adds to the chance for an arc to happen", NamedTextColor.GREEN),
-                            Component.text("    Arc chance Addition: 1.0 + (0.1 per level)", NamedTextColor.RED)
+                            Component.text("    Arc chance Addition: 1.0 + (0.1 per level)", NamedTextColor.GREEN)
                     )
                     .amount(1)
                     .build();

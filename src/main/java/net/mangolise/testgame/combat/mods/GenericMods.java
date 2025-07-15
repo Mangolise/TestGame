@@ -24,12 +24,13 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return ItemStack.builder(Material.IRON_SWORD)
+                    .customName(this.name())
                     .lore(
                             Component.text("+ Attacks twice", NamedTextColor.GREEN),
                             Component.text("- Damage multiplier: 0.5 + (0.1 per level)", NamedTextColor.RED)
                     )
                     .amount(2)
-                    .build();
+                    .maxStackSize(2).build();
         }
 
         @Override
@@ -56,12 +57,13 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return ItemStack.builder(Material.DIAMOND_SWORD)
+                    .customName(this.name())
                     .lore(
                             Component.text("+ Attacks three times", NamedTextColor.GREEN),
                             Component.text("- Damage multiplier: 0.33 + (0.1 per level)", NamedTextColor.RED)
                     )
                     .amount(3)
-                    .build();
+                    .maxStackSize(3).build();
         }
 
         @Override
@@ -89,12 +91,13 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return ItemStack.builder(Material.NETHERITE_SWORD)
+                    .customName(this.name())
                     .lore(
                             Component.text("+ Attacks four times", NamedTextColor.GREEN),
                             Component.text("- Damage multiplier: 0.25 + (0.1 per level)", NamedTextColor.RED)
                     )
                     .amount(4)
-                    .build();
+                    .maxStackSize(4).build();
         }
 
         @Override
@@ -123,9 +126,10 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return ItemStack.builder(Material.AMETHYST_SHARD)
+                    .customName(this.name())
                     .lore(
                             Component.text("+ Converts crit chance into damage", NamedTextColor.GREEN),
-                            Component.text("    Crit chance: 0.5 + (0.1 per level)", NamedTextColor.RED)
+                            Component.text("    Crit chance: 0.5 + (0.1 per level)", NamedTextColor.GREEN)
                     )
                     .build();
         }
@@ -155,6 +159,7 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return ItemStack.builder(Material.GOLD_INGOT)
+                    .customName(this.name())
                     .lore(
                             Component.text("+ Adds to crit chance", NamedTextColor.GREEN),
                             Component.text("    Added crit chance: 20% + (5% per level)", NamedTextColor.GREEN)
@@ -184,6 +189,7 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return ItemStack.builder(Material.LEATHER_HORSE_ARMOR)
+                    .customName(this.name())
                     .lore(
                             Component.text("+ Reduces cooldown", NamedTextColor.GREEN),
                             Component.text("    Cooldown reduction: 30% + (10% per level)", NamedTextColor.GREEN)
@@ -213,7 +219,8 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.AMETHYST_SHARD)
+            return ItemStack.builder(Material.GOLD_NUGGET)
+                    .customName(this.name())
                     .lore(
                             Component.text("+ Deals multiple times more damage", NamedTextColor.GREEN),
                             Component.text("    Damage multiplier: 2.5 + (0.5 per level)", NamedTextColor.GREEN),
