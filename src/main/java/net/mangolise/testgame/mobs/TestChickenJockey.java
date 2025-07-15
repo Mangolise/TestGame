@@ -25,7 +25,9 @@ public class TestChickenJockey extends HostileEntity {
                         new FollowTargetGoal(this, Duration.ofSeconds(1).plus(Duration.ofMillis((long) (1000.0 * Math.random())))),
                         new MeleeAttackGoal(this, 1.0, Duration.ofSeconds(1))
                 ),
-                List.of()
+                List.of(
+                        new TargetTargetSelector(this)
+                )
         );
         
         // Create the rider entity (a zombie)
