@@ -29,7 +29,6 @@ public record SwordWeapon(int level) implements Weapon {
     @Override
     public void doWeaponAttack(List<Attack> attacks) {
         for (Attack attack : attacks) {
-            // next == null means that we perform the attack
             Player user = attack.getTag(SWORD_USER);
             if (user == null) {
                 throw new IllegalStateException("SwordWeapon attack called without a user set in the tags.");

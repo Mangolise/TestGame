@@ -15,8 +15,8 @@ import java.util.function.Consumer;
 
 public record MaceWeapon(int level) implements Weapon {
     public static final Tag<Player> MACE_USER = Tag.Transient("testgame.attack.mace.user");
-    public static final Tag<Boolean> IS_LAUNCH_ATTACK = Tag.Transient("testgame.attack.mace.is_launch_attack");
-    public static final Tag<Double> SLAM_RADIUS = Tag.Double("testgame.attack.mace.is_launch_attack").defaultValue(4.0);
+    public static final Tag<Boolean> IS_LAUNCH_ATTACK = Tag.Boolean("testgame.attack.mace.is_launch_attack");
+    public static final Tag<Double> SLAM_RADIUS = Tag.Double("testgame.attack.mace.slam_radius").defaultValue(3.5);
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
@@ -38,7 +38,6 @@ public record MaceWeapon(int level) implements Weapon {
     @Override
     public void doWeaponAttack(List<Attack> attacks) {
         for (Attack attack : attacks) {
-            // next == null means that we perform the attack
             Player user = attack.getTag(MACE_USER);
             if (user == null) {
                 throw new IllegalStateException("MaceWeapon attack called without a user set in the tags.");
@@ -47,7 +46,7 @@ public record MaceWeapon(int level) implements Weapon {
             Instance instance = user.getInstance();
 
             if (attack.getTag(IS_LAUNCH_ATTACK)) {
-                Collection<Entity> entities = instance.getNearbyEntities(user.getPosition(), 5);
+                Collection<Entity> entities = instance.getNearbyEntities(user.getPosition(), attack.getTag(SLAM_RADIUS));
 
                 for (Entity entity : entities) {
                     if (!(entity instanceof AttackableMob mob)) {

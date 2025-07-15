@@ -46,7 +46,6 @@ public record StaffWeapon(int level) implements Weapon {
         Set<UUID> chainedEntities = ConcurrentHashMap.newKeySet();
         
         for (Attack attack : attacks) {
-            // next == null means that we perform the attack
             Player user = attack.getTag(STAFF_USER);
             if (user == null) {
                 throw new IllegalStateException("StaffWeapon attack called without a user set in the tags.");
