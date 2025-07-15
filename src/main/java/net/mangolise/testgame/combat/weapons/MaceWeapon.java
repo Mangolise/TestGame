@@ -27,6 +27,8 @@ public record MaceWeapon(int level) implements Weapon {
             attack.setTag(Attack.DAMAGE, 12.0 + level * 0.5);
         }
 
+        attack.setTag(Attack.COOLDOWN, 1.5);
+
         // Mace has a base crit change of 0.1, and increases by 0.1 per level
         attack.setTag(Attack.CRIT_CHANCE, 0.1 + level * 0.1);
 
@@ -54,7 +56,7 @@ public record MaceWeapon(int level) implements Weapon {
 
                     Entity target = mob.asEntity();
 
-                    Vec newVel = target.getVelocity().withY(target.getVelocity().y() + 15);
+                    Vec newVel = target.getVelocity().withY(target.getVelocity().y() + 20);
                     target.setVelocity(newVel);
                     mob.applyAttack(DamageType.PLAYER_ATTACK, attack);
                 }
