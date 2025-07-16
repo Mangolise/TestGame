@@ -303,6 +303,8 @@ sealed public interface GenericMods extends Mod {
         }
     }
 
+    // Health Mods --------------------------------------------------------------------------
+
     sealed interface IncreaseHealth extends GenericMods permits CommonIncreaseHealth, RareIncreaseHealth, EpicIncreaseHealth {
         @Override
         default void onAdd(Entity entity) {
@@ -409,6 +411,118 @@ sealed public interface GenericMods extends Mod {
                     .customName(this.name())
                     .lore(
                             Component.text("+ Increase Health: +3.0 heart per level", NamedTextColor.GREEN)
+                    )
+                    .build();
+        }
+    }
+
+    // Base Damage Mods --------------------------------------------------------------------------
+
+    // TODO: this doesnt work at time of creation, weapons do not support adding global damage, they set it on attack. when that issue is fixed fix this.
+    sealed interface IncreaseDamage extends GenericMods permits CommonIncreaseDamage, RareIncreaseDamage, EpicIncreaseDamage {
+        @Override
+        default void onAdd(Entity entity) {
+            if (!(entity instanceof LivingEntity mob)) {
+                return;
+            }
+
+            mob.getAndUpdateTag(Attack.DAMAGE, damage -> damage + getDamageAmount());
+        }
+
+        String getId();
+        double getDamageAmount();
+
+        @Override
+        default void onRemove(Entity entity) {
+            if (!(entity instanceof LivingEntity mob)) {
+                return;
+            }
+
+            mob.getAndUpdateTag(Attack.DAMAGE, damage -> damage - getDamageAmount());
+        }
+
+        @Override
+        default double priority() {
+            return PRIORITY_ADDITIVE_MODIFIER;
+        }
+    }
+
+    record CommonIncreaseDamage(int level) implements IncreaseDamage {
+        @Override
+        public String getId() {
+            return "common_damage_mod";
+        }
+
+        @Override
+        public double getDamageAmount() {
+            return 2 * (level + 1);
+        }
+
+        @Override
+        public Rarity rarity() {
+            return Rarity.COMMON;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.IRON_INGOT)
+                    .customName(this.name())
+                    .lore(
+                            Component.text("+ Increase Damage: +1.0 damage per level", NamedTextColor.GREEN)
+                    )
+                    .build();
+        }
+    }
+
+    record RareIncreaseDamage(int level) implements IncreaseDamage {
+        @Override
+        public String getId() {
+            return "rare_damage_mod";
+        }
+
+        @Override
+        public double getDamageAmount() {
+            return 4 * (level + 1);
+        }
+
+        @Override
+        public Rarity rarity() {
+            return Rarity.RARE;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.DIAMOND)
+                    .customName(this.name())
+                    .lore(
+                            Component.text("+ Increase Damage: +2.0 damage per level", NamedTextColor.GREEN)
+                    )
+                    .build();
+        }
+    }
+
+    record EpicIncreaseDamage(int level) implements IncreaseDamage {
+        @Override
+        public String getId() {
+            return "epic_damage_mod";
+        }
+
+        @Override
+        public double getDamageAmount() {
+            return 6 * (level + 1);
+        }
+
+        @Override
+        public Rarity rarity() {
+            return Rarity.EPIC;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.NETHERITE_INGOT)
+                    .customName(this.name())
+                    .lore(
+                            Component.text("+ Increase Damage: +3.0 damage per level", NamedTextColor.GREEN)
                     )
                     .build();
         }
