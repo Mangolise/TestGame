@@ -47,10 +47,6 @@ public final class AttackSystemImpl implements AttackSystem {
         Map<Class<? extends Mod>, Mod> modifiers = modifierNodes.computeIfAbsent(entity, k -> new HashMap<>());
         Mod mod = modifiers.get(modClass);
 
-        if (mod.level() >= mod.maxLevel()) {
-            throw new IllegalArgumentException("Mod is already max level.");
-        }
-
         mod.onRemove(entity);
 
         Mod newMod = Mod.getFactory(modClass).create(levelSupplier.apply(mod));

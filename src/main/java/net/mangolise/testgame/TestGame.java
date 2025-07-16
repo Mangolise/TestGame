@@ -9,11 +9,11 @@ import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.combat.AttackSystem;
-import net.mangolise.testgame.combat.mods.ModMenu;
+import net.mangolise.testgame.combat.mods.BundleMenu;
+import net.mangolise.testgame.combat.mods.ModMenuFeature;
 import net.mangolise.testgame.mobs.spawning.CompleteWaveEvent;
 import net.mangolise.testgame.mobs.spawning.WaveSystem;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
@@ -83,9 +83,9 @@ public class TestGame extends BaseGame<TestGame.Config> {
             joinPlayer(player);
         }
 
-        instance.eventNode().addListener(PlayerUseItemEvent.class, ModMenu::onItemUseEvent);
-        instance.eventNode().addListener(InventoryPreClickEvent.class, ModMenu::onItemClickEvent);
-        instance.eventNode().addListener(InventoryCloseEvent.class, ModMenu::onInventoryCloseEvent);
+        instance.eventNode().addListener(PlayerUseItemEvent.class, BundleMenu::onItemUseEvent);
+        instance.eventNode().addListener(InventoryPreClickEvent.class, BundleMenu::onItemClickEvent);
+        instance.eventNode().addListener(InventoryCloseEvent.class, BundleMenu::onInventoryCloseEvent);
         instance.eventNode().addListener(ItemDropEvent.class, e -> {
             e.setCancelled(true);
         });
@@ -138,7 +138,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
         player.getInventory().clear();
 
         // TODO: remove this and make sure each weapon has a mod.
-        player.getInventory().addItemStack(ModMenu.createBundleItem(true));
+        player.getInventory().addItemStack(BundleMenu.createBundleItem(true));
         player.getInventory().setItemStack(6, ItemStack.of(Material.SKELETON_SPAWN_EGG));
         player.getInventory().setItemStack(7, ItemStack.of(Material.CHICKEN_SPAWN_EGG));
         player.getInventory().setItemStack(8, ItemStack.of(Material.ZOMBIE_SPAWN_EGG));
@@ -172,7 +172,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
         return List.of(
                 new NoCollisionFeature(),
                 new FindTheButtonFeature(),
-                new ItemPickupFeature()
+                new ItemPickupFeature(),
+                new ModMenuFeature()
         );
     }
 

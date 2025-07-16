@@ -5,7 +5,7 @@ import net.kyori.adventure.sound.Sound;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.mods.Mod;
-import net.mangolise.testgame.combat.mods.ModMenu;
+import net.mangolise.testgame.combat.mods.BundleMenu;
 import net.mangolise.testgame.util.Throttler;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
@@ -13,15 +13,12 @@ import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
-import net.minestom.server.entity.metadata.item.ItemEntityMeta;
 import net.minestom.server.event.entity.EntityDespawnEvent;
-import net.minestom.server.event.item.PickupItemEvent;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.registry.RegistryKey;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
-import java.util.Set;
 
 public abstract non-sealed class HostileEntity extends EntityCreature implements AttackableMob {
     public HostileEntity(@NotNull EntityType entityType) {
@@ -138,7 +135,7 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
         double random = Math.random();
 
         if (isDead && random <= 0.1) {
-            ItemEntity itemEntity = GameSdkUtils.dropItem(instance, this.position, ModMenu.createBundleItem(false));
+            ItemEntity itemEntity = GameSdkUtils.dropItem(instance, this.position, BundleMenu.createBundleItem(false));
             itemEntity.setPickable(true);
             itemEntity.setGlowing(true);
 
@@ -154,7 +151,7 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
     private Entity createDisplayEntity(ItemEntity itemEntity) {
         Entity entity = new Entity(EntityType.BLOCK_DISPLAY);
 
-        Mod.Rarity rarity = itemEntity.getItemStack().getTag(ModMenu.BUNDLE_RARITY);
+        Mod.Rarity rarity = itemEntity.getItemStack().getTag(BundleMenu.BUNDLE_RARITY);
 
         Vec scale = new Vec(0.1, 50, 0.1);
 
