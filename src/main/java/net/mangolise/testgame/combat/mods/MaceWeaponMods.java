@@ -89,4 +89,44 @@ public sealed interface MaceWeaponMods extends Mod {
             return PRIORITY_ADDITIVE_MODIFIER;
         }
     }
+
+    record SwingRadius(int level) implements MaceWeaponMods {
+        @Override
+        public int maxLevel() {
+            return 6;
+        }
+
+        @Override
+        public Rarity rarity() {
+            return Rarity.COMMON;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.FIREWORK_STAR)
+                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
+                    .lore(
+                            Component.text("Mace: +0.5 Blocks Swing Radius", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                    )
+                    .amount(1)
+                    .build();
+        }
+
+        @Override
+        public List<Weapon> getWeaponGrants() {
+            return List.of(new MaceWeapon());
+        }
+
+        @Override
+        public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
+            double swingRadius = 2.0 + (level * 0.5);
+            attack.updateTag(MaceWeapon.SWING_RADIUS, slamRad -> slamRad + swingRadius);
+            next.accept(attack);
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_ADDITIVE_MODIFIER;
+        }
+    }
 }
