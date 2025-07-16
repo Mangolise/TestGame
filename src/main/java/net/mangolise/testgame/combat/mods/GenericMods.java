@@ -7,6 +7,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.SnakeWeapon;
 import net.mangolise.testgame.mobs.JacobEntity;
+import net.minestom.server.component.DataComponent;
+import net.minestom.server.component.DataComponents;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.entity.Player;
@@ -15,6 +17,8 @@ import net.minestom.server.entity.attribute.AttributeModifier;
 import net.minestom.server.entity.attribute.AttributeOperation;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.component.PotionContents;
+import net.minestom.server.potion.PotionType;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -341,6 +345,11 @@ sealed public interface GenericMods extends Mod {
         }
 
         @Override
+        public int maxLevel() {
+            return 6;
+        }
+
+        @Override
         public double getHealthAmount() {
             return 2 * (level + 1);
         }
@@ -365,6 +374,11 @@ sealed public interface GenericMods extends Mod {
         @Override
         public String getId() {
             return "rare_max_health_mod";
+        }
+
+        @Override
+        public int maxLevel() {
+            return 4;
         }
 
         @Override
@@ -396,7 +410,12 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public double getHealthAmount() {
-            return 6 * (level + 1);
+            return 8 * (level + 1);
+        }
+
+        @Override
+        public int maxLevel() {
+            return 2;
         }
 
         @Override
@@ -439,6 +458,11 @@ sealed public interface GenericMods extends Mod {
         }
 
         @Override
+        public int maxLevel() {
+            return 6;
+        }
+
+        @Override
         public Rarity rarity() {
             return Rarity.COMMON;
         }
@@ -461,6 +485,11 @@ sealed public interface GenericMods extends Mod {
         }
 
         @Override
+        public int maxLevel() {
+            return 4;
+        }
+
+        @Override
         public Rarity rarity() {
             return Rarity.RARE;
         }
@@ -479,7 +508,12 @@ sealed public interface GenericMods extends Mod {
     record EpicIncreaseDamage(int level) implements IncreaseDamage {
         @Override
         public double getDamageAmount() {
-            return 6 * (level + 1);
+            return 8 * (level + 1);
+        }
+
+        @Override
+        public int maxLevel() {
+            return 2;
         }
 
         @Override
@@ -495,6 +529,107 @@ sealed public interface GenericMods extends Mod {
                             Component.text("+ Increase Damage: +3.0 damage per level", NamedTextColor.GREEN)
                     )
                     .build();
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------
+
+    record GlassCannon(int level) implements GenericMods {
+        @Override
+        public Rarity rarity() {
+            return Rarity.EPIC;
+        }
+
+        @Override
+        public int maxLevel() {
+            return 100;
+        }
+
+        @Override
+        public void onAdd(Entity entity) {
+            if (!(entity instanceof LivingEntity mob)) {
+                return;
+            }
+
+            mob.getAttribute(Attribute.MAX_HEALTH).addModifier(new AttributeModifier("glass_cannon_mod",
+                    (0.5 / (level + 1.0)) - 1.0, AttributeOperation.ADD_MULTIPLIED_TOTAL)
+            );
+        }
+
+        @Override
+        public void onRemove(Entity entity) {
+            if (!(entity instanceof LivingEntity mob)) {
+                return;
+            }
+
+            mob.getAttribute(Attribute.MAX_HEALTH).removeModifier(Key.key("glass_cannon_mod"));
+        }
+
+        @Override
+        public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
+            attack.updateTag(Attack.DAMAGE, damage -> damage * (1.5 * (level + 1.0)));
+            next.accept(attack);
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.POTION)
+                    .customName(this.name())
+                    .lore(
+                            Component.text("+50% damage", NamedTextColor.GREEN),
+                            Component.text("-50% max health", NamedTextColor.RED)
+                    )
+                    .set(DataComponents.POTION_CONTENTS, new PotionContents(PotionType.STRENGTH))
+                    .hideExtraTooltip()
+                    .build();
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_MULTIPLICATIVE_MODIFIER;
+        }
+    }
+
+    record GamblersDice(int level) implements GenericMods {
+        @Override
+        public int maxLevel() {
+            return 1;
+        }
+
+        @Override
+        public Rarity rarity() {
+            return Rarity.EPIC;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.RABBIT_HIDE)
+                    .customName(this.name())
+                    .lore(
+                            Component.text("20% chance to deal 300% of current damage", NamedTextColor.GREEN),
+                            Component.text("or", NamedTextColor.GRAY),
+                            Component.text("20% chance to deal 30% of current damage", NamedTextColor.RED)
+                    )
+                    .hideExtraTooltip()
+                    .build();
+        }
+
+        @Override
+        public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
+            double random = Math.random();
+
+            if (random <= 0.2) {
+                attack.updateTag(Attack.DAMAGE, damage -> damage * 3);
+            } else if (random <= 0.4) {
+                attack.updateTag(Attack.DAMAGE, damage -> damage * 0.3);
+            }
+
+            next.accept(attack);
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_MULTIPLICATIVE_MODIFIER;
         }
     }
 }
