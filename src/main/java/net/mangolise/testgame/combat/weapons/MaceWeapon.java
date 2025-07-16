@@ -38,6 +38,11 @@ public record MaceWeapon() implements Weapon {
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
+        
+        if (!attack.hasTag(IS_LAUNCH_ATTACK)) {
+            throw new IllegalStateException("MaceWeapon attack called without a launch attack tag set in the tags.");
+        }
+        
         if (attack.getTag(IS_LAUNCH_ATTACK)) {
             attack.setTag(Attack.DAMAGE, 8.0);
         } else {

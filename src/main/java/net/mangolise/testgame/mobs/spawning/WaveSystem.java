@@ -2,10 +2,14 @@ package net.mangolise.testgame.mobs.spawning;
 
 import net.kyori.adventure.text.Component;
 import net.mangolise.testgame.combat.Attack;
+import net.mangolise.testgame.combat.AttackSystem;
+import net.mangolise.testgame.combat.mods.GenericMods;
 import net.mangolise.testgame.combat.mods.Mod;
+import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.mobs.MeleeJockeyMob;
 import net.mangolise.testgame.mobs.MeleeMob;
+import net.mangolise.testgame.mobs.ShooterMob;
 import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.attribute.Attribute;
@@ -30,10 +34,10 @@ public class WaveSystem {
         // Wave strength increases the strength of mobs (and to a certain extent, the number of mobs) in a wave.
         // We want it to scale exponentially, but allow players to survive at first.
         // This will likely need lots of tweaking.
-        double wavesMultiplier = 1.5; // increase to make waves stronger faster
+        double wavesMultiplier = 3.0; // increase to make waves stronger faster
         double timeMultiplier = 32.0; // number of seconds until your time multiplier goes to 1.0
         
-        double wavesComponent = Math.pow(wavesMultiplier, finishedWaves);
+        double wavesComponent = 3.0 + Math.pow(wavesMultiplier, finishedWaves);
         double timeComponent = Math.max(1.0, timeMultiplier / (msSinceStart * 0.001 + 1.0));
         
         if (timeComponent > 1.0) {
@@ -108,7 +112,7 @@ public class WaveSystem {
         for (AttackableMob mob : mobs) {
             mob.asEntity().getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(1.0 + (currentWave * 0.5));
             mob.asEntity().getAttribute(Attribute.MAX_HEALTH).setBaseValue(10.0 + (currentWave * 2.0));
-            mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_boost", 0.1 * currentWave, AttributeOperation.ADD_VALUE));
+            mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_boost", Math.pow(1.01, strength) - 1.8, AttributeOperation.ADD_MULTIPLIED_BASE));
 
             mob.asEntity().scheduler().scheduleTask(() -> {
                 // after 30 seconds, make them glowing
@@ -153,6 +157,18 @@ public class WaveSystem {
     }
     
     private EntitySelection sampleEntity(double strength) {
+        while (strength > 16.0) {
+            var warden = new MeleeMob(EntityType.WARDEN);
+            warden.weapon = new MaceWeapon();
+
+            AttackSystem.instance(instance).add(warden, new GenericMods.DoubleAttack(3));
+            AttackSystem.instance(instance).add(warden, new GenericMods.TripleAttack(3));
+            
+            warden.getAttribute(Attribute.MAX_HEALTH).setBaseValue(128.0);
+            warden.heal();
+
+            return new EntitySelection(warden, 5.0);
+        }
         while (strength > 4.0) {
             if (Math.random() < 0.5) {
                 return new EntitySelection(new MeleeJockeyMob(EntityType.CAMEL, EntityType.CREEPER), 1.0);

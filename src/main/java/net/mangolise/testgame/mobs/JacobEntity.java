@@ -2,6 +2,7 @@ package net.mangolise.testgame.mobs;
 
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.AttackSystem;
+import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.mangolise.testgame.util.Utils;
 import net.minestom.server.entity.Entity;
@@ -9,6 +10,8 @@ import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.ai.goal.FollowTargetGoal;
 import net.minestom.server.entity.ai.goal.MeleeAttackGoal;
 import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.entity.attribute.AttributeModifier;
+import net.minestom.server.entity.attribute.AttributeOperation;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
@@ -18,11 +21,13 @@ public class JacobEntity extends HostileEntity implements PlayerTeam {
     
     private final Weapon weapon;
     private final Attack attack;
+    private final int ticksToLive;
     
-    public JacobEntity(Weapon weapon, Attack attack) {
+    public JacobEntity(Weapon weapon, Attack attack, int ticksToLive) {
         super(EntityType.GOAT);
         this.weapon = weapon;
         this.attack = attack;
+        this.ticksToLive = ticksToLive;
 
         this.getAttribute(Attribute.MAX_HEALTH).setBaseValue(5.0);
 
@@ -40,8 +45,17 @@ public class JacobEntity extends HostileEntity implements PlayerTeam {
 
     @Override
     public void doTickUpdate(long time) {
-        if (this.getTarget() == null) {
-            
+        if (this.isDead()) {
+            return;
+        }
+        
+        // Shrink a little
+        double scale = 1.0 - (this.ticksToLive - this.getAliveTicks()) / (double) this.ticksToLive;
+        this.getAttribute(Attribute.SCALE).addModifier(new AttributeModifier("old_age", -scale, AttributeOperation.ADD_VALUE));
+
+        if (this.ticksToLive <= this.getAliveTicks()) {
+            // If the entity has reached it's time to live, DIE
+            this.remove();
         }
     }
 
@@ -50,6 +64,7 @@ public class JacobEntity extends HostileEntity implements PlayerTeam {
         AttackSystem.instance(this.instance).use(this, weapon, tags -> {
             tags.setTag(Attack.USER, this);
             tags.setTag(Attack.TARGET, target);
+            tags.setTag(MaceWeapon.IS_LAUNCH_ATTACK, true);
         });
     }
 }

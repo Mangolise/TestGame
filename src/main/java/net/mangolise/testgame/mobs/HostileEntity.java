@@ -61,6 +61,10 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
 
         Throttler.useTime(this.instance, "testgame.hostileentity.tick", 40, () -> {
             try {
+                if (this.getTarget() != null && this.getTarget().isRemoved()) {
+                    // if the target is removed, clear it
+                    this.setTarget(null);
+                }
                 super.tick(time);
             } catch (NullPointerException e) {
                 // TODO: (after the jam) report this bug
@@ -71,6 +75,8 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
                     // this is a known issue, we can safely ignore it
                     return;
                 }
+                // rethrow the exception if it's not the known issue
+                throw e;
             }
 
             var instance = this.getInstance();

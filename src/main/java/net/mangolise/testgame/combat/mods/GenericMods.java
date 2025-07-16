@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.Attack;
+import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.combat.weapons.SnakeWeapon;
 import net.mangolise.testgame.mobs.JacobEntity;
 import net.minestom.server.component.DataComponent;
@@ -284,7 +285,8 @@ sealed public interface GenericMods extends Mod {
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
                             Component.text("Jacob joins your side", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("    1.5 + (0.5 per level) Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            Component.text("    1.5 + (0.5 per level) Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("    2 + (2 per level) Seconds to live", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
                     )
                     .build();
         }
@@ -294,20 +296,24 @@ sealed public interface GenericMods extends Mod {
             // still do the normal attack
             next.accept(attack);
             
-            // Every time we attack, spawn a jacob entity with the same weapon
+            if (attack.sampleCrits() == 0) {
+                return; // no crits, no jacob
+            }
+
+            // Every time we crit, spawn a jacob entity with the same weapon
             double damageMultiplier = 1.5 + level * 0.5;
             Attack jacobAttack = attack.copy(true);
             jacobAttack.updateTag(Attack.DAMAGE, damage -> damage * damageMultiplier);
             var user = attack.getTag(Attack.USER);
             
             // TODO: get the user's weapon via a new Attack.WEAPON tag
-            JacobEntity jacob = new JacobEntity(new SnakeWeapon(), attack);
+            JacobEntity jacob = new JacobEntity(new MaceWeapon(), attack, (level * 2) * 20);
             jacob.setInstance(user.getInstance(), user.getPosition());
         }
 
         @Override
         public double priority() {
-            return PRIORITY_STAT_MODIFIER;
+            return PRIORITY_POST_MODIFIER;
         }
     }
 

@@ -14,9 +14,13 @@ import net.mangolise.testgame.combat.mods.ModMenuFeature;
 import net.mangolise.testgame.mobs.spawning.CompleteWaveEvent;
 import net.mangolise.testgame.mobs.spawning.WaveSystem;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
+import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.entity.pathfinding.NavigableEntity;
+import net.minestom.server.event.entity.EntityTickEvent;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.item.ItemDropEvent;
@@ -26,7 +30,9 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.registry.RegistryKey;
+import net.minestom.server.tag.Tag;
 import net.minestom.server.world.DimensionType;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -91,14 +97,73 @@ public class TestGame extends BaseGame<TestGame.Config> {
         });
         instance.eventNode().addListener(CompleteWaveEvent.class, e -> {
             e.getInstance().sendMessage(Component.text("Wave " + e.getWaveNumber() + " completed!"));
+            for (Player player : e.getInstance().getPlayers()) {
+                player.heal();
+            }
+
+            for (Entity entity : e.getInstance().getEntities()) {
+                if (entity instanceof ItemEntity item) {
+                    // tp to random player
+                    Player randomPlayer = e.getInstance().getPlayers().stream()
+                            .skip((int) (Math.random() * e.getInstance().getPlayers().size()))
+                            .findFirst()
+                            .orElse(null);
+                    
+                    if (randomPlayer != null) {
+                        item.teleport(randomPlayer.getPosition().add(0, 1, 0));
+                    }
+                }
+            }
         });
+        instance.eventNode().addListener(EntityTickEvent.class, this::tickEntity);
 
         super.setup();  // do this after the instance is set up so that features can access it
-        
+
         // Start the wave system
         WaveSystem.from(instance).start();
-        
+
         Log.logger().info("Started game");
+    }
+
+    private record NavigationInfo(Point pos, Point goal, int ticks) {}
+    private static final Tag<NavigationInfo> NAVIGATION_INFO = Tag.Transient("testgame.navigation_info");
+
+    private void tickEntity(@NotNull EntityTickEvent entityTickEvent) {
+        Entity entity = entityTickEvent.getEntity();
+        if (!(entity instanceof NavigableEntity navigable)) {
+            return;
+        }
+        
+        var goalPos = navigable.getNavigator().getGoalPosition();
+        if (goalPos == null || entity.isRemoved()) {
+            // If the entity has no goal or is removed, we don't need to do anything
+            return;
+        }
+
+        // prevent navigating entities from being stuck
+        NavigationInfo info = entity.getTag(NAVIGATION_INFO);
+
+        if (info == null) {
+            entity.setTag(NAVIGATION_INFO, new NavigationInfo(entity.getPosition(), goalPos, 0));
+            return;
+        }
+
+        if (info.ticks() > 20) {
+            // apply random movement to prevent being stuck
+            entity.setVelocity(new Vec(8 * (Math.random() - 0.5), 8 * Math.random(), 8 * (Math.random() - 0.5)));
+            // reset the navigation info
+            entity.setTag(NAVIGATION_INFO, new NavigationInfo(entity.getPosition(), goalPos, 0));
+            return;
+        }
+
+        if (!goalPos.sameBlock(info.goal())) {
+            // reset the navigation info if the goal has changed
+            entity.setTag(NAVIGATION_INFO, new NavigationInfo(entity.getPosition(), goalPos, 0));
+            return;
+        }
+
+        // increment the ticks
+        entity.setTag(NAVIGATION_INFO, new NavigationInfo(info.pos(), info.goal(), info.ticks() + 1));
     }
 
     public void end() {
