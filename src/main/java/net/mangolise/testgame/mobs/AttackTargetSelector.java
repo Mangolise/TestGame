@@ -1,9 +1,9 @@
 package net.mangolise.testgame.mobs;
 
-import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.util.Utils;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityCreature;
+import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.entity.ai.TargetSelector;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +31,8 @@ public class AttackTargetSelector extends TargetSelector {
 
         // find the closest attackable mob and set it as target
         var attackable = Utils.fastClosestEntity(entityCreature.getInstance(), entityCreature.getPosition(),
-                entity -> entity instanceof AttackableMob mob && shouldTarget.test(mob));
+                entity -> entity instanceof AttackableMob mob && shouldTarget.test(mob) &&
+                entity instanceof LivingEntity living && !living.isDead());
         lastTargetUpdate = currentTime + (long) (Math.random() * TARGET_UPDATE_INTERVAL); // randomize a bit to avoid updating every entity at the same time
         entityCreature.setTarget(attackable);
         return attackable;

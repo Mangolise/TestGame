@@ -45,8 +45,7 @@ public class ShooterMob extends HostileEntity {
                         rangedGoal
                 ),
                 List.of(
-                        // TODO: after yummy food on toast (jam) Make a guthib issue to make this not needed
-                        new TargetTargetSelector(this)
+                        new AttackTargetSelector(this, entity -> entity instanceof PlayerTeam)
                 )
         );
     }

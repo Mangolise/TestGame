@@ -7,7 +7,6 @@ import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
-import net.minestom.server.entity.ai.goal.FollowTargetGoal;
 import net.minestom.server.entity.ai.goal.MeleeAttackGoal;
 import net.minestom.server.instance.Instance;
 import org.jetbrains.annotations.NotNull;
@@ -26,11 +25,11 @@ public class MeleeJockeyMob extends HostileEntity {
 
         this.addAIGroup(
                 List.of(
-                        new FollowTargetGoal(this, Duration.ofSeconds(1).plus(Duration.ofMillis((long) (1000.0 * Math.random())))),
+                        new FollowTargetFixedGoal(this, Duration.ofSeconds(1).plus(Duration.ofMillis((long) (1000.0 * Math.random())))),
                         new MeleeAttackGoal(this, 1.0, Duration.ofSeconds(1))
                 ),
                 List.of(
-                        new TargetTargetSelector(this)
+                        new AttackTargetSelector(this, entity -> entity instanceof PlayerTeam)
                 )
         );
         
