@@ -28,9 +28,20 @@ public class ModMenu {
     public static Tag<Mod.Rarity> BUNDLE_RARITY = Tag.String("testgame.modmenu.rarity").map(Mod.Rarity::valueOf, Mod.Rarity::name);
     public static Tag<Boolean> BUNDLE_INVENTORY = Tag.Boolean("testgame.modmenu.bundle_inventory").defaultValue(false);
     public static Tag<Boolean> IS_BARRIER = Tag.Boolean("testgame.modmenu.is_barrier").defaultValue(false);
+    public static Tag<Boolean> IS_WEAPON_BUNDLE = Tag.Boolean("testgame.modmenu.is_weapon_bundle").defaultValue(false);
     public static Tag<Mod> ITEM_MOD = Tag.Component("testgame.modmenu.item_mod").map(c -> Mod.values().stream().filter(a -> a.create(0).name().equals(c)).findAny().get().create(0), Mod::name);
 
-    public static ItemStack createBundleItem() {
+    public static ItemStack createBundleItem(boolean isWeaponBundle) {
+        if (isWeaponBundle) {
+            var rarity = Mod.Rarity.EPIC;
+            return ItemStack.builder(Material.PURPLE_BUNDLE)
+                    .customName(Component.text("Epic Weapon Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
+                    .maxStackSize(64)
+                    .build()
+                    .withTag(IS_WEAPON_BUNDLE, true)
+                    .withTag(BUNDLE_RARITY, rarity);
+        }
+
         double randomNum = Math.random();
 
         if (randomNum <= 0.15) {
@@ -134,12 +145,23 @@ public class ModMenu {
         List<Mod> selectedMods = new ArrayList<>();
 
         while (selectedMods.size() < 3) {
-            Mod mod = sampleUpgrade(item, player, selectedMods);
-            if (mod == null) {
-                break;
-            }
+            if (item.hasTag(IS_WEAPON_BUNDLE)) {
+                Mod weaponMod = sampleWeaponUpgrade();
+                if (weaponMod == null) {
+                    break;
+                }
 
-            selectedMods.add(mod);
+                if (!selectedMods.contains(weaponMod)) {
+                    selectedMods.add(weaponMod);
+                }
+            } else {
+                Mod mod = sampleUpgrade(item, player, selectedMods);
+                if (mod == null) {
+                    break;
+                }
+
+                selectedMods.add(mod);
+            }
         }
 
         for (int i = 0; i < selectedMods.size(); i++) {
@@ -153,6 +175,21 @@ public class ModMenu {
                 .build().withTag(IS_BARRIER, true)
         );
         player.openInventory(inventory);
+    }
+
+    private static Mod sampleWeaponUpgrade() {
+        List<Mod> mods = new ArrayList<>();
+
+        for (Mod.Factory value : Mod.values()) {
+            if (value.create(0).getWeaponGrants().isEmpty()) {
+                continue;
+            }
+
+            mods.add(value.create(0));
+        }
+
+        double randomValue = Math.random() * mods.size();
+        return mods.get((int) randomValue);
     }
 
     private static final Map<Mod.Rarity, Map<Mod.Rarity, Number>> rarityToRarityDropChance = Map.ofEntries(

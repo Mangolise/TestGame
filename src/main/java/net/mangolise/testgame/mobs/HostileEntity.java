@@ -138,7 +138,7 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
         double random = Math.random();
 
         if (isDead && random <= 0.1) {
-            ItemEntity itemEntity = GameSdkUtils.dropItem(instance, this.position, ModMenu.createBundleItem());
+            ItemEntity itemEntity = GameSdkUtils.dropItem(instance, this.position, ModMenu.createBundleItem(false));
             itemEntity.setPickable(true);
             itemEntity.setGlowing(true);
 

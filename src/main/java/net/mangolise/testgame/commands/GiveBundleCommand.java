@@ -15,7 +15,7 @@ public class GiveBundleCommand extends Command {
             }
 
             for (int i = 0; i < 64; i++) {
-                player.getInventory().addItemStack(ModMenu.createBundleItem());
+                player.getInventory().addItemStack(ModMenu.createBundleItem(false));
             }
         });
     }
