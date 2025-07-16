@@ -2,6 +2,7 @@ package net.mangolise.testgame.combat.mods;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
@@ -23,10 +24,10 @@ public sealed interface MaceWeaponMods extends Mod {
         @Override
         public ItemStack item() {
             return ItemStack.builder(Material.MACE)
-                    .customName(this.name())
+                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+ Slam Radius: +1 block per level", NamedTextColor.GREEN),
-                            Component.text("- Damage: -0.5 damage", NamedTextColor.RED)
+                            Component.text("+1 Block Slam Range", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("-0.5 Damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .amount(1)
                     .build();
@@ -60,11 +61,11 @@ public sealed interface MaceWeaponMods extends Mod {
         @Override
         public ItemStack item() {
             return ItemStack.builder(Material.FIRE_CHARGE)
-                    .customName(this.name())
+                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+ Slam Intensity: +5 velocity per level", NamedTextColor.GREEN),
-                            Component.text("+ Damage: +1.5 damage", NamedTextColor.GREEN),
-                            Component.text("- Cooldown: +0.5 second increase", NamedTextColor.RED)
+                            Component.text("+5 Slam Velocity", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("+1.5 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("+0.5 Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .amount(1)
                     .build();

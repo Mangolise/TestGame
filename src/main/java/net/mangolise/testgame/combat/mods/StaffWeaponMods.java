@@ -2,6 +2,7 @@ package net.mangolise.testgame.combat.mods;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.StaffWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
@@ -23,9 +24,9 @@ public sealed interface StaffWeaponMods extends Mod {
         @Override
         public ItemStack item() {
             return ItemStack.builder(Material.BREEZE_ROD)
-                    .customName(this.name())
+                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+ Arc Chance: +10% per level", NamedTextColor.GREEN)
+                            Component.text("Staff: +10% Arc Chance", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
                     )
                     .amount(1)
                     .build();
@@ -33,7 +34,7 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            double arcChance = 1.0 + level;
+            double arcChance = 1.0 + (level * 0.1);
             attack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + arcChance);
             next.accept(attack);
         }
@@ -58,10 +59,10 @@ public sealed interface StaffWeaponMods extends Mod {
         @Override
         public ItemStack item() {
             return ItemStack.builder(Material.NETHER_STAR)
-                    .customName(this.name())
+                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+ Arc Distance: +1.0 block per level", NamedTextColor.GREEN),
-                            Component.text("- Damage: -0.5 damage", NamedTextColor.RED)
+                            Component.text("Staff: +1.0 Block Arc Range", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("Staff: -0.5 Damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .amount(1)
                     .build();
@@ -74,7 +75,7 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            double arcRadius = 3.0 + level;
+            double arcRadius = 2.5 + level;
             attack.updateTag(StaffWeapon.ARC_RADIUS, arc -> arc + arcRadius);
             attack.updateTag(Attack.DAMAGE, damage -> damage - 0.5);
             next.accept(attack);

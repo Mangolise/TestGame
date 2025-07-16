@@ -73,7 +73,7 @@ public sealed interface Mod extends Attack.Node permits CannonBallBallWeaponMods
         public TextColor color() {
             return switch (this) {
                 case COMMON -> TextColor.color(NamedTextColor.GRAY);
-                case RARE -> TextColor.color(NamedTextColor.DARK_BLUE);
+                case RARE -> TextColor.color(TextColor.color(65, 118, 216));
                 case EPIC -> TextColor.color(NamedTextColor.LIGHT_PURPLE);
             };
         }
