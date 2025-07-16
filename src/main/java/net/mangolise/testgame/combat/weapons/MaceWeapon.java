@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 public record MaceWeapon(int level) implements Weapon {
     public static final Tag<Boolean> IS_LAUNCH_ATTACK = Tag.Boolean("testgame.attack.mace.is_launch_attack");
     public static final Tag<Double> SLAM_RADIUS = Tag.Double("testgame.attack.mace.slam_radius").defaultValue(3.5);
+    public static final Tag<Double> SLAM_INTENSITY = Tag.Double("testgame.attack.mace.slam_intensity").defaultValue(20.0);
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
@@ -56,7 +57,7 @@ public record MaceWeapon(int level) implements Weapon {
 
                     Entity target = mob.asEntity();
 
-                    Vec newVel = target.getVelocity().withY(target.getVelocity().y() + 20);
+                    Vec newVel = target.getVelocity().withY(target.getVelocity().y() + attack.getTag(SLAM_INTENSITY));
                     target.setVelocity(newVel);
                     mob.applyAttack(DamageType.PLAYER_ATTACK, attack);
                 }

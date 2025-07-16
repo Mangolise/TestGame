@@ -4,9 +4,11 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.AttackSystem;
+import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
@@ -50,6 +52,7 @@ public class ModMenu {
                     .customName(Component.text("Epic Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
                     .maxStackSize(64)
                     .build()
+                    .withTag(IS_WEAPON_BUNDLE, false)
                     .withTag(BUNDLE_RARITY, rarity);
         } else if (randomNum <= 0.5) {
             var rarity = Mod.Rarity.RARE;
@@ -57,6 +60,7 @@ public class ModMenu {
                     .customName(Component.text("Rare Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
                     .maxStackSize(64)
                     .build()
+                    .withTag(IS_WEAPON_BUNDLE, false)
                     .withTag(BUNDLE_RARITY, Mod.Rarity.RARE);
         }
 
@@ -65,6 +69,7 @@ public class ModMenu {
                 .customName(Component.text("Common Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
                 .maxStackSize(64)
                 .build()
+                .withTag(IS_WEAPON_BUNDLE, false)
                 .withTag(BUNDLE_RARITY, rarity);
     }
 
@@ -129,13 +134,28 @@ public class ModMenu {
                     .decoration(TextDecoration.ITALIC, false)
             );
 
-            for (Weapon weapon : mod.getWeaponGrants()) {
-                player.getInventory().addItemStack(weapon.getItem());
+            for (Weapon weaponToGrant : mod.getWeaponGrants()) {
+                boolean playerHasWeapon = false;
+
+                for (ItemStack inventoryStack : player.getInventory().getItemStacks()) {
+                    if (isWeapon(inventoryStack, weaponToGrant)) {
+                        playerHasWeapon = true;
+                        break;
+                    }
+                }
+
+                if (!playerHasWeapon) {
+                    player.getInventory().addItemStack(weaponToGrant.getItem());
+                }
             }
         }
 
         inv.removeTag(BUNDLE_INVENTORY);
         e.getPlayer().closeInventory();
+    }
+
+    private static boolean isWeapon(ItemStack item, Weapon weapon) {
+        return item.hasTag(Weapon.WEAPON_TAG) && item.getTag(Weapon.WEAPON_TAG).equals(weapon.getId());
     }
 
     public static void openModMenu(Player player, ItemStack item) {
@@ -145,7 +165,7 @@ public class ModMenu {
         List<Mod> selectedMods = new ArrayList<>();
 
         while (selectedMods.size() < 3) {
-            if (item.hasTag(IS_WEAPON_BUNDLE)) {
+            if (item.getTag(IS_WEAPON_BUNDLE)) {
                 Mod weaponMod = sampleWeaponUpgrade();
                 if (weaponMod == null) {
                     break;
@@ -169,11 +189,13 @@ public class ModMenu {
             inventory.setItemStack(i * 2 + 2, selectedMod.item().withTag(ITEM_MOD, selectedMod));
         }
 
-        inventory.setItemStack(8, ItemStack.builder(Material.BARRIER)
-                .customName(Component.text("No Upgrade").color(NamedTextColor.RED).decoration(TextDecoration.ITALIC, false))
-                .lore(Component.text("Select this if you want no upgrades.").color(NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false))
-                .build().withTag(IS_BARRIER, true)
-        );
+        if (!item.getTag(IS_WEAPON_BUNDLE)) {
+            inventory.setItemStack(8, ItemStack.builder(Material.BARRIER)
+                    .customName(Component.text("No Upgrade").color(NamedTextColor.RED).decoration(TextDecoration.ITALIC, false))
+                    .lore(Component.text("Select this if you want no upgrades.").color(NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false))
+                    .build().withTag(IS_BARRIER, true)
+            );
+        }
         player.openInventory(inventory);
     }
 

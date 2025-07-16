@@ -13,7 +13,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-public sealed interface Mod extends Attack.Node permits GenericMods, SnakeWeaponMods, StaffWeaponMods {
+public sealed interface Mod extends Attack.Node permits GenericMods, SnakeWeaponMods, StaffWeaponMods, MaceWeaponMods {
 
     /**
      * The scaling factor for the experience needed to upgrade this mod
