@@ -151,8 +151,6 @@ public record CannonBallBallWeapon() implements Weapon {
 
             int consumeCount = IntStream.range(0, attackCopy.sampleCrits()).anyMatch(j -> Math.random() < scale * 0.5) ? 0 : 1;
 
-            ((Player)user).sendMessage(String.valueOf(consumeCount));
-
             ThrottledScheduler.use(instance, "cannonball-weapon-ball-attack", 4, () -> {
                 createCannonBall(user, instance, childAttack, position, velocity, new Vec(scale / CHILD_SCALE_MOD), splitCount - consumeCount, fallbackSplitCount - 1);
             });
