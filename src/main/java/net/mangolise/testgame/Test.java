@@ -1,6 +1,10 @@
 package net.mangolise.testgame;
 
+import net.kyori.adventure.text.Component;
 import net.mangolise.gamesdk.permissions.Permissions;
+import net.mangolise.gamesdk.tablist.CustomTabList;
+import net.mangolise.gamesdk.tablist.TabListEntry;
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.gamesdk.util.PerformanceTracker;
 import net.mangolise.testgame.commands.BenchmarkTestCommand;
@@ -15,10 +19,14 @@ import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.extras.bungee.BungeeCordProxy;
 import net.minestom.server.extras.velocity.VelocityProxy;
+import net.minestom.server.timer.TaskSchedule;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Test {
+
     public static void main(String[] args) {
         // Remove dumb Minestom limitations that are enabled by default.
         System.setProperty("minestom.packet-queue-size", "10000000");
@@ -37,6 +45,10 @@ public class Test {
             VelocityProxy.enable(secret);
         }
 
+        CustomTabList tabList = new CustomTabList();
+        tabList.setHeader(ChatUtil.toComponent("&6&lSome Game"));
+        tabList.setFooter(ChatUtil.toComponent("&7This is a Minestom game jam game.\n&7Please vote 5/5!"));
+
         MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {
             if (Arrays.stream(GameConstants.CREATORS).anyMatch(n -> n.equalsIgnoreCase(e.getPlayer().getUsername()))) {
                 Permissions.setPermission(e.getPlayer(), "*", true);
@@ -51,6 +63,14 @@ public class Test {
             e.getPlayer().updateViewableRule(p -> e.getPlayer().getGameMode() != GameMode.SPECTATOR);  // hide spectators
         });
 
+        MinecraftServer.getGlobalEventHandler().addListener(PlayerSpawnEvent.class, e -> {
+            Player p = e.getPlayer();
+            if (!e.isFirstSpawn()) return;
+
+            tabList.addPlayer(p);
+            tabList.update();
+        });
+
         MinecraftServer.getConnectionManager().setPlayerProvider(TestPlayer::new);
 
         TestGame.CreateRegistryEntries();
@@ -63,17 +83,41 @@ public class Test {
                 new GiveAllWeaponsCommand()
         );
 
-        boolean oneGame = System.getenv("ONE_GAME") != null && System.getenv("ONE_GAME").equalsIgnoreCase("true");
-        if (oneGame) {  // Start one game and join all players to it
-            TestGame game = new TestGame(new TestGame.Config(new Player[0]));
-            game.setup();
+        LobbyGame lobby = new LobbyGame(new LobbyGame.Config());
+        lobby.setup();
 
-            MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> e.setSpawningInstance(game.instance()));
-            MinecraftServer.getGlobalEventHandler().addListener(PlayerSpawnEvent.class, e -> game.joinPlayer(e.getPlayer()));
-        } else {  // Regular prod setup with lobby
-            LobbyGame lobby = new LobbyGame(new LobbyGame.Config());
-            lobby.setup();
-        }
+        tabList.setEntriesProvider(p -> {
+            List<TabListEntry> entries = new ArrayList<>();
+            for (Player op : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
+                Component text;
+
+                if (Permissions.hasPermission(op, "game.admin")) {
+                    text = ChatUtil.toComponent("&a" + op.getUsername() + " &7(Creator)");
+                } else if (Permissions.hasPermission(op, "game.minestomofficial")) {
+                    text = ChatUtil.toComponent("&b" + op.getUsername() + " &7(Minestom)");
+                } else {
+                    text = ChatUtil.toComponent("&7" + op.getUsername());
+                }
+
+                GameMode gameMode = p.getInstance() == op.getInstance() ? op.getGameMode() : GameMode.SPECTATOR;
+                entries.add(TabListEntry.text(text).withGameMode(gameMode).withUsername(op.getUsername()).withSkin(op.getSkin()));
+            }
+
+            // sort entries such that players not in spectator mode are at the top
+            entries.sort((e1, e2) -> {
+                boolean e1Spectator = e1.gameMode() == GameMode.SPECTATOR;
+                boolean e2Spectator = e2.gameMode() == GameMode.SPECTATOR;
+
+                if (e1Spectator && !e2Spectator) return 1; // e1 is spectator, e2 is not
+                if (!e1Spectator && e2Spectator) return -1; // e2 is spectator, e1 is not
+                return e1.username().compareToIgnoreCase(e2.username()); // sort by username
+            });
+
+            return entries;
+        });
+
+        // schedule to update every 2 seconds
+        MinecraftServer.getSchedulerManager().scheduleTask(tabList::update, TaskSchedule.seconds(2), TaskSchedule.seconds(2));
 
         server.start("0.0.0.0", GameSdkUtils.getConfiguredPort());
     }

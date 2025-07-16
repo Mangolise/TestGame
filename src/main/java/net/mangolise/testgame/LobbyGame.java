@@ -158,12 +158,6 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         }
         player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1);  // Set by the game, so we must manually reset it
         giveRegularItems(player);
-
-        if (Permissions.hasPermission(player, "game.admin")) {
-            player.sendMessage(ChatUtil.toComponent("&c&lYou have admin permissions!"));
-        } else if (Permissions.hasPermission(player, "game.minestomofficial")) {
-            player.sendMessage(ChatUtil.toComponent("&b&lWelcome to our game! You are a Minestom official!"));
-        }
     }
 
     @Override
@@ -198,8 +192,17 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         });
 
         world.eventNode().addListener(PlayerSpawnEvent.class, e -> {
+            if (!e.isFirstSpawn()) {
+                return;
+            }
             addPlayer(e.getPlayer());
             e.getPlayer().teleport(SPAWN);
+
+            if (Permissions.hasPermission(e.getPlayer(), "game.admin")) {
+                e.getPlayer().sendMessage(ChatUtil.toComponent("&c&lYou have admin permissions!"));
+            } else if (Permissions.hasPermission(e.getPlayer(), "game.minestomofficial")) {
+                e.getPlayer().sendMessage(ChatUtil.toComponent("&b&lWelcome to our game! You are a Minestom official!"));
+            }
         });
 
         world.eventNode().addListener(InventoryPreClickEvent.class, e -> {
