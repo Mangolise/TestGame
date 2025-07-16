@@ -90,9 +90,6 @@ public sealed interface Mod extends Attack.Node permits CannonBallBallWeaponMods
         for (Class<Mod> subClass : subClasses) {
             factories.add(getFactory(subClass));
         }
-
-        // You can remove this if you like, It's useful for keeping track of how many mods we have.
-        System.out.println("Total Mods: " + factories.size());
         return factories;
     }
 

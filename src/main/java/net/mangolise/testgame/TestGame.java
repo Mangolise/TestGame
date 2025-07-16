@@ -90,7 +90,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
             e.setCancelled(true);
         });
         instance.eventNode().addListener(CompleteWaveEvent.class, e -> {
-            Audiences.players().sendMessage(Component.text("Wave " + e.getWaveNumber() + " completed!"));
+            e.getInstance().sendMessage(Component.text("Wave " + e.getWaveNumber() + " completed!"));
         });
 
         super.setup();  // do this after the instance is set up so that features can access it

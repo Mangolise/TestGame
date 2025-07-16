@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class WaveSystem {
     
-    private static double waveStrength(int finishedWaves, int msSinceStart) {
+    private double waveStrength(int finishedWaves, int msSinceStart) {
         // Wave strength increases the strength of mobs (and to a certain extent, the number of mobs) in a wave.
         // We want it to scale exponentially, but allow players to survive at first.
         // This will likely need lots of tweaking.
@@ -38,7 +38,7 @@ public class WaveSystem {
         
         if (timeComponent > 1.0) {
             // If the time component is greater than 1.0, the players finished a wave early!
-            Audiences.players().sendMessage(Component.text("Wave " + (finishedWaves + 1) + " completed early! The next wave will be boosted!"));
+            instance.sendMessage(Component.text("Wave " + (finishedWaves + 1) + " completed early! The next wave will be boosted!"));
         }
         return 1.0 + (wavesComponent * timeComponent);
     }
@@ -93,7 +93,6 @@ public class WaveSystem {
         }
         
         // announce the number of mobs
-//        Audiences.players().sendMessage(Component.text("Wave " + (currentWave + 1) + " starting! " + mobs.size() + " mobs will spawn!"));
         Map<Class<? extends AttackableMob>, Integer> mobCount = mobs.stream()
                 .collect(Collectors.groupingBy(AttackableMob::getClass, Collectors.summingInt(mob -> 1)));
         StringBuilder mobCountMessage = new StringBuilder("Wave " + (currentWave + 1) + " (power " + String.format("%.2f", originalStrength) + ") starting! Mobs: ");
@@ -104,7 +103,7 @@ public class WaveSystem {
         if (mobCountMessage.length() > 0) {
             mobCountMessage.setLength(mobCountMessage.length() - 2);
         }
-        Audiences.players().sendMessage(Component.text(mobCountMessage.toString()));
+        instance.sendMessage(Component.text(mobCountMessage.toString()));
 
         for (AttackableMob mob : mobs) {
             mob.asEntity().getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(1.0 + (currentWave * 0.5));
