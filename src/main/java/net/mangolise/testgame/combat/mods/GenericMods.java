@@ -18,6 +18,7 @@ import net.minestom.server.entity.attribute.AttributeOperation;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.sound.SoundEvent;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
@@ -418,28 +419,14 @@ sealed public interface GenericMods extends Mod {
 
     // Base Damage Mods --------------------------------------------------------------------------
 
-    // TODO: this doesnt work at time of creation, weapons do not support adding global damage, they set it on attack. when that issue is fixed fix this.
     sealed interface IncreaseDamage extends GenericMods permits CommonIncreaseDamage, RareIncreaseDamage, EpicIncreaseDamage {
         @Override
-        default void onAdd(Entity entity) {
-            if (!(entity instanceof LivingEntity mob)) {
-                return;
-            }
-
-            mob.getAndUpdateTag(Attack.DAMAGE, damage -> damage + getDamageAmount());
+        default void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
+            attack.getAndUpdateTag(Attack.DAMAGE, damage -> damage + getDamageAmount());
+            next.accept(attack);
         }
 
-        String getId();
         double getDamageAmount();
-
-        @Override
-        default void onRemove(Entity entity) {
-            if (!(entity instanceof LivingEntity mob)) {
-                return;
-            }
-
-            mob.getAndUpdateTag(Attack.DAMAGE, damage -> damage - getDamageAmount());
-        }
 
         @Override
         default double priority() {
@@ -448,11 +435,6 @@ sealed public interface GenericMods extends Mod {
     }
 
     record CommonIncreaseDamage(int level) implements IncreaseDamage {
-        @Override
-        public String getId() {
-            return "common_damage_mod";
-        }
-
         @Override
         public double getDamageAmount() {
             return 2 * (level + 1);
@@ -476,11 +458,6 @@ sealed public interface GenericMods extends Mod {
 
     record RareIncreaseDamage(int level) implements IncreaseDamage {
         @Override
-        public String getId() {
-            return "rare_damage_mod";
-        }
-
-        @Override
         public double getDamageAmount() {
             return 4 * (level + 1);
         }
@@ -502,11 +479,6 @@ sealed public interface GenericMods extends Mod {
     }
 
     record EpicIncreaseDamage(int level) implements IncreaseDamage {
-        @Override
-        public String getId() {
-            return "epic_damage_mod";
-        }
-
         @Override
         public double getDamageAmount() {
             return 6 * (level + 1);
