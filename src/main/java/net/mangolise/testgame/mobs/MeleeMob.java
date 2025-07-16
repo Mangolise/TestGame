@@ -2,7 +2,7 @@ package net.mangolise.testgame.mobs;
 
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.AttackSystem;
-import net.mangolise.testgame.combat.weapons.SnakeWeapon;
+import net.mangolise.testgame.combat.weapons.DirectDamageWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
@@ -14,6 +14,8 @@ import java.time.Duration;
 import java.util.List;
 
 public class MeleeMob extends HostileEntity {
+    public Weapon weapon = new DirectDamageWeapon();
+
     public MeleeMob(EntityType type) {
         super(type);
 
@@ -33,8 +35,6 @@ public class MeleeMob extends HostileEntity {
     public void doTickUpdate(long time) {
     }
 
-    Weapon weapon = new SnakeWeapon();
-
     @Override
     public void attack(@NotNull Entity target, boolean swingHand) {
         super.attack(target, swingHand);
@@ -42,6 +42,7 @@ public class MeleeMob extends HostileEntity {
         AttackSystem.instance(target.getInstance()).use(this,weapon, tags -> {
             tags.setTag(Attack.USER, this);
             tags.setTag(Attack.TARGET, target);
+            tags.setTag(Attack.DAMAGE, 1.0);
         });
     }
 }

@@ -2,7 +2,7 @@ package net.mangolise.testgame.mobs;
 
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.AttackSystem;
-import net.mangolise.testgame.combat.weapons.CannonBallBallWeapon;
+import net.mangolise.testgame.combat.weapons.DirectDamageWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MeleeJockeyMob extends HostileEntity {
-    
+    public Weapon weapon = new DirectDamageWeapon();
     private final MeleeMob rider;
     
     public MeleeJockeyMob(EntityType type, EntityType passenger) {
@@ -58,8 +58,6 @@ public class MeleeJockeyMob extends HostileEntity {
     public void doTickUpdate(long time) {
     }
 
-    Weapon weapon = new CannonBallBallWeapon();
-
     @Override
     public void attack(@NotNull Entity target, boolean swingHand) {
         super.attack(target, swingHand);
@@ -67,6 +65,7 @@ public class MeleeJockeyMob extends HostileEntity {
         AttackSystem.instance(target.getInstance()).use(this, weapon, tags -> {
             tags.setTag(Attack.USER, this);
             tags.setTag(Attack.TARGET, target);
+            tags.setTag(Attack.DAMAGE, 1.0);
         });
     }
 
