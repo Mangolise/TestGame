@@ -15,24 +15,21 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-public record MaceWeapon(int level) implements Weapon {
+public record MaceWeapon() implements Weapon {
     public static final Tag<Boolean> IS_LAUNCH_ATTACK = Tag.Boolean("testgame.attack.mace.is_launch_attack");
     public static final Tag<Double> SLAM_RADIUS = Tag.Double("testgame.attack.mace.slam_radius").defaultValue(3.5);
     public static final Tag<Double> SLAM_INTENSITY = Tag.Double("testgame.attack.mace.slam_intensity").defaultValue(20.0);
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
-        // Mace has a base damage of 12.0, and increases by 0.5 per level
         if (attack.getTag(IS_LAUNCH_ATTACK)) {
-            attack.setTag(Attack.DAMAGE, 8.0 + level * 0.5);
+            attack.setTag(Attack.DAMAGE, 8.0);
         } else {
-            attack.setTag(Attack.DAMAGE, 12.0 + level * 0.5);
+            attack.setTag(Attack.DAMAGE, 12.0);
         }
 
         attack.setTag(Attack.COOLDOWN, 1.5);
-
-        // Mace has a base crit change of 0.1, and increases by 0.1 per level
-        attack.setTag(Attack.CRIT_CHANCE, 0.1 + level * 0.1);
+        attack.setTag(Attack.CRIT_CHANCE, 0.1);
 
         next.accept(attack);
     }

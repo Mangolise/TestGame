@@ -26,17 +26,14 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-public record StaffWeapon(int level) implements Weapon {
+public record StaffWeapon() implements Weapon {
     public static final Tag<Double> ARC_CHANCE = Tag.Double("testgame.attack.staff.arc_chance").defaultValue(0.5);
     public static final Tag<Double> ARC_RADIUS = Tag.Double("testgame.attack.staff.arc_radius").defaultValue(3.0);
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
-        // staff has a staff damage of 6, and increases by 0.5 per level
-        attack.setTag(Attack.DAMAGE, 6 + level * 0.5);
-
-        // staff has a base crit change of 0.5, and increases by 0.1 per level
-        attack.setTag(Attack.CRIT_CHANCE, 0.5 + level * 0.1);
+        attack.setTag(Attack.DAMAGE, 6.0);
+        attack.setTag(Attack.CRIT_CHANCE, 0.5);
 
         next.accept(attack);
     }
@@ -75,7 +72,7 @@ public record StaffWeapon(int level) implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.BLAZE_ROD).withTag(Weapon.WEAPON_TAG, getId());
+        return ItemStack.of(Material.BREEZE_ROD).withTag(Weapon.WEAPON_TAG, getId());
     }
 
     @Override

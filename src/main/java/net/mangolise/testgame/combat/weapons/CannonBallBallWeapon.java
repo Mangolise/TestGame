@@ -20,17 +20,21 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-public record CannonBallWeapon(int level) implements Weapon {
+public record CannonBallBallWeapon() implements Weapon {
+
+    public static final Tag<Integer> SPLIT_COUNT = Tag.Integer("testgame.attack.cannonballball.split_count").defaultValue(1);
+
     @Override
     public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-        attack.setTag(Attack.DAMAGE, 8.0 + level * 2.0);
-        attack.setTag(Attack.CRIT_CHANCE, 0.5 + level * 0.1);
-        attack.setTag(Attack.COOLDOWN, 1.0 - level * 0.2);
+        attack.setTag(Attack.DAMAGE, 8.0);
+        attack.setTag(Attack.CRIT_CHANCE, 0.5);
+        attack.setTag(Attack.COOLDOWN, 1.0);
 
         next.accept(attack);
     }
@@ -50,13 +54,13 @@ public record CannonBallWeapon(int level) implements Weapon {
             double inaccuracy = attacks.size() - 1.0; // more attacks, more inaccuracy
             velocity = velocity.add((Math.random() - 0.5) * inaccuracy, (Math.random() - 0.5) * inaccuracy, (Math.random() - 0.5) * inaccuracy);
 
-            createCannonBall(user, user.getInstance(), attack, position, velocity, Vec.ONE, level);
+            createCannonBall(user, user.getInstance(), attack, position, velocity, Vec.ONE, attack.getTag(SPLIT_COUNT));
         }
     }
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.SUNFLOWER).withTag(Weapon.WEAPON_TAG, getId());
+        return ItemStack.of(Material.HEAVY_CORE).withTag(Weapon.WEAPON_TAG, getId());
     }
 
     @Override

@@ -17,11 +17,11 @@ public interface Weapon extends Attack.Node {
 
     static List<Weapon> weapons() {
         return List.of(
-            new BowWeapon(1),
-            new CannonBallWeapon(1),
-            new MaceWeapon(1),
-            new SnakeWeapon(1),
-            new StaffWeapon(1)
+            new BowWeapon(),
+            new CannonBallBallWeapon(),
+            new MaceWeapon(),
+            new SnakeWeapon(),
+            new StaffWeapon()
         );
     }
 

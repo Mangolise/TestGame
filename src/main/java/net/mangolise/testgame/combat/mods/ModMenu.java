@@ -4,11 +4,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.AttackSystem;
-import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
-import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
@@ -120,7 +118,7 @@ public class ModMenu {
         Map<Class<? extends Mod>, Mod> modifiers = attackSystem.getModifiers(player);
 
         if (modifiers.containsKey(mod.getClass())) {
-            attackSystem.upgradeMod(e.getPlayer(), mod.getClass());
+            attackSystem.upgradeMod(e.getPlayer(), mod.getClass(), m -> m.level() + 1);
             player.sendMessage(Component.text()
                     .append(Component.text("You upgraded: "))
                     .append(mod.name())

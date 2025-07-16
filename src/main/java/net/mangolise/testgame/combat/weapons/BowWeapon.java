@@ -16,18 +16,15 @@ import net.minestom.server.tag.Tag;
 import java.util.List;
 import java.util.function.Consumer;
 
-public record BowWeapon(int level) implements Weapon {
+public record BowWeapon() implements Weapon {
 
     public static final Tag<Double> VELOCITY = Tag.Double("testgame.attack.bow.velocity").defaultValue(48.0);
     public static final Tag<Vec> AIM_DIRECTION = Tag.Structure("testgame.attack.bow.aim", Vec.class);
     
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
-        // bow has a base damage of 2.0, and increases by 0.5 per level
-        attack.setTag(Attack.DAMAGE, 2.0 + level * 0.5);
-
-        // bow has a base crit change of 0.5, and increases by 0.1 per level
-        attack.setTag(Attack.CRIT_CHANCE, 0.5 + level * 0.1);
+        attack.setTag(Attack.DAMAGE, 2.0);
+        attack.setTag(Attack.CRIT_CHANCE, 0.5);
 
         attack.setTag(Attack.COOLDOWN, -100.0);
 

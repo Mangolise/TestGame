@@ -33,7 +33,7 @@ public class MeleeMob extends HostileEntity {
     public void doTickUpdate(long time) {
     }
 
-    Weapon weapon = new SnakeWeapon(1);
+    Weapon weapon = new SnakeWeapon();
 
     @Override
     public void attack(@NotNull Entity target, boolean swingHand) {

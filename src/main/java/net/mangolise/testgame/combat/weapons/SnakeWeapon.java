@@ -32,9 +32,8 @@ import java.util.function.Consumer;
 
 /**
  * A weapon that snakes along the ground, and forks when an enemy is hit.
- * @param level the level of the weapon, which affects its damage, crit chance, and cooldown.
  */
-public record SnakeWeapon(int level) implements Weapon {
+public record SnakeWeapon() implements Weapon {
 
     public static final Tag<Double> ALIVE_TICKS = Tag.Double("testgame.attack.snake.aliveticks").defaultValue(20.0 * 3.0);
     
@@ -44,9 +43,9 @@ public record SnakeWeapon(int level) implements Weapon {
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
         // modifiers only
-        attack.setTag(Attack.DAMAGE, 1.0 + level * 0.5);
-        attack.setTag(Attack.CRIT_CHANCE, 0.1 + level * 0.1);
-        attack.setTag(Attack.COOLDOWN, 0.1 + level * 0.1);
+        attack.setTag(Attack.DAMAGE, 1.0);
+        attack.setTag(Attack.CRIT_CHANCE, 0.1);
+        attack.setTag(Attack.COOLDOWN, 0.1);
 
         next.accept(attack);
     }
@@ -152,7 +151,7 @@ public record SnakeWeapon(int level) implements Weapon {
             // check if we hit the target
             if (entity.getPosition().distanceSquared(pos) < speedBonus * speedBonus * 0.25) {
                 // hit the target
-                ((AttackableMob) target).applyAttack(DamageType.IN_WALL, attack);
+                target.applyAttack(DamageType.IN_WALL, attack);
 
                 // fork the snake
                 int childrenRemainingTicks = remainingTicks - 1;

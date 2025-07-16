@@ -4,7 +4,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.SnakeWeapon;
-import net.mangolise.testgame.combat.weapons.StaffWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -34,7 +33,7 @@ public sealed interface SnakeWeaponMods extends Mod {
 
         @Override
         public List<Weapon> getWeaponGrants() {
-            return List.of(new SnakeWeapon(1));
+            return List.of(new SnakeWeapon());
         }
 
         @Override

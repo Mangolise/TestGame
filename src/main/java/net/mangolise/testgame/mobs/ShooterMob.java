@@ -19,7 +19,7 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class ShooterMob extends HostileEntity {
-    Weapon weapon = new BowWeapon(1);
+    Weapon weapon = new BowWeapon();
 
     public ShooterMob(EntityType type) {
         super(type);

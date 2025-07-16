@@ -40,7 +40,7 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public List<Weapon> getWeaponGrants() {
-            return List.of(new StaffWeapon(1));
+            return List.of(new StaffWeapon());
         }
 
         @Override
@@ -69,7 +69,7 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public List<Weapon> getWeaponGrants() {
-            return List.of(new StaffWeapon(1));
+            return List.of(new StaffWeapon());
         }
 
         @Override

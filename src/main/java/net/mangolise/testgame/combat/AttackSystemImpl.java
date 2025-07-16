@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public final class AttackSystemImpl implements AttackSystem {
 
@@ -42,7 +43,7 @@ public final class AttackSystemImpl implements AttackSystem {
         return Collections.unmodifiableMap(modifierNodes.computeIfAbsent(entity, k -> new HashMap<>()));
     }
 
-    public void upgradeMod(Entity entity, Class<? extends Mod> modClass) {
+    public void upgradeMod(Entity entity, Class<? extends Mod> modClass, Function<Mod, Integer> levelSupplier) {
         Map<Class<? extends Mod>, Mod> modifiers = modifierNodes.computeIfAbsent(entity, k -> new HashMap<>());
         Mod mod = modifiers.get(modClass);
 
@@ -52,7 +53,7 @@ public final class AttackSystemImpl implements AttackSystem {
 
         mod.onRemove(entity);
 
-        Mod newMod = Mod.getFactory(modClass).create(mod.level() + 1);
+        Mod newMod = Mod.getFactory(modClass).create(levelSupplier.apply(mod));
         modifiers.put(modClass, newMod);
         newMod.onAdd(entity);
     }
@@ -157,7 +158,7 @@ public final class AttackSystemImpl implements AttackSystem {
             onSwing(player, e.getItemStack());
 
             if (isWeapon(player.getItemInHand(e.getHand()), Weapon.weapon(MaceWeapon.class))) { // mace
-                MaceWeapon maceWeapon = new MaceWeapon(1);
+                MaceWeapon maceWeapon = new MaceWeapon();
                 AttackSystem.instance(player.getInstance()).use(player, maceWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
                     tags.setTag(MaceWeapon.IS_LAUNCH_ATTACK, true);
@@ -171,7 +172,7 @@ public final class AttackSystemImpl implements AttackSystem {
             }
 
             if (isWeapon(player.getItemInHand(PlayerHand.MAIN), Weapon.weapon(MaceWeapon.class))) { // mace
-                MaceWeapon maceWeapon = new MaceWeapon(1);
+                MaceWeapon maceWeapon = new MaceWeapon();
                 AttackSystem.instance(player.getInstance()).use(player, maceWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
                     tags.setTag(Attack.TARGET, e.getTarget());
@@ -185,7 +186,7 @@ public final class AttackSystemImpl implements AttackSystem {
 
             // staff
             if (isWeapon(player.getItemInHand(e.getHand()), Weapon.weapon(StaffWeapon.class))) {
-                StaffWeapon staffWeapon = new StaffWeapon(1);
+                StaffWeapon staffWeapon = new StaffWeapon();
                 AttackSystem.instance(instance).use(player, staffWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
                     tags.setTag(Attack.TARGET, e.getTarget());
@@ -197,15 +198,15 @@ public final class AttackSystemImpl implements AttackSystem {
     private void onSwing(Player player, ItemStack item) {
         // bow
         if (isWeapon(item, Weapon.weapon(BowWeapon.class))) {
-            BowWeapon bowWeapon = new BowWeapon(1);
+            BowWeapon bowWeapon = new BowWeapon();
             AttackSystem.instance(player.getInstance()).use(player, bowWeapon, tags -> {
                 tags.setTag(Attack.USER, player);
             });
-        } else if (isWeapon(item, Weapon.weapon(CannonBallWeapon.class))) { // CannonBallBall
-            CannonBallWeapon weapon = new CannonBallWeapon(2);
+        } else if (isWeapon(item, Weapon.weapon(CannonBallBallWeapon.class))) { // CannonBallBall
+            CannonBallBallWeapon weapon = new CannonBallBallWeapon();
             AttackSystem.instance(player.getInstance()).use(player, weapon, tags -> tags.setTag(Attack.USER, player));
         } else if (isWeapon(item, Weapon.weapon(SnakeWeapon.class))) { // staff
-            SnakeWeapon snakeWeapon = new SnakeWeapon(1);
+            SnakeWeapon snakeWeapon = new SnakeWeapon();
             AttackSystem.instance(player.getInstance()).use(player, snakeWeapon, tags -> {
                 tags.setTag(Attack.USER, player);
             });

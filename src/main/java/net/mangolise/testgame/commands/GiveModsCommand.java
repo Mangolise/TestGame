@@ -75,8 +75,9 @@ public class GiveModsCommand extends Command {
                         .append(Component.text("Gave you mod: "))
                         .append(mod.name()));
             } else {
+                AttackSystem.instance(player.getInstance()).upgradeMod(player, mod.getClass(), m -> mod.level());
                 player.sendMessage(Component.text()
-                        .append(Component.text("You already have mod: "))
+                        .append(Component.text("Upgraded mod: "))
                         .append(mod.name()));
             }
         }

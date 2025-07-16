@@ -5,8 +5,6 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
-import net.mangolise.testgame.combat.weapons.BowWeapon;
-import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.combat.weapons.SnakeWeapon;
 import net.mangolise.testgame.mobs.JacobEntity;
 import net.minestom.server.entity.Entity;
@@ -294,7 +292,7 @@ sealed public interface GenericMods extends Mod {
             var user = attack.getTag(Attack.USER);
             
             // TODO: get the user's weapon via a new Attack.WEAPON tag
-            JacobEntity jacob = new JacobEntity(new SnakeWeapon(1), attack);
+            JacobEntity jacob = new JacobEntity(new SnakeWeapon(), attack);
             jacob.setInstance(user.getInstance(), user.getPosition());
         }
 

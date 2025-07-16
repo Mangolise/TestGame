@@ -22,7 +22,7 @@ public sealed interface MaceWeaponMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.HEAVY_CORE)
+            return ItemStack.builder(Material.MACE)
                     .customName(this.name())
                     .lore(
                             Component.text("+ Slam Radius: +1 block per level", NamedTextColor.GREEN),
@@ -42,7 +42,7 @@ public sealed interface MaceWeaponMods extends Mod {
 
         @Override
         public List<Weapon> getWeaponGrants() {
-            return List.of(new MaceWeapon(1));
+            return List.of(new MaceWeapon());
         }
 
         @Override
@@ -72,7 +72,7 @@ public sealed interface MaceWeaponMods extends Mod {
 
         @Override
         public List<Weapon> getWeaponGrants() {
-            return List.of(new MaceWeapon(1));
+            return List.of(new MaceWeapon());
         }
 
         @Override

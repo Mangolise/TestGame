@@ -8,6 +8,7 @@ import net.minestom.server.tag.Tag;
 
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public sealed interface AttackSystem permits AttackSystemImpl {
 
@@ -19,7 +20,7 @@ public sealed interface AttackSystem permits AttackSystemImpl {
 
     Map<Class<? extends Mod>, Mod> getModifiers(Entity entity);
 
-    public void upgradeMod(Entity entity, Class<? extends Mod> mod);
+    void upgradeMod(Entity entity, Class<? extends Mod> mod, Function<Mod, Integer> levelSupplier);
 
     void use(Entity entity, Weapon weapon);
     void use(Entity entity, Weapon weapon, Consumer<Attack> tags);

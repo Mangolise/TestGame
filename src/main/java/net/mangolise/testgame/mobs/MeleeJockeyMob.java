@@ -2,7 +2,7 @@ package net.mangolise.testgame.mobs;
 
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.AttackSystem;
-import net.mangolise.testgame.combat.weapons.CannonBallWeapon;
+import net.mangolise.testgame.combat.weapons.CannonBallBallWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;
@@ -58,7 +58,7 @@ public class MeleeJockeyMob extends HostileEntity {
     public void doTickUpdate(long time) {
     }
 
-    Weapon weapon = new CannonBallWeapon(1);
+    Weapon weapon = new CannonBallBallWeapon();
 
     @Override
     public void attack(@NotNull Entity target, boolean swingHand) {
