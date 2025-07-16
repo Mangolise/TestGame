@@ -1,21 +1,15 @@
 package net.mangolise.testgame.commands;
 
+import net.mangolise.gamesdk.features.commands.MangoliseCommand;
 import net.mangolise.testgame.LobbyGame;
 import net.mangolise.testgame.TestGame;
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.entity.Player;
 
-public class LeaveCommand extends Command {
+public class LeaveCommand extends MangoliseCommand {
 
     public LeaveCommand(LobbyGame lobby) {
         super("leave");
 
-        setDefaultExecutor((sender, context) -> {
-            if (!(sender instanceof Player player)) {
-                sender.sendMessage("This command can only be used by players.");
-                return;
-            }
-
+        addPlayerSyntax((player, context) -> {
             TestGame game = lobby.gameByInstance(player.getInstance());
             lobby.addPlayer(player);
 
@@ -23,5 +17,10 @@ public class LeaveCommand extends Command {
                 game.leavePlayer(player);
             }
         });
+    }
+
+    @Override
+    protected String getPermission() {
+        return "game.command.leave";
     }
 }

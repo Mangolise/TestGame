@@ -16,6 +16,8 @@ import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.extras.bungee.BungeeCordProxy;
 import net.minestom.server.extras.velocity.VelocityProxy;
 
+import java.util.Arrays;
+
 public class Test {
     public static void main(String[] args) {
         // Remove dumb Minestom limitations that are enabled by default.
@@ -35,9 +37,17 @@ public class Test {
             VelocityProxy.enable(secret);
         }
 
-        // give every permission to every player, TODO: Remove this in production
         MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {
-            Permissions.setPermission(e.getPlayer(), "*", true);
+            if (Arrays.stream(GameConstants.CREATORS).anyMatch(n -> n.equalsIgnoreCase(e.getPlayer().getUsername()))) {
+                Permissions.setPermission(e.getPlayer(), "*", true);
+            } else if (Arrays.stream(GameConstants.MINESTOM_OFFICIALS).anyMatch(n -> n.equalsIgnoreCase(e.getPlayer().getUsername()))) {
+                Permissions.setPermission(e.getPlayer(), "game.minestomofficial", true);
+                Permissions.setPermission(e.getPlayer(), "mangolise.command.tps", true);
+            }
+
+            Permissions.setPermission(e.getPlayer(), "game.command.leave", true);
+            Permissions.setPermission(e.getPlayer(), "game.command.acceptpartyinvite", true);
+
             e.getPlayer().updateViewableRule(p -> e.getPlayer().getGameMode() != GameMode.SPECTATOR);  // hide spectators
         });
 
@@ -46,7 +56,6 @@ public class Test {
         TestGame.CreateRegistryEntries();
         LobbyGame.CreateRegistryEntries();
 
-        // TODO: How should we handle this?
         MinecraftServer.getCommandManager().register(
                 new GiveModsCommand(),
                 new GiveBundleCommand(),

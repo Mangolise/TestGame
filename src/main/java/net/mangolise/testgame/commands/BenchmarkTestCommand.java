@@ -1,24 +1,22 @@
 package net.mangolise.testgame.commands;
 
+import net.mangolise.gamesdk.features.commands.MangoliseCommand;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.util.Utils;
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class BenchmarkTestCommand extends Command {
+public class BenchmarkTestCommand extends MangoliseCommand {
     private static final int ITERATIONS = 10_000;
     private static final int TRIES = 10;
 
     public BenchmarkTestCommand() {
         super("benchmarktest");
 
-        setDefaultExecutor(((sender, context) -> {
-            if (!(sender instanceof Player player)) return;
+        addPlayerSyntax(((player, context) -> {
             Instance instance = player.getInstance();
 
             List<Long> times = new ArrayList<>();
@@ -53,5 +51,10 @@ public class BenchmarkTestCommand extends Command {
             average = total / TRIES;
             player.sendMessage("Average time [2]: " + average + " ms over " + TRIES + " tries.");
         }));
+    }
+
+    @Override
+    protected String getPermission() {
+        return "game.command.benchmarktest";
     }
 }

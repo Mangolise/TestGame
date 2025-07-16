@@ -13,6 +13,7 @@ import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.AdminCommandsFeature;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.features.SignFeature;
+import net.mangolise.gamesdk.permissions.Permissions;
 import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.gamesdk.util.InventoryMenu;
 import net.mangolise.testgame.commands.AcceptPartyInviteCommand;
@@ -157,6 +158,12 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         }
         player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1);  // Set by the game, so we must manually reset it
         giveRegularItems(player);
+
+        if (Permissions.hasPermission(player, "game.admin")) {
+            player.sendMessage(ChatUtil.toComponent("&c&lYou have admin permissions!"));
+        } else if (Permissions.hasPermission(player, "game.minestomofficial")) {
+            player.sendMessage(ChatUtil.toComponent("&b&lWelcome to our game! You are a Minestom official!"));
+        }
     }
 
     @Override
@@ -332,9 +339,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                         .with(DataComponents.PROFILE, new HeadProfile(iconSkin))
                         .withLore(lore)
                         .withCustomName(ChatUtil.toComponent("&r&bGame: " + game.instance().getPlayers().size() + " players"));
-                menu.addMenuItem(icon).onLeftClick(e -> {
-                    game.addSpectator(e.player());
-                });
+                menu.addMenuItem(icon).onLeftClick(e -> game.addSpectator(e.player()));
             }
             player.openInventory(menu.getInventory());
         } else if (item.equals(rejoinItem)) {
