@@ -1,7 +1,9 @@
 package net.mangolise.testgame.combat.weapons;
 
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
+import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
@@ -9,10 +11,12 @@ import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.component.TooltipDisplay;
 import net.minestom.server.tag.Tag;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public record MaceWeapon() implements Weapon {
@@ -71,7 +75,15 @@ public record MaceWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.MACE).withTag(Weapon.WEAPON_TAG, getId());
+        return ItemStack.of(Material.MACE)
+                .withTag(Weapon.WEAPON_TAG, getId())
+                .with(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+                .withCustomName(ChatUtil.toComponent("&r&7&c&lMace"))
+                .with(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(false, Set.of(DataComponents.ATTRIBUTE_MODIFIERS)))
+                .withLore(
+                        ChatUtil.toComponent("&7A heavy weapon that can launch enemies into the air."),
+                        ChatUtil.toComponent("&7Slow but powerful, deal damage to enemies close by.")
+                );
     }
 
     @Override

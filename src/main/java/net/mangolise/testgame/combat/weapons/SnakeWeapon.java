@@ -4,10 +4,12 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.util.ThrottledScheduler;
 import net.mangolise.testgame.util.Utils;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
+import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -84,7 +86,14 @@ public record SnakeWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.STICK).withTag(Weapon.WEAPON_TAG, getId());
+        return ItemStack.of(Material.STICK)
+                .withTag(Weapon.WEAPON_TAG, getId())
+                .with(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+                .withCustomName(ChatUtil.toComponent("&r&a&lSnake"))
+                .withLore(
+                        ChatUtil.toComponent("&7Spawn a slithery snake that forks upon critting an enemy."),
+                        ChatUtil.toComponent("&7When it hits a hoard it can cause a chain reaction!")
+                );
     }
 
     @Override

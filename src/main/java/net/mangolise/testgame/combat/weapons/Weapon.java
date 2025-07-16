@@ -21,7 +21,8 @@ public interface Weapon extends Attack.Node {
             new CannonBallBallWeapon(),
             new MaceWeapon(),
             new SnakeWeapon(),
-            new StaffWeapon()
+            new StaffWeapon(),
+            new DirectDamageWeapon()
         );
     }
 

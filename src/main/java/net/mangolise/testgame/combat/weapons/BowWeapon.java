@@ -1,5 +1,6 @@
 package net.mangolise.testgame.combat.weapons;
 
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
@@ -74,7 +75,10 @@ public record BowWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.BOW).withTag(Weapon.WEAPON_TAG, getId());
+        return ItemStack.of(Material.BOW)
+                .withTag(Weapon.WEAPON_TAG, getId())
+                .withCustomName(ChatUtil.toComponent("&r&6&lLiterally Just A Bow"))
+                .withLore(ChatUtil.toComponent("&7You clearly cheated to get this."));
     }
 
     @Override

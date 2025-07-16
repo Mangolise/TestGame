@@ -2,6 +2,7 @@ package net.mangolise.testgame.combat.weapons;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.events.ProjectileCollideAnyEvent;
 import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
@@ -9,6 +10,7 @@ import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.projectiles.VanillaProjectile;
 import net.mangolise.testgame.util.ThrottledScheduler;
 import net.minestom.server.collision.BoundingBox;
+import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
@@ -60,7 +62,13 @@ public record CannonBallBallWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.HEAVY_CORE).withTag(Weapon.WEAPON_TAG, getId());
+        return ItemStack.of(Material.HEAVY_CORE)
+                .withTag(Weapon.WEAPON_TAG, getId())
+                .with(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+                .withCustomName(ChatUtil.toComponent("&r&6&lCannon Ball Ball"))
+                .withLore(
+                        ChatUtil.toComponent("&7A heavy ball that splits into smaller balls on impact."),
+                        ChatUtil.toComponent("&7It deals large area of effect damage in a chain reaction."));
     }
 
     @Override

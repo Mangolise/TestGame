@@ -3,9 +3,11 @@ package net.mangolise.testgame.combat.weapons;
 import net.krystilize.pathable.Path;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.util.ThrottledScheduler;
+import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
@@ -72,7 +74,15 @@ public record StaffWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.BREEZE_ROD).withTag(Weapon.WEAPON_TAG, getId());
+        return ItemStack.of(Material.BREEZE_ROD)
+                .withTag(Weapon.WEAPON_TAG, getId())
+                .with(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+                .withCustomName(ChatUtil.toComponent("&r&b&lStaff"))
+                .withLore(
+                        ChatUtil.toComponent("&7A magical staff that can chain lightning attacks."),
+                        ChatUtil.toComponent("&7Hit groups of enemies to cause a chain reaction "),
+                        ChatUtil.toComponent("&7of forking lightning bolts!")
+                );
     }
 
     @Override

@@ -2,6 +2,7 @@ package net.mangolise.testgame.combat.weapons;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.minestom.server.entity.Entity;
@@ -30,7 +31,9 @@ public record DirectDamageWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.WAXED_WEATHERED_CUT_COPPER_SLAB).withCustomName(Component.text("Hi there", TextColor.color(12, 12, 12))).withTag(Weapon.WEAPON_TAG, getId());
+        return ItemStack.of(Material.WAXED_WEATHERED_CUT_COPPER_SLAB)
+                .withCustomName(Component.text("Hi there", TextColor.color(12, 12, 12))).withTag(Weapon.WEAPON_TAG, getId())
+                .withLore(ChatUtil.toComponent("&7This is a dev tool noob!"));
     }
 
     @Override
