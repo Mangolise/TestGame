@@ -3,7 +3,7 @@ package net.mangolise.testgame.combat;
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.weapons.*;
 import net.mangolise.testgame.mobs.ShooterMob;
-import net.mangolise.testgame.mobs.SpawnSystem;
+import net.mangolise.testgame.mobs.spawning.SpawnSystem;
 import net.mangolise.testgame.mobs.MeleeJockeyMob;
 import net.mangolise.testgame.mobs.MeleeMob;
 import net.minestom.server.MinecraftServer;

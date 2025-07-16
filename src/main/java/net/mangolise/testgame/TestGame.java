@@ -2,6 +2,7 @@ package net.mangolise.testgame;
 
 import net.hollowcube.polar.PolarLoader;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.ItemPickupFeature;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
@@ -9,7 +10,10 @@ import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.mods.ModMenu;
+import net.mangolise.testgame.mobs.spawning.CompleteWaveEvent;
+import net.mangolise.testgame.mobs.spawning.WaveSystem;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
@@ -85,8 +89,15 @@ public class TestGame extends BaseGame<TestGame.Config> {
         instance.eventNode().addListener(ItemDropEvent.class, e -> {
             e.setCancelled(true);
         });
+        instance.eventNode().addListener(CompleteWaveEvent.class, e -> {
+            Audiences.players().sendMessage(Component.text("Wave " + e.getWaveNumber() + " completed!"));
+        });
 
         super.setup();  // do this after the instance is set up so that features can access it
+        
+        // Start the wave system
+        WaveSystem.from(instance).start();
+        
         Log.logger().info("Started game");
     }
 

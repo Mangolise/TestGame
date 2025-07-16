@@ -1,5 +1,7 @@
-package net.mangolise.testgame.mobs;
+package net.mangolise.testgame.mobs.spawning;
 
+import net.kyori.adventure.text.Component;
+import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
@@ -108,7 +110,7 @@ public class SpawnSystem {
             return complete;
         }
         
-        // otherwise, spawn the entity immediately
+        // otherwise, spawn the entity
         // but update the next spawn time to be 50ms in the future first
         instance.setTag(NEXT_SPAWN_TIME_MS, currentTimeMs + msBetweenSpawns);
         return doSpawn(instance, entity);
@@ -128,7 +130,7 @@ public class SpawnSystem {
                     .min()
                     .orElse(Double.POSITIVE_INFINITY);
 
-            if (distance > bestDistance) {
+            if ((distance * Math.random()) > bestDistance) {
                 bestDistance = distance;
                 bestSpawn = spawn;
             }
@@ -144,7 +146,7 @@ public class SpawnSystem {
         
         
         // add tiny bit of randomness to the spawn point
-        spawnPoint = spawnPoint.add(Math.random(), Math.random() * 0.1, Math.random());
+        spawnPoint = spawnPoint.add(Math.random() * 0.1, Math.random() * 0.1, Math.random() * 0.1);
         return entity.setInstance(instance, spawnPoint);
     }
 
