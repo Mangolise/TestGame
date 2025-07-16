@@ -27,6 +27,7 @@ import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 public record CannonBallBallWeapon() implements Weapon {
 
@@ -56,7 +57,7 @@ public record CannonBallBallWeapon() implements Weapon {
             double inaccuracy = attacks.size() - 1.0; // more attacks, more inaccuracy
             velocity = velocity.add((Math.random() - 0.5) * inaccuracy, (Math.random() - 0.5) * inaccuracy, (Math.random() - 0.5) * inaccuracy);
 
-            createCannonBall(user, user.getInstance(), attack, position, velocity, Vec.ONE, attack.getTag(SPLIT_COUNT));
+            createCannonBall(user, user.getInstance(), attack, position, velocity, Vec.ONE, attack.getTag(SPLIT_COUNT), 6);
         }
     }
 
@@ -68,7 +69,8 @@ public record CannonBallBallWeapon() implements Weapon {
                 .withCustomName(ChatUtil.toComponent("&r&6&lCannon Ball Ball"))
                 .withLore(
                         ChatUtil.toComponent("&7A heavy ball that splits into smaller balls on impact."),
-                        ChatUtil.toComponent("&7It deals large area of effect damage in a chain reaction."));
+                        ChatUtil.toComponent("&7It deals large area of effect damage in a chain reaction."),
+                        ChatUtil.toComponent("&7Crits cause it to split even more."));
     }
 
     @Override
@@ -76,7 +78,7 @@ public record CannonBallBallWeapon() implements Weapon {
         return "cannon_ball";
     }
 
-    private void createCannonBall(LivingEntity user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount) {
+    private void createCannonBall(LivingEntity user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount, int fallbackSplitCount) {
         VanillaProjectile cannonBall = new VanillaProjectile(user, EntityType.BLOCK_DISPLAY);
         cannonBall.editEntityMeta(BlockDisplayMeta.class, meta -> {
             meta.setBlockState(Block.SMOOTH_BASALT);
@@ -92,7 +94,7 @@ public record CannonBallBallWeapon() implements Weapon {
 
         final Attack finalAttack = attack;
         cannonBall.eventNode().addListener(EventListener.builder(ProjectileCollideAnyEvent.class)
-                .handler(event -> onCannonBallCollide(event, user, cannonBall, finalAttack, splitCount))
+                .handler(event -> onCannonBallCollide(event, user, cannonBall, finalAttack, splitCount, fallbackSplitCount))
                 .expireWhen(ignored -> cannonBall.isRemoved())
                 .build());
     }
@@ -102,7 +104,7 @@ public record CannonBallBallWeapon() implements Weapon {
         return PRIORITY_WEAPON;
     }
 
-    private void onCannonBallCollide(ProjectileCollideAnyEvent event, LivingEntity user, VanillaProjectile cannonBall, Attack attack, int splitCount) {
+    private void onCannonBallCollide(ProjectileCollideAnyEvent event, LivingEntity user, VanillaProjectile cannonBall, Attack attack, int splitCount, int fallbackSplitCount) {
         double scale = ((BlockDisplayMeta)cannonBall.getEntityMeta()).getScale().x();
 
         if (event instanceof ProjectileCollideEntityEvent eEvent) {
@@ -116,7 +118,7 @@ public record CannonBallBallWeapon() implements Weapon {
             target.applyAttack(DamageType.FALLING_ANVIL, attackCopy);
         }
 
-        if (splitCount <= 0) {
+        if (splitCount <= 0 || fallbackSplitCount <= 0) {
             return;
         }
 
@@ -135,6 +137,8 @@ public record CannonBallBallWeapon() implements Weapon {
         // split into children
         final int CHILD_COUNT = 6;
         final double CHILD_SCALE_MOD = Math.pow(CHILD_COUNT, 1.0 / 3.0); // is this math right, idk
+        Attack attackCopy = attack;
+
         for (int i = 0; i < CHILD_COUNT; i++) {
             double rotation = i * Math.TAU / CHILD_COUNT;
             Pos position = cannonBall.getPosition().withYaw((float) rotation);
@@ -142,8 +146,15 @@ public record CannonBallBallWeapon() implements Weapon {
 
             instance.playSound(Sound.sound(Key.key("minecraft:entity.generic.explode"), Sound.Source.PLAYER, 0.1f, 2.5f + (float) Math.random() * 0.5f), position);
 
+            Attack childAttack = attackCopy.copy(true);
+            attackCopy = childAttack;
+
+            int consumeCount = IntStream.range(0, attackCopy.sampleCrits()).anyMatch(j -> Math.random() < scale * 0.5) ? 0 : 1;
+
+            ((Player)user).sendMessage(String.valueOf(consumeCount));
+
             ThrottledScheduler.use(instance, "cannonball-weapon-ball-attack", 4, () -> {
-                createCannonBall(user, instance, attack, position, velocity, new Vec(scale / CHILD_SCALE_MOD), splitCount - 1);
+                createCannonBall(user, instance, childAttack, position, velocity, new Vec(scale / CHILD_SCALE_MOD), splitCount - consumeCount, fallbackSplitCount - 1);
             });
         }
     }
