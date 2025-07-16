@@ -18,6 +18,7 @@ import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.event.player.PlayerHandAnimationEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.TaskSchedule;
@@ -128,6 +129,10 @@ public final class AttackSystemImpl implements AttackSystem {
         sorted.sort(Comparator.comparingDouble(Attack.Node::priority).reversed());
         return sorted;
     }
+
+    public boolean isWeapon(ItemStack item, Weapon weapon) {
+        return item.hasTag(Weapon.WEAPON_TAG) && item.getTag(Weapon.WEAPON_TAG).equals(weapon.getId());
+    }
     
     public void init() {
         instance.eventNode().addListener(PlayerHandAnimationEvent.class, e -> {
@@ -139,14 +144,14 @@ public final class AttackSystemImpl implements AttackSystem {
             var itemUseHand = player.getItemUseHand() == null ? PlayerHand.MAIN : player.getItemUseHand();
             var item = player.getItemInHand(itemUseHand);
 
-            onSwing(player, item.material());
+            onSwing(player, item);
         });
 
         instance.eventNode().addListener(PlayerUseItemEvent.class, e -> {
             var player = e.getPlayer();
-            onSwing(player, e.getItemStack().material());
+            onSwing(player, e.getItemStack());
 
-            if (player.getItemInHand(e.getHand()).material() == Material.MACE) { // mace
+            if (isWeapon(player.getItemInHand(e.getHand()), Weapon.weapon(MaceWeapon.class))) { // mace
                 MaceWeapon maceWeapon = new MaceWeapon(1);
                 AttackSystem.instance(player.getInstance()).use(player, maceWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
@@ -160,7 +165,7 @@ public final class AttackSystemImpl implements AttackSystem {
                 return;
             }
 
-            if (player.getItemInHand(PlayerHand.MAIN).material() == Material.MACE) { // mace
+            if (isWeapon(player.getItemInHand(PlayerHand.MAIN), Weapon.weapon(MaceWeapon.class))) { // mace
                 MaceWeapon maceWeapon = new MaceWeapon(1);
                 AttackSystem.instance(player.getInstance()).use(player, maceWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
@@ -174,7 +179,7 @@ public final class AttackSystemImpl implements AttackSystem {
             Player player = e.getPlayer();
 
             // staff
-            if (player.getItemInHand(e.getHand()).material() == Material.BLAZE_ROD) {
+            if (isWeapon(player.getItemInHand(e.getHand()), Weapon.weapon(StaffWeapon.class))) {
                 StaffWeapon staffWeapon = new StaffWeapon(1);
                 AttackSystem.instance(instance).use(player, staffWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
@@ -184,22 +189,22 @@ public final class AttackSystemImpl implements AttackSystem {
         });
     }
 
-    private void onSwing(Player player, Material material) {
+    private void onSwing(Player player, ItemStack item) {
         // bow
-        if (material == Material.BOW) {
+        if (isWeapon(item, Weapon.weapon(BowWeapon.class))) {
             BowWeapon bowWeapon = new BowWeapon(1);
             AttackSystem.instance(player.getInstance()).use(player, bowWeapon, tags -> {
                 tags.setTag(Attack.USER, player);
             });
-        } else if (material == Material.SUNFLOWER) { // CannonBallBall
+        } else if (isWeapon(item, Weapon.weapon(CannonBallWeapon.class))) { // CannonBallBall
             CannonBallWeapon weapon = new CannonBallWeapon(2);
             AttackSystem.instance(player.getInstance()).use(player, weapon, tags -> tags.setTag(Attack.USER, player));
-        } else if (material == Material.STICK) { // staff
+        } else if (isWeapon(item, Weapon.weapon(SnakeWeapon.class))) { // staff
             SnakeWeapon snakeWeapon = new SnakeWeapon(1);
             AttackSystem.instance(player.getInstance()).use(player, snakeWeapon, tags -> {
                 tags.setTag(Attack.USER, player);
             });
-        } else if (material == Material.ZOMBIE_SPAWN_EGG) { // spawn zombies
+        } else if (item.material() == Material.ZOMBIE_SPAWN_EGG) { // spawn zombies
             for (int i = 0; i < 128; i++) {
                 MeleeMob entity = new MeleeMob(EntityType.HUSK);
                 double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.4;
@@ -211,7 +216,7 @@ public final class AttackSystemImpl implements AttackSystem {
                 entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
                 SpawnSystem.spawn(player.getInstance(), entity);
             }
-        } else if (material == Material.CHICKEN_SPAWN_EGG) {
+        } else if (item.material() == Material.CHICKEN_SPAWN_EGG) {
             for (int i = 0; i < 128; i++) {
                 MeleeJockeyMob entity = new MeleeJockeyMob(EntityType.CHICKEN, EntityType.DROWNED);
                 entity.getRider().editEntityMeta(DrownedMeta.class, m -> m.setBaby(true));
@@ -230,7 +235,7 @@ public final class AttackSystemImpl implements AttackSystem {
                 entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
                 SpawnSystem.spawn(player.getInstance(), entity);
             }
-        } else if (material == Material.SKELETON_SPAWN_EGG) {
+        } else if (item.material() == Material.SKELETON_SPAWN_EGG) {
             for (int i = 0; i < 1; i++) {
                 ShooterMob entity = new ShooterMob(EntityType.SKELETON);
 

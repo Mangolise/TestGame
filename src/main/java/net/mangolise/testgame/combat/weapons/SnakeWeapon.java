@@ -85,7 +85,12 @@ public record SnakeWeapon(int level) implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.STICK);
+        return ItemStack.of(Material.STICK).withTag(Weapon.WEAPON_TAG, getId());
+    }
+
+    @Override
+    public String getId() {
+        return "snake";
     }
 
     @Override

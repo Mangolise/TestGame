@@ -77,7 +77,12 @@ public record BowWeapon(int level) implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.BOW);
+        return ItemStack.of(Material.BOW).withTag(Weapon.WEAPON_TAG, getId());
+    }
+
+    @Override
+    public String getId() {
+        return "bow";
     }
 
     @Override

@@ -56,7 +56,12 @@ public record CannonBallWeapon(int level) implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.SUNFLOWER);
+        return ItemStack.of(Material.SUNFLOWER).withTag(Weapon.WEAPON_TAG, getId());
+    }
+
+    @Override
+    public String getId() {
+        return "cannon_ball";
     }
 
     private void createCannonBall(LivingEntity user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount) {

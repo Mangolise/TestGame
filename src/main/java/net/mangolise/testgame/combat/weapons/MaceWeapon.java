@@ -73,7 +73,12 @@ public record MaceWeapon(int level) implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.MACE);
+        return ItemStack.of(Material.MACE).withTag(Weapon.WEAPON_TAG, getId());
+    }
+
+    @Override
+    public String getId() {
+        return "mace";
     }
 
     @Override

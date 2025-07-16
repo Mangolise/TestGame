@@ -75,7 +75,12 @@ public record StaffWeapon(int level) implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.BLAZE_ROD);
+        return ItemStack.of(Material.BLAZE_ROD).withTag(Weapon.WEAPON_TAG, getId());
+    }
+
+    @Override
+    public String getId() {
+        return "staff";
     }
 
     @Override
