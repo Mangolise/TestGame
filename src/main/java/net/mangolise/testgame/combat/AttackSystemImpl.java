@@ -50,7 +50,11 @@ public final class AttackSystemImpl implements AttackSystem {
             throw new IllegalArgumentException("Mod is already max level.");
         }
 
-        modifiers.put(modClass, Mod.getFactory(modClass).create(mod.level() + 1));
+        mod.onRemove(entity);
+
+        Mod newMod = Mod.getFactory(modClass).create(mod.level() + 1);
+        modifiers.put(modClass, newMod);
+        newMod.onAdd(entity);
     }
 
     public void use(Entity entity, Weapon weapon) {
@@ -119,8 +123,9 @@ public final class AttackSystemImpl implements AttackSystem {
         if (nodes.containsKey(modClass)) {
             return false; // Entity already has this mod
         }
-        
+
         nodes.put(modClass, mod);
+        mod.onAdd(entity);
         return true; // Mod added successfully
     }
 

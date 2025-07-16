@@ -1,5 +1,6 @@
 package net.mangolise.testgame.combat.mods;
 
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -8,7 +9,12 @@ import net.mangolise.testgame.combat.weapons.BowWeapon;
 import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.combat.weapons.SnakeWeapon;
 import net.mangolise.testgame.mobs.JacobEntity;
+import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.entity.attribute.AttributeModifier;
+import net.minestom.server.entity.attribute.AttributeOperation;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.sound.SoundEvent;
@@ -191,7 +197,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.LEATHER_HORSE_ARMOR)
+            return ItemStack.builder(Material.RABBIT_FOOT)
                     .customName(this.name())
                     .lore(
                             Component.text("+ Reduces cooldown", NamedTextColor.GREEN),
@@ -294,6 +300,117 @@ sealed public interface GenericMods extends Mod {
         @Override
         public double priority() {
             return PRIORITY_STAT_MODIFIER;
+        }
+    }
+
+    sealed interface IncreaseHealth extends GenericMods permits CommonIncreaseHealth, RareIncreaseHealth, EpicIncreaseHealth {
+        @Override
+        default void onAdd(Entity entity) {
+            if (!(entity instanceof LivingEntity mob)) {
+                return;
+            }
+
+            mob.getAttribute(Attribute.MAX_HEALTH).addModifier(new AttributeModifier(getId(), getHealthAmount(), AttributeOperation.ADD_VALUE));
+            mob.setHealth(mob.getHealth() + (float) getHealthAmount());
+        }
+
+        String getId();
+        double getHealthAmount();
+
+        @Override
+        default void onRemove(Entity entity) {
+            if (!(entity instanceof LivingEntity mob)) {
+                return;
+            }
+
+            mob.getAttribute(Attribute.MAX_HEALTH).removeModifier(Key.key(getId()));
+            mob.setHealth(mob.getHealth() - (float) getHealthAmount());
+        }
+
+        @Override
+        default double priority() {
+            return PRIORITY_ADDITIVE_MODIFIER;
+        }
+    }
+
+    record CommonIncreaseHealth(int level) implements IncreaseHealth {
+        @Override
+        public String getId() {
+            return "common_max_health_mod";
+        }
+
+        @Override
+        public double getHealthAmount() {
+            return 2 * (level + 1);
+        }
+
+        @Override
+        public Rarity rarity() {
+            return Rarity.COMMON;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.APPLE)
+                    .customName(this.name())
+                    .lore(
+                            Component.text("+ Increase Health: +1.0 heart per level", NamedTextColor.GREEN)
+                    )
+                    .build();
+        }
+    }
+
+    record RareIncreaseHealth(int level) implements IncreaseHealth {
+        @Override
+        public String getId() {
+            return "rare_max_health_mod";
+        }
+
+        @Override
+        public double getHealthAmount() {
+            return 4 * (level + 1);
+        }
+
+        @Override
+        public Rarity rarity() {
+            return Rarity.RARE;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.GOLDEN_APPLE)
+                    .customName(this.name())
+                    .lore(
+                            Component.text("+ Increase Health: +2.0 hearts per level", NamedTextColor.GREEN)
+                    )
+                    .build();
+        }
+    }
+
+    record EpicIncreaseHealth(int level) implements IncreaseHealth {
+        @Override
+        public String getId() {
+            return "epic_max_health_mod";
+        }
+
+        @Override
+        public double getHealthAmount() {
+            return 6 * (level + 1);
+        }
+
+        @Override
+        public Rarity rarity() {
+            return Rarity.EPIC;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.ENCHANTED_GOLDEN_APPLE)
+                    .customName(this.name())
+                    .lore(
+                            Component.text("+ Increase Health: +3.0 heart per level", NamedTextColor.GREEN)
+                    )
+                    .build();
         }
     }
 }

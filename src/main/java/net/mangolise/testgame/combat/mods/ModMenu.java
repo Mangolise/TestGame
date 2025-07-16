@@ -196,6 +196,7 @@ public class ModMenu {
                     .build().withTag(IS_BARRIER, true)
             );
         }
+
         player.openInventory(inventory);
     }
 

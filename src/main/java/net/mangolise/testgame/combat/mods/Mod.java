@@ -7,6 +7,7 @@ import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.mangolise.testgame.util.Utils;
 import net.minestom.server.component.DataComponents;
+import net.minestom.server.entity.Entity;
 import net.minestom.server.item.ItemStack;
 
 import java.lang.reflect.Constructor;
@@ -56,6 +57,9 @@ public sealed interface Mod extends Attack.Node permits GenericMods, SnakeWeapon
     default List<Component> description() {
         return item().get(DataComponents.LORE);
     }
+
+    default void onAdd(Entity entity) {}
+    default void onRemove(Entity entity) {}
 
     Rarity rarity();
     ItemStack item();
