@@ -4,10 +4,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.SnakeWeapon;
+import net.mangolise.testgame.combat.weapons.StaffWeapon;
+import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.UnknownNullability;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public sealed interface SnakeWeaponMods extends Mod {
@@ -27,6 +30,11 @@ public sealed interface SnakeWeaponMods extends Mod {
                     )
                     .amount(1)
                     .build();
+        }
+
+        @Override
+        public List<Weapon> getWeaponGrants() {
+            return List.of(new SnakeWeapon(1));
         }
 
         @Override

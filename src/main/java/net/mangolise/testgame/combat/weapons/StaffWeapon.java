@@ -14,6 +14,8 @@ import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.tag.Tag;
@@ -69,6 +71,11 @@ public record StaffWeapon(int level) implements Weapon {
 
             chainAttack(chainedEntities, originalEntity, attack, 1.0);
         }
+    }
+
+    @Override
+    public ItemStack getItem() {
+        return ItemStack.of(Material.BLAZE_ROD);
     }
 
     @Override

@@ -19,6 +19,8 @@ import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.sound.SoundEvent;
@@ -79,6 +81,11 @@ public record SnakeWeapon(int level) implements Weapon {
             Snake snake = new Snake(user.getInstance(), attack, user.getPosition(), target, attack.getTag(SnakeWeapon.ALIVE_TICKS).intValue(), alreadyMarked);
             snake.init();
         }
+    }
+
+    @Override
+    public ItemStack getItem() {
+        return ItemStack.of(Material.STICK);
     }
 
     @Override

@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.mangolise.testgame.combat.Attack;
+import net.mangolise.testgame.combat.weapons.Weapon;
 import net.mangolise.testgame.util.Utils;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.item.ItemStack;
@@ -34,6 +35,10 @@ public sealed interface Mod extends Attack.Node permits GenericMods, SnakeWeapon
      */
     default double upgradeExpBase() {
         return 512.0;
+    }
+
+    default List<Weapon> getWeaponGrants() {
+        return List.of();
     }
 
     /**

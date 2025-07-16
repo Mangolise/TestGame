@@ -4,10 +4,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.StaffWeapon;
+import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import org.jetbrains.annotations.UnknownNullability;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public sealed interface StaffWeaponMods extends Mod {
@@ -37,6 +39,11 @@ public sealed interface StaffWeaponMods extends Mod {
         }
 
         @Override
+        public List<Weapon> getWeaponGrants() {
+            return List.of(new StaffWeapon(1));
+        }
+
+        @Override
         public double priority() {
             return PRIORITY_ADDITIVE_MODIFIER;
         }
@@ -58,6 +65,11 @@ public sealed interface StaffWeaponMods extends Mod {
                     )
                     .amount(1)
                     .build();
+        }
+
+        @Override
+        public List<Weapon> getWeaponGrants() {
+            return List.of(new StaffWeapon(1));
         }
 
         @Override

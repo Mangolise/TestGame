@@ -9,6 +9,8 @@ import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.event.EventListener;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.tag.Tag;
 
 import java.util.List;
@@ -71,6 +73,11 @@ public record BowWeapon(int level) implements Weapon {
                     .build()
             );
         }
+    }
+
+    @Override
+    public ItemStack getItem() {
+        return ItemStack.of(Material.BOW);
     }
 
     @Override

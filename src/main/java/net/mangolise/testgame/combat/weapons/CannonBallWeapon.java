@@ -18,6 +18,8 @@ import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.List;
@@ -50,6 +52,11 @@ public record CannonBallWeapon(int level) implements Weapon {
 
             createCannonBall(user, user.getInstance(), attack, position, velocity, Vec.ONE, level);
         }
+    }
+
+    @Override
+    public ItemStack getItem() {
+        return ItemStack.of(Material.SUNFLOWER);
     }
 
     private void createCannonBall(LivingEntity user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount) {

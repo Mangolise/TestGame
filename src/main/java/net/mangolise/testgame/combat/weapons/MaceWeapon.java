@@ -7,6 +7,8 @@ import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.tag.Tag;
 
 import java.util.Collection;
@@ -67,6 +69,11 @@ public record MaceWeapon(int level) implements Weapon {
 
             mob.applyAttack(DamageType.PLAYER_ATTACK, attack);
         }
+    }
+
+    @Override
+    public ItemStack getItem() {
+        return ItemStack.of(Material.MACE);
     }
 
     @Override

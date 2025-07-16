@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.AttackSystem;
+import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
@@ -116,6 +117,10 @@ public class ModMenu {
                     .append(mod.name())
                     .decoration(TextDecoration.ITALIC, false)
             );
+
+            for (Weapon weapon : mod.getWeaponGrants()) {
+                player.getInventory().addItemStack(weapon.getItem());
+            }
         }
 
         inv.removeTag(BUNDLE_INVENTORY);
