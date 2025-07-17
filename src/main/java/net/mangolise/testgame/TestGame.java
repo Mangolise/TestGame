@@ -55,7 +55,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
     static {
         try {
-            worldLoader = new PolarLoader(new FileInputStream("game.polar"));
+            worldLoader = new ReadOnlyPolarLoader(new FileInputStream("game.polar"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -167,7 +167,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
         isEnding = true;
         Log.logger().info("Game lost, ending game");
         instance.sendMessage(ChatUtil.toComponent("&cYou lost the game!"));
-        instance.playSound(Sound.sound(SoundEvent.ENTITY_ENDER_DRAGON_DEATH.key(), Sound.Source.PLAYER, 1.0f, 1.0f));
+        instance.playSound(Sound.sound(SoundEvent.ENTITY_ENDER_DRAGON_DEATH.key(), Sound.Source.PLAYER, 0.1f, 1.0f));
         instance.showTitle(Title.title(ChatUtil.toComponent("&c&lYou lost!"), ChatUtil.toComponent("&7Better luck next time.")));
 
         // Blow up the map
