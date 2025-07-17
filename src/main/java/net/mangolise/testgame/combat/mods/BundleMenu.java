@@ -45,7 +45,7 @@ public class BundleMenu {
 
         double randomNum = Math.random();
 
-        if (randomNum <= 0.15) {
+        if (randomNum <= 0.1) {
             var rarity = Mod.Rarity.EPIC;
             return ItemStack.builder(Material.PURPLE_BUNDLE)
                     .customName(Component.text("Epic Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))
@@ -53,7 +53,7 @@ public class BundleMenu {
                     .build()
                     .withTag(IS_WEAPON_BUNDLE, false)
                     .withTag(BUNDLE_RARITY, rarity);
-        } else if (randomNum <= 0.5) {
+        } else if (randomNum <= 0.3) {
             var rarity = Mod.Rarity.RARE;
             return ItemStack.builder(Material.BLUE_BUNDLE)
                     .customName(Component.text("Rare Upgrade Box").decoration(TextDecoration.ITALIC, false).color(rarity.color()))

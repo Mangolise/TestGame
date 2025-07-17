@@ -79,6 +79,10 @@ public class WaveSystem {
         instance.eventNode().addListener(InstanceTickEvent.class, event -> instanceTick());
     }
 
+    public int getCurrentWave() {
+        return instance.getTag(CURRENT_WAVE_TAG);
+    }
+
     // Starts the timer for the next wave, if it is not already waiting.
     public void startNextWave() {
         if (instance.getTag(NEXT_WAVE_WAITING_TAG)) {

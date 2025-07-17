@@ -6,6 +6,7 @@ import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.mods.BundleMenu;
+import net.mangolise.testgame.mobs.spawning.WaveSystem;
 import net.mangolise.testgame.util.Throttler;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
@@ -140,7 +141,7 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
 
         double random = Math.random();
 
-        if (isDead && random <= 0.1) {
+        if (isDead && random <= 0.1 * (1.0/WaveSystem.from(instance).getCurrentWave())) {
             ItemEntity itemEntity = GameSdkUtils.dropItem(instance, this.position, BundleMenu.createBundleItem(false));
             itemEntity.setPickable(true);
             itemEntity.setGlowing(true);
