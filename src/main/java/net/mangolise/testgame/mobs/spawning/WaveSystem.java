@@ -1,16 +1,17 @@
 package net.mangolise.testgame.mobs.spawning;
 
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
-import net.mangolise.testgame.combat.Attack;
+import net.kyori.adventure.title.Title;
+import net.mangolise.gamesdk.util.ChatUtil;
+import net.mangolise.gamesdk.util.Timer;
+import net.mangolise.testgame.GameConstants;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.mods.GenericMods;
-import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.mobs.MeleeJockeyMob;
 import net.mangolise.testgame.mobs.MeleeMob;
-import net.mangolise.testgame.mobs.ShooterMob;
-import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeModifier;
@@ -18,11 +19,10 @@ import net.minestom.server.entity.attribute.AttributeOperation;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
-import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
-import java.lang.constant.Constable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +65,7 @@ public class WaveSystem {
     
     private static final Tag<Integer> CURRENT_WAVE_TAG = Tag.Integer("current_wave");
     private static final Tag<Long> LAST_WAVE_START_TAG = Tag.Long("last_wave_start").defaultValue(0L);
+    private static final Tag<Boolean> NEXT_WAVE_WAITING_TAG = Tag.Boolean("next_wave_waiting").defaultValue(false);
     private static final Tag<List<AttackableMob>> MOBS_IN_WAVE_TAG = Tag.<List<AttackableMob>>Transient("mobs_in_wave").defaultValue(List.of());
     
     public void start() {
@@ -77,10 +78,15 @@ public class WaveSystem {
         // no need to start the next wave, the instanceTick function will handle that
         instance.eventNode().addListener(InstanceTickEvent.class, event -> instanceTick());
     }
-    
-    private void startNextWave() {
-        // TODO: Countdown (and wait for) next wave
+
+    // Starts the timer for the next wave, if it is not already waiting.
+    public void startNextWave() {
+        if (instance.getTag(NEXT_WAVE_WAITING_TAG)) {
+            return;  // already waiting for the next wave
+        }
+
         int currentWave = instance.getTag(CURRENT_WAVE_TAG);
+        int displayWave = currentWave + 1;  // display wave is 1-based, currentWave is 0-based
         
         int msSinceStart = (int) (System.currentTimeMillis() - instance.getTag(LAST_WAVE_START_TAG));
         
@@ -95,44 +101,62 @@ public class WaveSystem {
             AttackableMob entity = selection.entity;
             mobs.add(entity);
         }
-        
-        // announce the number of mobs
-        Map<Class<? extends AttackableMob>, Integer> mobCount = mobs.stream()
-                .collect(Collectors.groupingBy(AttackableMob::getClass, Collectors.summingInt(mob -> 1)));
-        StringBuilder mobCountMessage = new StringBuilder("Wave " + (currentWave + 1) + " (power " + String.format("%.2f", originalStrength) + ") starting! Mobs: ");
-        for (Map.Entry<Class<? extends AttackableMob>, Integer> entry : mobCount.entrySet()) {
-            mobCountMessage.append(entry.getKey().getSimpleName()).append(": ").append(entry.getValue()).append(", ");
-        }
-        // remove the last comma and space
-        if (mobCountMessage.length() > 0) {
-            mobCountMessage.setLength(mobCountMessage.length() - 2);
-        }
-        instance.sendMessage(Component.text(mobCountMessage.toString()));
+        final double finalStrength = strength;
 
-        for (AttackableMob mob : mobs) {
-            mob.asEntity().getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(1.0 + (currentWave * 0.5));
-            mob.asEntity().getAttribute(Attribute.MAX_HEALTH).setBaseValue(10.0 + (currentWave * 2.0));
-            mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_boost", Math.pow(1.01, strength) - 1.8, AttributeOperation.ADD_MULTIPLIED_BASE));
+        instance.setTag(NEXT_WAVE_WAITING_TAG, true);
 
-            mob.asEntity().scheduler().scheduleTask(() -> {
-                // after 30 seconds, make them glowing
-                if (!mob.asEntity().isRemoved()) {
-                    mob.asEntity().setGlowing(true);
-                }
-            }, TaskSchedule.seconds(30), TaskSchedule.stop());            
-            SpawnSystem.spawn(instance, mob.asEntity());
-        }
+        Timer.countDown(GameConstants.SECONDS_BETWEEN_WAVES, 20, i -> {
+            instance.sendActionBar(ChatUtil.toComponent("&aWave &6" + displayWave + " &astarting in &6" + (i) + " &aseconds!"));
+        }).thenAccept(ignored -> {
+            instance.showTitle(Title.title(
+                    ChatUtil.toComponent("&6&lWave " + displayWave),
+                    ChatUtil.toComponent("&7Get ready!")
+            ));
+            instance.playSound(Sound.sound(SoundEvent.ENTITY_ENDER_DRAGON_GROWL.key(), Sound.Source.PLAYER, 0.2f, 1.0f));
 
-        instance.setTag(LAST_WAVE_START_TAG, System.currentTimeMillis());
-        instance.setTag(MOBS_IN_WAVE_TAG, mobs);
-        instance.setTag(CURRENT_WAVE_TAG, currentWave + 1);
-        
-        SpawnWaveEvent event = new SpawnWaveEvent(instance, mobs, currentWave + 1);
-        EventDispatcher.call(event);
+            // announce the number of mobs
+            Map<Class<? extends AttackableMob>, Integer> mobCount = mobs.stream()
+                    .collect(Collectors.groupingBy(AttackableMob::getClass, Collectors.summingInt(mob -> 1)));
+            StringBuilder mobCountMessage = new StringBuilder("Wave " + displayWave + " (power " + String.format("%.2f", originalStrength) + ") starting! Mobs: ");
+            for (Map.Entry<Class<? extends AttackableMob>, Integer> entry : mobCount.entrySet()) {
+                mobCountMessage.append(entry.getKey().getSimpleName()).append(": ").append(entry.getValue()).append(", ");
+            }
+            // remove the last comma and space
+            if (!mobCountMessage.isEmpty()) {
+                mobCountMessage.setLength(mobCountMessage.length() - 2);
+            }
+            instance.sendMessage(Component.text(mobCountMessage.toString()));
+
+            for (AttackableMob mob : mobs) {
+                mob.asEntity().getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(1.0 + (currentWave * 0.5));
+                mob.asEntity().getAttribute(Attribute.MAX_HEALTH).setBaseValue(10.0 + (currentWave * 2.0));
+                mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_boost", Math.pow(1.01, finalStrength) - 1.8, AttributeOperation.ADD_MULTIPLIED_BASE));
+
+                mob.asEntity().scheduler().scheduleTask(() -> {
+                    // after 30 seconds, make them glowing
+                    if (!mob.asEntity().isRemoved()) {
+                        mob.asEntity().setGlowing(true);
+                    }
+                }, TaskSchedule.seconds(30), TaskSchedule.stop());
+                SpawnSystem.spawn(instance, mob.asEntity());
+            }
+
+            instance.setTag(LAST_WAVE_START_TAG, System.currentTimeMillis());
+            instance.setTag(MOBS_IN_WAVE_TAG, mobs);
+            instance.setTag(CURRENT_WAVE_TAG, currentWave + 1);
+            instance.setTag(NEXT_WAVE_WAITING_TAG, false);
+
+            SpawnWaveEvent event = new SpawnWaveEvent(instance, mobs, currentWave + 1);
+            EventDispatcher.call(event);
+        });
     }
     
     private void instanceTick() {
-        var mobsInWave = instance.getTag(MOBS_IN_WAVE_TAG);
+        if (instance.getTag(NEXT_WAVE_WAITING_TAG)) {
+            return;  // currently waiting for the next wave to start
+        }
+
+        List<AttackableMob> mobsInWave = instance.getTag(MOBS_IN_WAVE_TAG);
         
         if (mobsInWave.isEmpty()) {
             // no mobs in the current wave, start the next one
@@ -158,7 +182,7 @@ public class WaveSystem {
     
     private EntitySelection sampleEntity(double strength) {
         while (strength > 16.0) {
-            var warden = new MeleeMob(EntityType.WARDEN);
+            MeleeMob warden = new MeleeMob(EntityType.WARDEN);
             warden.weapon = new MaceWeapon();
 
             AttackSystem.instance(instance).add(warden, new GenericMods.DoubleAttack(3));
