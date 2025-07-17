@@ -4,11 +4,13 @@ import net.hollowcube.polar.PolarLoader;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.ItemPickupFeature;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.ChatUtil;
+import net.mangolise.gamesdk.util.Timer;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.mods.BundleMenu;
 import net.mangolise.testgame.combat.mods.ModMenuFeature;
@@ -25,11 +27,15 @@ import net.minestom.server.event.entity.EntityTickEvent;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.item.ItemDropEvent;
+import net.minestom.server.event.player.PlayerDeathEvent;
 import net.minestom.server.event.player.PlayerDisconnectEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.network.packet.server.play.ParticlePacket;
+import net.minestom.server.particle.Particle;
 import net.minestom.server.registry.RegistryKey;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
@@ -44,7 +50,8 @@ import java.util.function.Consumer;
 public class TestGame extends BaseGame<TestGame.Config> {
     private static final Pos SPAWN = new Pos(7.5, 0, 8.5);
     private static final PolarLoader worldLoader;
-    private final Set<UUID> players = new HashSet<>();
+    private final Set<UUID> players = new HashSet<>();  // list of players who belong in this game (allows them to rejoin)
+    private final List<Player> deadPlayers = new ArrayList<>();  // they should respawn at the end of the wave
 
     static {
         try {
@@ -57,6 +64,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
     private Instance instance;
     private Runnable endCallback;
     private Consumer<Player> kickFromGameConsumer = ignored -> {};
+    private boolean isEnding = false;  // if it's ending then we don't want to end it again
 
     protected TestGame(Config config, Runnable endCallback) {
         super(config);
@@ -72,7 +80,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
         MinecraftServer.getDimensionTypeRegistry().register("test-game-dimension", dimension);
     }
 
-    // TODO: Unregister the instance when everyone leaves
     @Override
     public void setup() {
         RegistryKey<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().getKey(Key.key("test-game-dimension"));
@@ -104,6 +111,14 @@ public class TestGame extends BaseGame<TestGame.Config> {
                 player.heal();
             }
 
+            // respawn dead players
+            for (Player player : deadPlayers) {
+                player.setGameMode(GameMode.ADVENTURE);
+                player.teleport(SPAWN);
+                player.showTitle(Title.title(ChatUtil.toComponent("&a&lYou respawned!"), ChatUtil.toComponent("&7Get ready for the next wave.")));
+            }
+            deadPlayers.clear();
+
             for (Entity entity : e.getInstance().getEntities()) {
                 if (entity instanceof ItemEntity item) {
                     // tp to random player
@@ -119,6 +134,19 @@ public class TestGame extends BaseGame<TestGame.Config> {
             }
         });
         instance.eventNode().addListener(EntityTickEvent.class, this::tickEntity);
+        instance.eventNode().addListener(PlayerDeathEvent.class, e -> {
+            e.setChatMessage(ChatUtil.toComponent("&6" + e.getPlayer().getUsername() + " &chas been killed! &7They will respawn at the end of the wave."));
+            Player p = e.getPlayer();
+            MinecraftServer.getSchedulerManager().scheduleNextTick(p::respawn);
+            p.setGameMode(GameMode.SPECTATOR);
+            deadPlayers.add(p);
+            p.showTitle(Title.title(ChatUtil.toComponent("&c&lYou died!"), ChatUtil.toComponent("&7You will respawn at the end of the wave.")));
+
+            if (instance.getPlayers().stream().noneMatch(pl -> pl.getGameMode() != GameMode.SPECTATOR)) {
+                // game lost
+                lose();
+            }
+        });
 
         super.setup();  // do this after the instance is set up so that features can access it
 
@@ -126,6 +154,58 @@ public class TestGame extends BaseGame<TestGame.Config> {
         WaveSystem.from(instance).start();
 
         Log.logger().info("Started game");
+    }
+
+    public boolean isDead(Player player) {
+        return deadPlayers.contains(player);
+    }
+
+    // do fancy stuff
+    private void lose() {
+        if (isEnding) return;
+
+        isEnding = true;
+        Log.logger().info("Game lost, ending game");
+        instance.sendMessage(ChatUtil.toComponent("&cYou lost the game!"));
+        instance.playSound(Sound.sound(SoundEvent.ENTITY_ENDER_DRAGON_DEATH.key(), Sound.Source.PLAYER, 1.0f, 1.0f));
+        instance.showTitle(Title.title(ChatUtil.toComponent("&c&lYou lost!"), ChatUtil.toComponent("&7Better luck next time.")));
+
+        // Blow up the map
+        Timer.countDown(100, 2, i -> {
+            Vec randomPos = new Vec(
+                    SPAWN.x() + (Math.random() - 0.5) * 50,
+                    SPAWN.y() + (Math.random() - 0.5) * 20 + 20,
+                    SPAWN.z() + (Math.random() - 0.5) * 50
+            );
+            Entity fb = new Entity(EntityType.FIREBALL);
+            fb.setInstance(instance, randomPos);
+            fb.setVelocity(new Vec(0, 0, 0).add(Math.random() - 0.5, Math.random() - 1, Math.random() - 0.5).mul(10));
+            instance.playSound(Sound.sound(SoundEvent.ENTITY_GHAST_SHOOT.key(), Sound.Source.HOSTILE, 0.4f, 1.0f), randomPos);
+            fb.eventNode().addListener(EntityTickEvent.class, e -> {
+                if (fb.getVelocity().x() != 0 || fb.getVelocity().z() != 0) return;
+
+                // it stopped moving (aka hit something), so explode
+                fb.getInstance().playSound(Sound.sound(SoundEvent.ENTITY_GENERIC_EXPLODE.key(), Sound.Source.PLAYER, 1.0f, 1.0f), fb.getPosition());
+
+                // destroy every block in a 5 block radius
+                for (int x = -5; x <= 5; x++) {
+                    for (int y = -5; y <= 5; y++) {
+                        for (int z = -5; z <= 5; z++) {
+                            if (x * x + y * y + z * z > 25) continue; // only destroy blocks in a sphere
+                            instance.setBlock(fb.getPosition().add(x, y, z), Block.AIR);
+                        }
+                    }
+                }
+
+                // particles
+                ParticlePacket packet = new ParticlePacket(Particle.EXPLOSION, fb.getPosition(), Vec.ZERO, 0, 3);
+                instance.sendGroupedPacket(packet);
+
+                fb.remove();
+            });
+        }).thenAccept(ignored -> {
+            end();
+        });
     }
 
     private record NavigationInfo(Point pos, Point goal, int ticks) {}
@@ -220,6 +300,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
     public void leavePlayer(Player player) {
         Log.logger().info("Player {} left a game", player.getUsername());
+
+        if (isEnding) return;  // if the game is ending, we don't want to do anything
         if (instance.getPlayers().stream().filter(p -> p != player).noneMatch(p -> p.getGameMode() != GameMode.SPECTATOR) && GameConstants.END_EMPTY_GAMES) {
             Log.logger().info("No players left, ending game");
             end();

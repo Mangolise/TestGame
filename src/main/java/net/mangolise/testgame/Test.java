@@ -91,15 +91,23 @@ public class Test {
             for (Player op : MinecraftServer.getConnectionManager().getOnlinePlayers()) {
                 Component text;
 
+                TestGame game = lobby.gameByInstance(op.getInstance());
+                boolean dead = game != null && game.isDead(op);
+                String namePrefix = dead ? "&m" : "";
+
                 if (Permissions.hasPermission(op, "game.admin")) {
-                    text = ChatUtil.toComponent("&a" + op.getUsername() + " &7(Creator)");
+                    text = ChatUtil.toComponent("&a" + namePrefix + op.getUsername() + " &7(Creator)");
                 } else if (Permissions.hasPermission(op, "game.minestomofficial")) {
-                    text = ChatUtil.toComponent("&b" + op.getUsername() + " &7(Minestom)");
+                    text = ChatUtil.toComponent("&b" + namePrefix + op.getUsername() + " &7(Minestom)");
                 } else {
-                    text = ChatUtil.toComponent("&7" + op.getUsername());
+                    text = ChatUtil.toComponent("&7" + namePrefix + op.getUsername());
                 }
 
                 GameMode gameMode = p.getInstance() == op.getInstance() ? op.getGameMode() : GameMode.SPECTATOR;
+                if (dead) {
+                    gameMode = GameMode.SURVIVAL;  // dead players are always in survival mode (so they display at the top with players)
+                }
+
                 entries.add(TabListEntry.text(text).withGameMode(gameMode).withUsername(op.getUsername()).withSkin(op.getSkin()));
             }
 
