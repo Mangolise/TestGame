@@ -285,7 +285,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         player.getInventory().clear();
 
-        // TODO: remove this and make sure each weapon has a mod.
+        // TODO: remove this and make sure each weapon that should be obtainable has a mod.
         player.getInventory().addItemStack(BundleMenu.createBundleItem(true));
         player.getInventory().setItemStack(6, ItemStack.of(Material.SKELETON_SPAWN_EGG));
         player.getInventory().setItemStack(7, ItemStack.of(Material.CHICKEN_SPAWN_EGG));

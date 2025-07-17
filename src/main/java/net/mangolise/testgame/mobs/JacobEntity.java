@@ -4,7 +4,6 @@ import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
-import net.mangolise.testgame.util.Utils;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.ai.goal.FollowTargetGoal;
@@ -37,7 +36,6 @@ public class JacobEntity extends HostileEntity implements PlayerTeam {
                         new FollowTargetGoal(this, Duration.ofSeconds(1).plus(Duration.ofMillis((long) (1000.0 * Math.random()))))
                 ),
                 List.of(
-                        // TODO: after yummy food on toast (jam) Make a guthib issue to make this not needed
                         new AttackTargetSelector(this, attack::canTarget)
                 )
         );

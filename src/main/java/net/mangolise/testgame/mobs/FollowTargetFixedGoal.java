@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 
-// TODO: They still get stuck but they follow you when you are still now
 public class FollowTargetFixedGoal extends GoalSelector {
     private final Duration pathDuration;
     private long lastUpdateTime = 0;
