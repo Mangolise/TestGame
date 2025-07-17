@@ -65,7 +65,7 @@ public class WaveSystem {
             throw new IllegalStateException("Wave system already started in this instance!");
         }
         
-        instance.setTag(CURRENT_WAVE_TAG, 7);
+        instance.setTag(CURRENT_WAVE_TAG, 0);
 
         // no need to start the next wave, the instanceTick function will handle that
         instance.eventNode().addListener(InstanceTickEvent.class, event -> instanceTick());
