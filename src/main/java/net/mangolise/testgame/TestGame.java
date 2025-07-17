@@ -6,6 +6,7 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.mangolise.gamesdk.BaseGame;
+import net.mangolise.gamesdk.features.ItemDropFeature;
 import net.mangolise.gamesdk.features.ItemPickupFeature;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.log.Log;
@@ -102,7 +103,9 @@ public class TestGame extends BaseGame<TestGame.Config> {
         instance.eventNode().addListener(InventoryPreClickEvent.class, BundleMenu::onItemClickEvent);
         instance.eventNode().addListener(InventoryCloseEvent.class, BundleMenu::onInventoryCloseEvent);
         instance.eventNode().addListener(ItemDropEvent.class, e -> {
-            e.setCancelled(true);
+            if (!e.getItemStack().material().name().endsWith("bundle") || e.getItemStack().getTag(BundleMenu.IS_WEAPON_BUNDLE)) {
+                e.setCancelled(true);
+            }
         });
         instance.eventNode().addListener(CompleteWaveEvent.class, e -> {
             e.getInstance().sendMessage(Component.text("Wave " + e.getWaveNumber() + " completed!"));
@@ -323,6 +326,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
                 new NoCollisionFeature(),
                 new FindTheButtonFeature(),
                 new ItemPickupFeature(),
+                new ItemDropFeature(),
                 new ModMenuFeature()
         );
     }
