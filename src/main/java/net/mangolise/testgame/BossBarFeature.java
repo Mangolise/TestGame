@@ -72,7 +72,6 @@ public class BossBarFeature implements Game.Feature<TestGame> {
             MinecraftServer.getGlobalEventHandler().addListener(PlayerSpawnEvent.class, e -> {
                 MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
                     e.getPlayer().setTag(LAST_INSTANCE_TAG, e.getInstance());
-                    e.getPlayer().sendMessage("Spawning in instance");
                 });
             });
         }
