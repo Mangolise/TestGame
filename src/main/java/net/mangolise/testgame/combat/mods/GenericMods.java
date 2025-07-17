@@ -17,6 +17,7 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeModifier;
 import net.minestom.server.entity.attribute.AttributeOperation;
+import net.minestom.server.entity.metadata.EntityMeta;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.component.AttributeList;
@@ -41,7 +42,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public int maxLevel() {
-            return 1;
+            return 0;
         }
 
         @Override
@@ -333,7 +334,7 @@ sealed public interface GenericMods extends Mod {
             }
 
             mob.getAttribute(Attribute.MAX_HEALTH).addModifier(new AttributeModifier(getId(), getHealthAmount(), AttributeOperation.ADD_VALUE));
-            mob.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier(getId(), -0.005 * (level() + 1.0), AttributeOperation.ADD_VALUE));
+            mob.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier(getId(), -0.0015 * (level() + 1.0), AttributeOperation.ADD_VALUE));
             mob.setHealth(mob.getHealth() + (float) getHealthAmount());
         }
 
@@ -347,6 +348,7 @@ sealed public interface GenericMods extends Mod {
             }
 
             mob.getAttribute(Attribute.MAX_HEALTH).removeModifier(Key.key(getId()));
+            mob.getAttribute(Attribute.MOVEMENT_SPEED).removeModifier(Key.key(getId()));
             mob.setHealth(mob.getHealth() - (float) getHealthAmount());
         }
 
@@ -583,7 +585,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public int maxLevel() {
-            return 1;
+            return 0;
         }
 
         @Override
@@ -671,6 +673,94 @@ sealed public interface GenericMods extends Mod {
         @Override
         public double priority() {
             return PRIORITY_MULTIPLICATIVE_MODIFIER;
+        }
+    }
+
+    record Agility(int level) implements GenericMods {
+        @Override
+        public Rarity rarity() {
+            return Rarity.COMMON;
+        }
+
+        @Override
+        public int maxLevel() {
+            return 6;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.SUGAR)
+                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
+                    .lore(
+                            Component.text("+5% Speed", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("-1.0 Heart", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
+                    )
+                    .hideExtraTooltip()
+                    .build();
+        }
+
+        @Override
+        public void onAdd(Entity entity) {
+            if (!(entity instanceof LivingEntity mob)) {
+                return;
+            }
+
+            mob.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_mod", 0.005, AttributeOperation.ADD_VALUE));
+        }
+
+        @Override
+        public void onRemove(Entity entity) {
+            if (!(entity instanceof LivingEntity mob)) {
+                return;
+            }
+
+            mob.getAttribute(Attribute.MOVEMENT_SPEED).removeModifier(Key.key("speed_mod"));
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_ADDITIVE_MODIFIER;
+        }
+    }
+
+    record Acrobatics(int level) implements GenericMods {
+        @Override
+        public Rarity rarity() {
+            return Rarity.COMMON;
+        }
+
+        @Override
+        public ItemStack item() {
+            return ItemStack.builder(Material.GLISTERING_MELON_SLICE)
+                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
+                    .lore(
+                            Component.text("+5% Jump Boost", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                    )
+                    .hideExtraTooltip()
+                    .build();
+        }
+
+        @Override
+        public void onAdd(Entity entity) {
+            if (!(entity instanceof LivingEntity mob)) {
+                return;
+            }
+
+            mob.getAttribute(Attribute.JUMP_STRENGTH).addModifier(new AttributeModifier("jump_boost", 0.005, AttributeOperation.ADD_VALUE));
+        }
+
+        @Override
+        public void onRemove(Entity entity) {
+            if (!(entity instanceof LivingEntity mob)) {
+                return;
+            }
+
+            mob.getAttribute(Attribute.JUMP_STRENGTH).removeModifier(Key.key("jump_boost"));
+        }
+
+        @Override
+        public double priority() {
+            return PRIORITY_ADDITIVE_MODIFIER;
         }
     }
 }

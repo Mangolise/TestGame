@@ -83,7 +83,7 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            attack.updateTag(StaffWeapon.ARC_RADIUS, arc -> arc + (1.0 + (0.5 + level * 0.5)));
+            attack.updateTag(StaffWeapon.ARC_RADIUS, arc -> arc + (0.5 + level * 0.5));
             attack.updateTag(Attack.DAMAGE, damage -> damage - (1.0 + (1.0 * level)));
             next.accept(attack);
         }

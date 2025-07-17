@@ -110,7 +110,7 @@ public record StaffWeapon() implements Weapon {
 
         Instance instance = originEntity.getInstance();
 
-        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), attack.getTag(ARC_RADIUS));
+        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), 1.5 + attack.getTag(ARC_RADIUS));
         for (Entity entity : entities) {
             if (!(entity instanceof AttackableMob mob && attack.canTarget(mob)) ||
                     chainedEntities.contains(entity.getUuid()) ||
