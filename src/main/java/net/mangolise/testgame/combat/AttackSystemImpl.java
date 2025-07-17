@@ -76,7 +76,7 @@ public final class AttackSystemImpl implements AttackSystem {
 
 //        System.out.printf("Went from %s mods to %s sorted nodes.%n", unsorted, sorted);
         
-        Attack initialAttack = new Attack(ThreadLocalRandom.current().nextInt());
+        Attack initialAttack = new Attack(ThreadLocalRandom.current().nextInt(), weapon);
         tags.accept(initialAttack);
         
         List<Attack> attacks = new ArrayList<>();

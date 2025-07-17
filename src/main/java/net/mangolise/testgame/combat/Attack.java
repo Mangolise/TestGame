@@ -1,10 +1,10 @@
 package net.mangolise.testgame.combat;
 
+import net.mangolise.testgame.combat.weapons.Weapon;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.mobs.PlayerTeam;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
-import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagHandler;
 import net.minestom.server.tag.Taggable;
@@ -24,16 +24,18 @@ public class Attack implements Taggable {
 
     private final int seed;
     private final TagHandler tagHandler;
+    private final Weapon weapon;
     
     private static final int SAMPLE_CRITS_SEED_OFFSET = 234563456;
 
-    public Attack(int seed) {
-        this(seed, TagHandler.newHandler());
+    public Attack(int seed, Weapon weapon) {
+        this(seed, weapon, TagHandler.newHandler());
     }
 
-    private Attack(int seed, TagHandler handler) {
+    private Attack(int seed, Weapon weapon, TagHandler handler) {
         this.seed = seed;
         this.tagHandler = handler;
+        this.weapon = weapon;
     }
 
     /**
@@ -62,6 +64,10 @@ public class Attack implements Taggable {
         } else {
             return entity instanceof PlayerTeam;
         }
+    }
+
+    public Weapon weapon() {
+        return weapon;
     }
 
     public interface Node {
@@ -97,7 +103,7 @@ public class Attack implements Taggable {
 
     public Attack copy(boolean mixSeed) {
         int newSeed = mixSeed ? staffordMix13(this.seed) : this.seed;
-        return new Attack(newSeed, tagHandler.copy());
+        return new Attack(newSeed, weapon, tagHandler.copy());
     }
 
     /* David Stafford's (http://zimbry.blogspot.com/2011/09/better-bit-mixing-improving-on.html)
