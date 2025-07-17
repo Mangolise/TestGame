@@ -15,8 +15,9 @@ import java.util.List;
 
 public class MeleeMob extends HostileEntity {
     public Weapon weapon = new DirectDamageWeapon();
+    private final double damage;
 
-    public MeleeMob(EntityType type) {
+    public MeleeMob(EntityType type, double damage) {
         super(type);
 
         this.addAIGroup(
@@ -28,6 +29,8 @@ public class MeleeMob extends HostileEntity {
                         new AttackTargetSelector(this, entity -> entity instanceof PlayerTeam)
                 )
         );
+
+        this.damage = damage;
     }
 
     @Override
@@ -46,7 +49,7 @@ public class MeleeMob extends HostileEntity {
         AttackSystem.instance(target.getInstance()).use(this, weapon, tags -> {
             tags.setTag(Attack.USER, this);
             tags.setTag(Attack.TARGET, target);
-            tags.setTag(Attack.DAMAGE, 1.0);
+            tags.setTag(Attack.DAMAGE, damage);
             tags.setTag(MaceWeapon.IS_LAUNCH_ATTACK, true);
         });
     }

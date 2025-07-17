@@ -34,7 +34,12 @@ public class MeleeJockeyMob extends HostileEntity {
         );
         
         // Create the rider entity (a zombie)
-        this.rider = new MeleeMob(passenger);
+        this.rider = new MeleeMob(passenger, 4);
+    }
+
+    public MeleeJockeyMob withWeapon(Weapon weapon) {
+        this.weapon = weapon;
+        return this;
     }
 
     @Override

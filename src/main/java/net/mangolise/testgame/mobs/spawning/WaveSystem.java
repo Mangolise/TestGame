@@ -6,16 +6,8 @@ import net.kyori.adventure.title.Title;
 import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.gamesdk.util.Timer;
 import net.mangolise.testgame.GameConstants;
-import net.mangolise.testgame.combat.AttackSystem;
-import net.mangolise.testgame.combat.mods.GenericMods;
-import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.mobs.AttackableMob;
-import net.mangolise.testgame.mobs.MeleeJockeyMob;
-import net.mangolise.testgame.mobs.MeleeMob;
-import net.minestom.server.entity.EntityType;
-import net.minestom.server.entity.attribute.Attribute;
-import net.minestom.server.entity.attribute.AttributeModifier;
-import net.minestom.server.entity.attribute.AttributeOperation;
+import net.minestom.server.entity.GameMode;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
@@ -73,7 +65,7 @@ public class WaveSystem {
             throw new IllegalStateException("Wave system already started in this instance!");
         }
         
-        instance.setTag(CURRENT_WAVE_TAG, 0);
+        instance.setTag(CURRENT_WAVE_TAG, 7);
 
         // no need to start the next wave, the instanceTick function will handle that
         instance.eventNode().addListener(InstanceTickEvent.class, event -> instanceTick());
@@ -94,18 +86,28 @@ public class WaveSystem {
         
         int msSinceStart = (int) (System.currentTimeMillis() - instance.getTag(LAST_WAVE_START_TAG));
         
-        double strength = waveStrength(currentWave, msSinceStart);
-        double originalStrength = strength;
+//        double strength = waveStrength(currentWave, msSinceStart);
+//        double originalStrength = strength;
 
         List<AttackableMob> mobs = new ArrayList<>();
         
-        while (strength > 0.1) {
-            EntitySelection selection = sampleEntity(strength);
-            strength -= selection.cost;
-            AttackableMob entity = selection.entity;
-            mobs.add(entity);
+//        while (strength > 0.1) {
+//            EntitySelection selection = sampleEntity(strength);
+//            strength -= selection.cost;
+//            AttackableMob entity = selection.entity;
+//            mobs.add(entity);
+//        }
+//        final double finalStrength = strength;
+
+        List<Waves.SpawnRecord> waveMobs = Waves.getWave(currentWave);
+        for (Waves.SpawnRecord record : waveMobs) {
+            for (int i = 0; i < record.count(); i++) {
+                for (int j = 0; j < instance.getPlayers().stream().filter(p -> p.getGameMode() != GameMode.SPECTATOR).count(); j++) {
+                    AttackableMob mob = record.entity().get();
+                    mobs.add(mob);
+                }
+            }
         }
-        final double finalStrength = strength;
 
         instance.setTag(NEXT_WAVE_WAITING_TAG, true);
 
@@ -121,7 +123,7 @@ public class WaveSystem {
             // announce the number of mobs
             Map<Class<? extends AttackableMob>, Integer> mobCount = mobs.stream()
                     .collect(Collectors.groupingBy(AttackableMob::getClass, Collectors.summingInt(mob -> 1)));
-            StringBuilder mobCountMessage = new StringBuilder("Wave " + displayWave + " (power " + String.format("%.2f", originalStrength) + ") starting! Mobs: ");
+            StringBuilder mobCountMessage = new StringBuilder("Wave " + displayWave + " starting! Mobs: ");
             for (Map.Entry<Class<? extends AttackableMob>, Integer> entry : mobCount.entrySet()) {
                 mobCountMessage.append(entry.getKey().getSimpleName()).append(": ").append(entry.getValue()).append(", ");
             }
@@ -132,9 +134,9 @@ public class WaveSystem {
             instance.sendMessage(Component.text(mobCountMessage.toString()));
 
             for (AttackableMob mob : mobs) {
-                mob.asEntity().getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(1.0 + (currentWave * 0.5));
-                mob.asEntity().getAttribute(Attribute.MAX_HEALTH).setBaseValue(10.0 + (currentWave * 2.0));
-                mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_boost", Math.pow(1.01, finalStrength) - 1.8, AttributeOperation.ADD_MULTIPLIED_BASE));
+//                mob.asEntity().getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(1.0 + (currentWave * 0.5));
+//                mob.asEntity().getAttribute(Attribute.MAX_HEALTH).setBaseValue(10.0 + (currentWave * 2.0));
+//                mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_boost", Math.pow(1.01, currentWave) - 1.8, AttributeOperation.ADD_MULTIPLIED_BASE));
 
                 mob.asEntity().scheduler().scheduleTask(() -> {
                     // after 30 seconds, make them glowing
@@ -181,33 +183,33 @@ public class WaveSystem {
         }
     }
     
-    private record EntitySelection(AttackableMob entity, double cost) {
-    }
+//    private record EntitySelection(AttackableMob entity, double cost) {
+//    }
     
-    private EntitySelection sampleEntity(double strength) {
-        while (strength > 16.0) {
-            MeleeMob warden = new MeleeMob(EntityType.WARDEN);
-            warden.weapon = new MaceWeapon();
-
-            AttackSystem.instance(instance).add(warden, new GenericMods.DoubleAttack(3));
+//    private EntitySelection sampleEntity(double strength) {
+//        while (strength > 16.0) {
+//            MeleeMob warden = new MeleeMob(EntityType.WARDEN);
+//            warden.weapon = new MaceWeapon();
+//
+//            AttackSystem.instance(instance).add(warden, new GenericMods.DoubleAttack(3));
 //            AttackSystem.instance(instance).add(warden, new GenericMods.TripleAttack(3));
-            
-            warden.getAttribute(Attribute.MAX_HEALTH).setBaseValue(128.0);
-            warden.heal();
-
-            return new EntitySelection(warden, 5.0);
-        }
-        while (strength > 4.0) {
-            if (Math.random() < 0.5) {
-                return new EntitySelection(new MeleeJockeyMob(EntityType.CAMEL, EntityType.CREEPER), 1.0);
-            }
-            
-            // TODO: Add more mobs with higher strength levels here
-        }
-
-        // fallback to basic mob
-        return new EntitySelection(new MeleeMob(EntityType.BOGGED), 0.1);
-    }
+//
+//            warden.getAttribute(Attribute.MAX_HEALTH).setBaseValue(128.0);
+//            warden.heal();
+//
+//            return new EntitySelection(warden, 5.0);
+//        }
+//        while (strength > 4.0) {
+//            if (Math.random() < 0.5) {
+//                return new EntitySelection(new MeleeJockeyMob(EntityType.CAMEL, EntityType.CREEPER), 1.0);
+//            }
+//
+//            // TODO: Add more mobs with higher strength levels here
+//        }
+//
+//        // fallback to basic mob
+//        return new EntitySelection(new MeleeMob(EntityType.BOGGED), 0.1);
+//    }
 
     public boolean isNextWaveWaiting() {
         return instance.getTag(NEXT_WAVE_WAITING_TAG);

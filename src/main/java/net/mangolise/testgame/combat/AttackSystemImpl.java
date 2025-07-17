@@ -2,24 +2,14 @@ package net.mangolise.testgame.combat;
 
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.weapons.*;
-import net.mangolise.testgame.mobs.ShooterMob;
-import net.mangolise.testgame.mobs.spawning.SpawnSystem;
-import net.mangolise.testgame.mobs.MeleeJockeyMob;
-import net.mangolise.testgame.mobs.MeleeMob;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.entity.Entity;
-import net.minestom.server.entity.EntityType;
-import net.minestom.server.entity.Player;
-import net.minestom.server.entity.PlayerHand;
-import net.minestom.server.entity.attribute.Attribute;
-import net.minestom.server.entity.metadata.monster.zombie.DrownedMeta;
+import net.minestom.server.entity.*;
 import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.player.PlayerEntityInteractEvent;
 import net.minestom.server.event.player.PlayerHandAnimationEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.SetCooldownPacket;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.TaskSchedule;
@@ -196,6 +186,8 @@ public final class AttackSystemImpl implements AttackSystem {
     }
 
     private void onEntitySwing(Player player, Entity target, ItemStack item) {
+        if (player.getGameMode() == GameMode.SPECTATOR) return;
+
         // staff
         if (isWeapon(item, Weapon.weapon(StaffWeapon.class))) {
             StaffWeapon staffWeapon = new StaffWeapon();
@@ -215,6 +207,8 @@ public final class AttackSystemImpl implements AttackSystem {
     }
 
     private void onSwing(Player player, ItemStack item) {
+        if (player.getGameMode() == GameMode.SPECTATOR) return;
+
         // bow
         if (isWeapon(item, Weapon.weapon(BowWeapon.class))) {
             BowWeapon bowWeapon = new BowWeapon();
@@ -229,55 +223,6 @@ public final class AttackSystemImpl implements AttackSystem {
             AttackSystem.instance(player.getInstance()).use(player, snakeWeapon, tags -> {
                 tags.setTag(Attack.USER, player);
             });
-        } else if (item.material() == Material.ZOMBIE_SPAWN_EGG) { // spawn zombies
-            for (int i = 0; i < 128; i++) {
-                MeleeMob entity = new MeleeMob(EntityType.HUSK);
-                double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.4;
-                double scale = Math.pow(1.0 / (0.8 * (speedMultiplier + 1.0)), 1.0 / 0.3);
-
-                entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
-
-                entity.setTarget(player);
-                entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
-                SpawnSystem.spawn(player.getInstance(), entity);
-            }
-        } else if (item.material() == Material.CHICKEN_SPAWN_EGG) {
-            for (int i = 0; i < 128; i++) {
-                MeleeJockeyMob entity = new MeleeJockeyMob(EntityType.CHICKEN, EntityType.DROWNED);
-                entity.getRider().editEntityMeta(DrownedMeta.class, m -> m.setBaby(true));
-
-                double statScaling = 1.5;
-
-                double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.4;
-                double scale = Math.pow(1.0 / (0.8 * (speedMultiplier + 1.0)), 1.0 / 0.3);
-
-                speedMultiplier *= statScaling;
-                scale *= statScaling;
-
-                entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
-
-                entity.setTarget(player);
-                entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
-                SpawnSystem.spawn(player.getInstance(), entity);
-            }
-        } else if (item.material() == Material.SKELETON_SPAWN_EGG) {
-            for (int i = 0; i < 1; i++) {
-                ShooterMob entity = new ShooterMob(EntityType.SKELETON);
-
-                double statScaling = 1.5;
-
-                double speedMultiplier = 0.1 + Math.random() * Math.random() * 0.4;
-                double scale = Math.pow(1.0 / (0.8 * (speedMultiplier + 1.0)), 1.0 / 0.3);
-
-                speedMultiplier *= statScaling;
-                scale *= statScaling;
-
-                entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speedMultiplier);
-
-                entity.setTarget(player);
-                entity.getAttribute(Attribute.SCALE).setBaseValue(scale);
-                SpawnSystem.spawn(player.getInstance(), entity);
-            }
         }
     }
 }
