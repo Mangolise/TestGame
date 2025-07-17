@@ -32,17 +32,17 @@ import java.util.function.Consumer;
 
 public record MaceWeapon() implements Weapon {
     public static final Tag<Boolean> IS_LAUNCH_ATTACK = Tag.Boolean("testgame.attack.mace.is_launch_attack");
-    public static final Tag<Double> SLAM_RADIUS = Tag.Double("testgame.attack.mace.slam_radius").defaultValue(3.5);
-    public static final Tag<Double> SLAM_INTENSITY = Tag.Double("testgame.attack.mace.slam_intensity").defaultValue(20.0);
-    public static final Tag<Double> SWING_RADIUS = Tag.Double("testgame.attack.mace.swing_radius").defaultValue(2.0);
+    public static final Tag<Double> SLAM_RADIUS = Tag.Double("testgame.attack.mace.slam_radius").defaultValue(0.0);
+    public static final Tag<Double> SLAM_INTENSITY = Tag.Double("testgame.attack.mace.slam_intensity").defaultValue(0.0);
+    public static final Tag<Double> SWING_RADIUS = Tag.Double("testgame.attack.mace.swing_radius").defaultValue(0.0);
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
-        
+
         if (!attack.hasTag(IS_LAUNCH_ATTACK)) {
             throw new IllegalStateException("MaceWeapon attack called without a launch attack tag set in the tags.");
         }
-        
+
         if (attack.getTag(IS_LAUNCH_ATTACK)) {
             attack.setTag(Attack.DAMAGE, 8.0);
         } else {
@@ -66,7 +66,7 @@ public record MaceWeapon() implements Weapon {
             Instance instance = user.getInstance();
 
             if (attack.getTag(IS_LAUNCH_ATTACK)) {
-                Collection<Entity> entities = instance.getNearbyEntities(user.getPosition(), attack.getTag(SLAM_RADIUS));
+                Collection<Entity> entities = instance.getNearbyEntities(user.getPosition(),  2.5 + attack.getTag(SLAM_RADIUS));
 
                 displayBlockVisuals(instance, user.getPosition().asVec());
                 instance.sendGroupedPacket(new ParticlePacket(Particle.CAMPFIRE_COSY_SMOKE, false, true, user.getPosition(), new Vec(0, 0, 0), 0.1f, 100));
@@ -80,7 +80,7 @@ public record MaceWeapon() implements Weapon {
 
                     Entity target = mob.asEntity();
 
-                    Vec newVel = target.getVelocity().withY(target.getVelocity().y() + attack.getTag(SLAM_INTENSITY));
+                    Vec newVel = target.getVelocity().withY(target.getVelocity().y() + (20 + attack.getTag(SLAM_INTENSITY)));
                     target.setVelocity(newVel);
                     mob.applyAttack(DamageType.PLAYER_ATTACK, attack);
                 }
@@ -91,7 +91,7 @@ public record MaceWeapon() implements Weapon {
                 continue;
             }
 
-            Collection<Entity> entities = instance.getNearbyEntities(target.getPosition(), attack.getTag(SWING_RADIUS));
+            Collection<Entity> entities = instance.getNearbyEntities(target.getPosition(), 1.5 + attack.getTag(SWING_RADIUS));
             for (Entity entity : entities) {
                 if (!(entity instanceof AttackableMob e) || entity instanceof Player) {
                     continue;

@@ -26,8 +26,8 @@ public sealed interface MaceWeaponMods extends Mod {
             return ItemStack.builder(Material.MACE)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+1 Block Slam Range", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("-0.5 Damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
+                            Component.text("Mace: +1 Block Slam Range", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("Mace: -1.0 Damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .amount(1)
                     .build();
@@ -35,9 +35,8 @@ public sealed interface MaceWeaponMods extends Mod {
 
         @Override
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            double slamRadius = 3.5 + level;
-            attack.updateTag(MaceWeapon.SLAM_RADIUS, slamRad -> slamRad + slamRadius);
-            attack.updateTag(Attack.DAMAGE, damage -> damage - 0.5);
+            attack.updateTag(MaceWeapon.SLAM_RADIUS, slamRad -> slamRad + (1.0 + level));
+            attack.updateTag(Attack.DAMAGE, damage -> damage - (1.0 + level));
             next.accept(attack);
         }
 
@@ -63,9 +62,9 @@ public sealed interface MaceWeaponMods extends Mod {
             return ItemStack.builder(Material.FIRE_CHARGE)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+5 Slam Velocity", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("+1.5 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("+0.5 Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
+                            Component.text("Mace: +5 Slam Velocity", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("Mace: +1.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("Mace: +0.5s Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .amount(1)
                     .build();
@@ -78,9 +77,12 @@ public sealed interface MaceWeaponMods extends Mod {
 
         @Override
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            attack.updateTag(MaceWeapon.SLAM_INTENSITY, slamIntensity -> slamIntensity + 5);
-            attack.updateTag(Attack.DAMAGE, damage -> damage + 1.5);
-            attack.updateTag(Attack.COOLDOWN, cooldown -> cooldown + 0.5);
+            attack.updateTag(MaceWeapon.SLAM_INTENSITY, slamIntensity -> slamIntensity + (5.0 + 5.0 * level));
+            attack.updateTag(Attack.DAMAGE, damage -> damage + (1.0 + 1.0 * level));
+            if (attack.weapon() instanceof MaceWeapon) {
+                attack.updateTag(Attack.COOLDOWN, cooldown -> cooldown + (0.5 + 0.5 * level));
+            }
+
             next.accept(attack);
         }
 
@@ -106,7 +108,8 @@ public sealed interface MaceWeaponMods extends Mod {
             return ItemStack.builder(Material.FIREWORK_STAR)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("Mace: +0.5 Blocks Swing Radius", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            Component.text("Mace: +0.5 Blocks Swing Radius", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("Mace: -0.5 Damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .amount(1)
                     .build();
@@ -119,8 +122,8 @@ public sealed interface MaceWeaponMods extends Mod {
 
         @Override
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            double swingRadius = 2.0 + (level * 0.5);
-            attack.updateTag(MaceWeapon.SWING_RADIUS, slamRad -> slamRad + swingRadius);
+            attack.updateTag(MaceWeapon.SWING_RADIUS, slamRad -> slamRad + (0.5 + 0.5 * level));
+            attack.updateTag(Attack.DAMAGE, damage -> damage - (0.5 + 0.5 * level));
             next.accept(attack);
         }
 

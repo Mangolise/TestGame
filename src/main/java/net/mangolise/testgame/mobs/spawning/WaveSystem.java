@@ -190,7 +190,7 @@ public class WaveSystem {
             warden.weapon = new MaceWeapon();
 
             AttackSystem.instance(instance).add(warden, new GenericMods.DoubleAttack(3));
-            AttackSystem.instance(instance).add(warden, new GenericMods.TripleAttack(3));
+//            AttackSystem.instance(instance).add(warden, new GenericMods.TripleAttack(3));
             
             warden.getAttribute(Attribute.MAX_HEALTH).setBaseValue(128.0);
             warden.heal();

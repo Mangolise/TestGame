@@ -36,16 +36,21 @@ sealed public interface GenericMods extends Mod {
     record DoubleAttack(int level) implements GenericMods {
         @Override
         public Rarity rarity() {
-            return Rarity.COMMON;
+            return Rarity.EPIC;
+        }
+
+        @Override
+        public int maxLevel() {
+            return 1;
         }
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.IRON_SWORD)
+            return ItemStack.builder(Material.NETHERITE_SWORD)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
                             Component.text("2x Attacks", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("-0.5 + (0.1 per level) damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
+                            Component.text("-50% Damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(List.of()))
                     .amount(2)
@@ -54,7 +59,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public void attack(Attack attack, Consumer<Attack> next) {
-            attack.updateTag(Attack.DAMAGE, damage -> damage * (0.5 + level * 0.1));
+            attack.updateTag(Attack.DAMAGE, damage -> damage * 0.5);
 
             // attack twice
             next.accept(attack);
@@ -63,80 +68,81 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public double priority() {
-            return PRIORITY_WEAPON + 0.1; // this is essentially a weapon
+            return PRIORITY_MULTIPLICATIVE_MODIFIER;
         }
     }
 
-    record TripleAttack(int level) implements GenericMods {
-        @Override
-        public Rarity rarity() {
-            return Rarity.RARE;
-        }
-
-        @Override
-        public ItemStack item() {
-            return ItemStack.builder(Material.DIAMOND_SWORD)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("3x Attacks", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("-0.3 + (0.1 per level)", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(List.of()))
-                    .amount(3)
-                    .maxStackSize(3).build();
-        }
-
-        @Override
-        public void attack(Attack attack, Consumer<Attack> next) {
-            attack.updateTag(Attack.DAMAGE, damage -> damage * (0.33 + level * 0.1));
-
-            // attack three times
-            next.accept(attack);
-            next.accept(attack);
-            next.accept(attack);
-        }
-
-        @Override
-        public double priority() {
-            return PRIORITY_WEAPON + 0.2; // this is essentially a weapon
-        }
-    }
-
-    record QuadAttack(int level) implements GenericMods {
-        @Override
-        public Rarity rarity() {
-            return Rarity.EPIC;
-        }
-
-        @Override
-        public ItemStack item() {
-            return ItemStack.builder(Material.NETHERITE_SWORD)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("4x Attacks", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("-0.25 + (0.1 per level)", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(List.of()))
-                    .amount(4)
-                    .maxStackSize(4).build();
-        }
-
-        @Override
-        public void attack(Attack attack, Consumer<Attack> next) {
-            attack.updateTag(Attack.DAMAGE, damage -> damage * (0.25 + level * 0.1));
-
-            // attack four times
-            next.accept(attack);
-            next.accept(attack);
-            next.accept(attack);
-            next.accept(attack);
-        }
-
-        @Override
-        public double priority() {
-            return PRIORITY_WEAPON + 0.3; // this is essentially a weapon
-        }
-    }
+    // TODO: decide whether to keep this, It's really broken having more than 1 or having more than 2 attacks.
+//    record TripleAttack(int level) implements GenericMods {
+//        @Override
+//        public Rarity rarity() {
+//            return Rarity.RARE;
+//        }
+//
+//        @Override
+//        public ItemStack item() {
+//            return ItemStack.builder(Material.DIAMOND_SWORD)
+//                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
+//                    .lore(
+//                            Component.text("3x Attacks", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+//                            Component.text("-0.3 + (0.1 per level)", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
+//                    )
+//                    .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(List.of()))
+//                    .amount(3)
+//                    .maxStackSize(3).build();
+//        }
+//
+//        @Override
+//        public void attack(Attack attack, Consumer<Attack> next) {
+//            attack.updateTag(Attack.DAMAGE, damage -> damage * (0.33 + level * 0.1));
+//
+//            // attack three times
+//            next.accept(attack);
+//            next.accept(attack);
+//            next.accept(attack);
+//        }
+//
+//        @Override
+//        public double priority() {
+//            return PRIORITY_WEAPON + 0.2; // this is essentially a weapon
+//        }
+//    }
+//
+//    record QuadAttack(int level) implements GenericMods {
+//        @Override
+//        public Rarity rarity() {
+//            return Rarity.EPIC;
+//        }
+//
+//        @Override
+//        public ItemStack item() {
+//            return ItemStack.builder(Material.NETHERITE_SWORD)
+//                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
+//                    .lore(
+//                            Component.text("4x Attacks", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+//                            Component.text("-0.25 + (0.1 per level)", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
+//                    )
+//                    .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(List.of()))
+//                    .amount(4)
+//                    .maxStackSize(4).build();
+//        }
+//
+//        @Override
+//        public void attack(Attack attack, Consumer<Attack> next) {
+//            attack.updateTag(Attack.DAMAGE, damage -> damage * (0.25 + level * 0.1));
+//
+//            // attack four times
+//            next.accept(attack);
+//            next.accept(attack);
+//            next.accept(attack);
+//            next.accept(attack);
+//        }
+//
+//        @Override
+//        public double priority() {
+//            return PRIORITY_WEAPON + 0.3; // this is essentially a weapon
+//        }
+//    }
 
     // TODO: decide whether to keep this, It's often detrimental and is confusing to explain.
 //    record CritToDamage(int level) implements GenericMods {
@@ -183,14 +189,14 @@ sealed public interface GenericMods extends Mod {
             return ItemStack.builder(Material.GOLD_INGOT)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+20% + (5% per level) Crit chance", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            Component.text("+5% Crit chance", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
                     )
                     .build();
         }
 
         @Override
         public void attack(Attack attack, Consumer<Attack> next) {
-            attack.updateTag(Attack.CRIT_CHANCE, crit -> crit + (0.2 + level * 0.05));
+            attack.updateTag(Attack.CRIT_CHANCE, crit -> crit + (5.0 + level * 5.0));
 
             next.accept(attack);
         }
@@ -212,14 +218,14 @@ sealed public interface GenericMods extends Mod {
             return ItemStack.builder(Material.RABBIT_FOOT)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("30% + (10% per level) Cooldown Reduction", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            Component.text("+5% Cooldown Reduction", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
                     )
                     .build();
         }
 
         @Override
         public void attack(Attack attack, Consumer<Attack> next) {
-            double cooldownReduction = 0.3 + level * 0.1;
+            double cooldownReduction = 0.05 + level * 0.05;
             attack.updateTag(Attack.COOLDOWN, cooldown -> cooldown * (1.0 - cooldownReduction));
 
             next.accept(attack);
@@ -327,6 +333,7 @@ sealed public interface GenericMods extends Mod {
             }
 
             mob.getAttribute(Attribute.MAX_HEALTH).addModifier(new AttributeModifier(getId(), getHealthAmount(), AttributeOperation.ADD_VALUE));
+            mob.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier(getId(), -0.005 * (level() + 1.0), AttributeOperation.ADD_VALUE));
             mob.setHealth(mob.getHealth() + (float) getHealthAmount());
         }
 
@@ -375,7 +382,8 @@ sealed public interface GenericMods extends Mod {
             return ItemStack.builder(Material.APPLE)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+1.0 Heart", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            Component.text("+1.0 Heart", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("+5% Slowness", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .build();
         }
@@ -407,7 +415,8 @@ sealed public interface GenericMods extends Mod {
             return ItemStack.builder(Material.GOLDEN_APPLE)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+2.0 Hearts", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            Component.text("+2.0 Hearts", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("+5% Slowness", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .build();
         }
@@ -439,7 +448,8 @@ sealed public interface GenericMods extends Mod {
             return ItemStack.builder(Material.ENCHANTED_GOLDEN_APPLE)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+4.0 Hearts", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            Component.text("+4.0 Hearts", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("+5% Slowness", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .build();
         }
@@ -451,10 +461,12 @@ sealed public interface GenericMods extends Mod {
         @Override
         default void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
             attack.getAndUpdateTag(Attack.DAMAGE, damage -> damage + getDamageAmount());
+            attack.getAndUpdateTag(Attack.COOLDOWN, coolDown -> coolDown * getCooldownAmount());
             next.accept(attack);
         }
 
         double getDamageAmount();
+        double getCooldownAmount();
 
         @Override
         default double priority() {
@@ -466,6 +478,11 @@ sealed public interface GenericMods extends Mod {
         @Override
         public double getDamageAmount() {
             return 2 * (level + 1);
+        }
+
+        @Override
+        public double getCooldownAmount() {
+            return 1.0 - (0.05 * (level + 1.0));
         }
 
         @Override
@@ -483,7 +500,8 @@ sealed public interface GenericMods extends Mod {
             return ItemStack.builder(Material.IRON_INGOT)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+1.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            Component.text("+1.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("+5% Weapon Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .build();
         }
@@ -493,6 +511,11 @@ sealed public interface GenericMods extends Mod {
         @Override
         public double getDamageAmount() {
             return 4 * (level + 1);
+        }
+
+        @Override
+        public double getCooldownAmount() {
+            return 1.0 - (0.05 * (level + 1.0));
         }
 
         @Override
@@ -510,7 +533,8 @@ sealed public interface GenericMods extends Mod {
             return ItemStack.builder(Material.DIAMOND)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+2.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            Component.text("+2.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("+5% Weapon Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .build();
         }
@@ -520,6 +544,11 @@ sealed public interface GenericMods extends Mod {
         @Override
         public double getDamageAmount() {
             return 8 * (level + 1);
+        }
+
+        @Override
+        public double getCooldownAmount() {
+            return 1.0 - (0.1 * (level + 1.0));
         }
 
         @Override
@@ -537,7 +566,8 @@ sealed public interface GenericMods extends Mod {
             return ItemStack.builder(Material.NETHERITE_INGOT)
                     .customName(this.name().decoration(TextDecoration.ITALIC, false))
                     .lore(
-                            Component.text("+4.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            Component.text("+4.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
+                            Component.text("+10% Weapon Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
                     )
                     .build();
         }
@@ -553,7 +583,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public int maxLevel() {
-            return 100;
+            return 1;
         }
 
         @Override

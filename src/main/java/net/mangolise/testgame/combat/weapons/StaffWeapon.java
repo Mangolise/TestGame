@@ -29,8 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public record StaffWeapon() implements Weapon {
-    public static final Tag<Double> ARC_CHANCE = Tag.Double("testgame.attack.staff.arc_chance").defaultValue(0.5);
-    public static final Tag<Double> ARC_RADIUS = Tag.Double("testgame.attack.staff.arc_radius").defaultValue(3.0);
+    public static final Tag<Double> ARC_CHANCE = Tag.Double("testgame.attack.staff.arc_chance").defaultValue(0.0);
+    public static final Tag<Double> ARC_RADIUS = Tag.Double("testgame.attack.staff.arc_radius").defaultValue(0.0);
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
