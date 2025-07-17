@@ -3,33 +3,30 @@ package net.mangolise.testgame;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.mangolise.gamesdk.Game;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.mobs.spawning.CompleteWaveEvent;
 import net.mangolise.testgame.mobs.spawning.SpawnWaveEvent;
+import net.mangolise.testgame.mobs.spawning.WaveSystem;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.event.instance.RemoveEntityFromInstanceEvent;
+import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.tag.Tag;
 
-public class BossBarSystem {
+public class BossBarFeature implements Game.Feature<TestGame> {
+    private static final Tag<Instance> LAST_INSTANCE_TAG = Tag.Transient("testgame.boss_bar_feature.last_instance");
 
-    private final Instance instance;
+    private static boolean hasRegisteredGlobal = false;
+    private Instance instance;
 
-    public BossBarSystem(Instance instance) {
-        this.instance = instance;
-    }
+    public BossBarFeature() {}
 
-    private static final Tag<BossBarSystem> BOSS_BAR_SYSTEM = Tag.Transient("boss_bar_system");
+    @Override
+    public void setup(Context<TestGame> context) {
+        instance = context.game().instance();
 
-    public static BossBarSystem from(Instance instance) {
-        if (!instance.hasTag(BOSS_BAR_SYSTEM)) {
-            BossBarSystem bossBarSystem = new BossBarSystem(instance);
-            instance.setTag(BOSS_BAR_SYSTEM, bossBarSystem);
-        }
-        return instance.getTag(BOSS_BAR_SYSTEM);
-    }
-
-    public void start() {
         Component name = Component.text("Wave").color(TextColor.color(226, 0, 0));
         BossBar bossBar = BossBar.bossBar(name, 1.0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS);
 
@@ -56,5 +53,28 @@ public class BossBarSystem {
         instance.eventNode().addListener(CompleteWaveEvent.class, e -> {
             instance.hideBossBar(bossBar);
         });
+
+        context.eventNode().addListener(PlayerSpawnEvent.class, e -> {
+            if (e.getPlayer().getTag(LAST_INSTANCE_TAG) == instance) {
+                e.getPlayer().hideBossBar(bossBar);
+            } else {
+                MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
+                    if (e.getInstance() == instance && !WaveSystem.from(instance).isNextWaveWaiting()) {
+                        e.getPlayer().showBossBar(bossBar);
+                        e.getPlayer().sendMessage("Joined instance");
+                    }
+                });
+            }
+        });
+
+        if (!hasRegisteredGlobal) {
+            hasRegisteredGlobal = true;
+            MinecraftServer.getGlobalEventHandler().addListener(PlayerSpawnEvent.class, e -> {
+                MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
+                    e.getPlayer().setTag(LAST_INSTANCE_TAG, e.getInstance());
+                    e.getPlayer().sendMessage("Spawning in instance");
+                });
+            });
+        }
     }
 }

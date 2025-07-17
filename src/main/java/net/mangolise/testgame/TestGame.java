@@ -155,7 +155,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         // Start the wave system
         WaveSystem.from(instance).start();
-        BossBarSystem.from(instance).start();
 
         Log.logger().info("Started game");
     }
@@ -327,7 +326,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
                 new FindTheButtonFeature(),
                 new ItemPickupFeature(),
                 new ItemDropFeature(),
-                new ModMenuFeature()
+                new ModMenuFeature(),
+                new BossBarFeature()
         );
     }
 

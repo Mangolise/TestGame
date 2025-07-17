@@ -208,4 +208,8 @@ public class WaveSystem {
         // fallback to basic mob
         return new EntitySelection(new MeleeMob(EntityType.BOGGED), 0.1);
     }
+
+    public boolean isNextWaveWaiting() {
+        return instance.getTag(NEXT_WAVE_WAITING_TAG);
+    }
 }
