@@ -2,8 +2,10 @@ package net.mangolise.testgame.commands;
 
 import net.mangolise.gamesdk.features.commands.MangoliseCommand;
 import net.mangolise.testgame.LobbyGame;
-import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentType;
+import net.minestom.server.entity.Player;
+
+import java.util.List;
 
 public class AcceptPartyInviteCommand extends MangoliseCommand {
 
@@ -13,11 +15,14 @@ public class AcceptPartyInviteCommand extends MangoliseCommand {
         addPlayerSyntax((sender, context) ->
                 sender.sendMessage("Specify the player you want to accept the party invite from."));
 
-        Argument<String> arg = ArgumentType.String("player");
         addPlayerSyntax(((player, context) -> {
-            String partyOwner = context.get(arg);
-            lobby.tryJoinParty(player, partyOwner);
-        }), arg);
+            List<Player> selections = getPlayers(context, player, "player");
+            if (selections.size() != 1) {
+                player.sendMessage("You must specify exactly one player to accept the party invite from.");
+                return;
+            }
+            lobby.tryJoinParty(player, selections.getFirst().getUsername());
+        }), ArgumentType.Entity("player").onlyPlayers(true));
     }
 
     @Override

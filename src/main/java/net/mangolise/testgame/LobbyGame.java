@@ -248,7 +248,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         Component acceptMessage = Component.text("Click here to accept the invite.")
                 .color(NamedTextColor.GOLD)
                 .hoverEvent(HoverEvent.showText(ChatUtil.toComponent("&aClick this to join their party!")))
-                .clickEvent(ClickEvent.runCommand("/acceptpartyinvite " + player.getUsername()));
+                .clickEvent(ClickEvent.runCommand("acceptpartyinvite " + player.getUsername()));
         target.sendMessage(acceptMessage);
     }
 
