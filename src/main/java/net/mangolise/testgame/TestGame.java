@@ -273,13 +273,12 @@ public class TestGame extends BaseGame<TestGame.Config> {
         if (player.getInstance() != instance) player.setInstance(instance, SPAWN);
 
         player.setGameMode(GameMode.ADVENTURE);
-        player.setAllowFlying(true); // TODO: Remove this
         player.setRespawnPoint(SPAWN);
 
         // TODO: should we do this?
         // Setting the base value instead of adding a modifier seems to reduce FOV effects.
         //player.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("scale-movement-bonus", 1.5, AttributeOperation.ADD_MULTIPLIED_BASE));
-        player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1 * 1.5);
+//        player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1 * 1.5);
 
         // TODO: this should be changed, only on weapons like the staff would this be big
         player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(10000.0);
