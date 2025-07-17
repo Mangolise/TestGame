@@ -1,6 +1,8 @@
 package net.mangolise.testgame.commands;
 
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.gamesdk.features.commands.MangoliseCommand;
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.LobbyGame;
 import net.mangolise.testgame.TestGame;
 
@@ -14,6 +16,7 @@ public class LeaveCommand extends MangoliseCommand {
             lobby.addPlayer(player);
 
             if (game != null) {
+                game.instance().sendMessage(ChatUtil.toComponent("&7[&aGame&7] &7[&c-&7] &7" + player.getUsername()));
                 game.leavePlayer(player);
             }
         });

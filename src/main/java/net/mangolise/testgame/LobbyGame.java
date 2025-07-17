@@ -361,6 +361,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             for (TestGame game : games) {
                 if (game.players().contains(player.getUuid())) {
                     player.sendMessage(ChatUtil.toComponent("&aRejoining your game..."));
+                    game.instance().sendMessage(ChatUtil.toComponent("&7[&aGame&7] &7[&a+&7] &7" + player.getUsername()));
                     game.joinPlayer(player);
                     return;
                 }
