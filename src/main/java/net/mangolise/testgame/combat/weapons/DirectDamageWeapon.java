@@ -5,10 +5,12 @@ import net.kyori.adventure.text.format.TextColor;
 import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
+import net.minestom.server.component.DataComponents;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.component.UseCooldown;
 import net.minestom.server.registry.RegistryKey;
 import net.minestom.server.tag.Tag;
 
@@ -31,9 +33,12 @@ public record DirectDamageWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.WAXED_WEATHERED_CUT_COPPER_SLAB)
-                .withCustomName(Component.text("Hi there", TextColor.color(12, 12, 12))).withTag(Weapon.WEAPON_TAG, getId())
-                .withLore(ChatUtil.toComponent("&7This is a dev tool noob!"));
+        return ItemStack.builder(Material.WAXED_WEATHERED_CUT_COPPER_SLAB)
+                .set(DataComponents.USE_COOLDOWN, new UseCooldown(0, getId()))
+                .customName(Component.text("Hi there", TextColor.color(12, 12, 12)))
+                .set(Weapon.WEAPON_TAG, getId())
+                .lore(ChatUtil.toComponent("&7This is a dev tool noob!"))
+                .build();
     }
 
     @Override

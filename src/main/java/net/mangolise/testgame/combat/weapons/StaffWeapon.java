@@ -18,6 +18,7 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.component.UseCooldown;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.tag.Tag;
@@ -74,15 +75,16 @@ public record StaffWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.BREEZE_ROD)
-                .withTag(Weapon.WEAPON_TAG, getId())
-                .with(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
-                .withCustomName(ChatUtil.toComponent("&r&b&lStaff"))
-                .withLore(
+        return ItemStack.builder(Material.BREEZE_ROD)
+                .set(Weapon.WEAPON_TAG, getId())
+                .set(DataComponents.USE_COOLDOWN, new UseCooldown(0, getId()))
+                .set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+                .customName(ChatUtil.toComponent("&r&b&lStaff"))
+                .lore(
                         ChatUtil.toComponent("&7A magical staff that can chain lightning attacks."),
                         ChatUtil.toComponent("&7Hit groups of enemies to cause a chain reaction "),
                         ChatUtil.toComponent("&7of forking lightning bolts!")
-                );
+                ).build();
     }
 
     @Override

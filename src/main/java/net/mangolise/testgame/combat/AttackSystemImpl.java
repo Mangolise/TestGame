@@ -20,6 +20,7 @@ import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.network.packet.server.play.SetCooldownPacket;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.TaskSchedule;
 
@@ -103,6 +104,12 @@ public final class AttackSystemImpl implements AttackSystem {
                 .map(attack -> attack.getTag(Attack.COOLDOWN))
                 .max(Double::compareTo).get();
 
+        // Visual cooldown
+        if (entity instanceof Player player) {
+            player.sendPacket(new SetCooldownPacket(weapon.getId(), (int) (cooldown * 20.0)));
+        }
+
+        // Real cooldown
         cooldowns.add(weapon);
         MinecraftServer.getSchedulerManager().scheduleTask(() -> {
             cooldowns.remove(weapon);

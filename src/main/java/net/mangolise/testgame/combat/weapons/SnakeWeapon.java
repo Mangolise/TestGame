@@ -23,6 +23,7 @@ import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.component.UseCooldown;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.sound.SoundEvent;
@@ -86,14 +87,15 @@ public record SnakeWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.STICK)
-                .withTag(Weapon.WEAPON_TAG, getId())
-                .with(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
-                .withCustomName(ChatUtil.toComponent("&r&a&lSnake"))
-                .withLore(
+        return ItemStack.builder(Material.STICK)
+                .set(Weapon.WEAPON_TAG, getId())
+                .set(DataComponents.USE_COOLDOWN, new UseCooldown(0, getId()))
+                .set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+                .customName(ChatUtil.toComponent("&r&a&lSnake"))
+                .lore(
                         ChatUtil.toComponent("&7Spawn a slithery snake that forks upon critting an enemy."),
                         ChatUtil.toComponent("&7When it hits a hoard it can cause a chain reaction!")
-                );
+                ).build();
     }
 
     @Override

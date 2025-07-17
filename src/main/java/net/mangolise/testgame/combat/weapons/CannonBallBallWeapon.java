@@ -22,6 +22,7 @@ import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.item.component.UseCooldown;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.UnknownNullability;
 
@@ -63,14 +64,17 @@ public record CannonBallBallWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.HEAVY_CORE)
-                .withTag(Weapon.WEAPON_TAG, getId())
-                .with(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
-                .withCustomName(ChatUtil.toComponent("&r&6&lCannon Ball Ball"))
-                .withLore(
+        return ItemStack.builder(Material.HEAVY_CORE)
+                .set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+                .set(DataComponents.USE_COOLDOWN, new UseCooldown(0, getId()))
+                .set(Weapon.WEAPON_TAG, getId())
+                .customName(ChatUtil.toComponent("&r&6&lCannon Ball Ball"))
+                .lore(
                         ChatUtil.toComponent("&7A heavy ball that splits into smaller balls on impact."),
                         ChatUtil.toComponent("&7It deals large area of effect damage in a chain reaction."),
-                        ChatUtil.toComponent("&7Crits cause it to split even more."));
+                        ChatUtil.toComponent("&7Crits cause it to split even more.")
+                )
+                .build();
     }
 
     @Override

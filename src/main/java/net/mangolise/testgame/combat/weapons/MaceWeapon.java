@@ -20,6 +20,7 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.component.TooltipDisplay;
+import net.minestom.server.item.component.UseCooldown;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.tag.Tag;
@@ -145,15 +146,16 @@ public record MaceWeapon() implements Weapon {
 
     @Override
     public ItemStack getItem() {
-        return ItemStack.of(Material.MACE)
-                .withTag(Weapon.WEAPON_TAG, getId())
-                .with(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
-                .withCustomName(ChatUtil.toComponent("&r&7&c&lMace"))
-                .with(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(false, Set.of(DataComponents.ATTRIBUTE_MODIFIERS)))
-                .withLore(
+        return ItemStack.builder(Material.MACE)
+                .set(Weapon.WEAPON_TAG, getId())
+                .set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+                .set(DataComponents.USE_COOLDOWN, new UseCooldown(0, getId()))
+                .set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(false, Set.of(DataComponents.ATTRIBUTE_MODIFIERS)))
+                .customName(ChatUtil.toComponent("&r&7&c&lMace"))
+                .lore(
                         ChatUtil.toComponent("&7A heavy weapon that can launch enemies into the air."),
                         ChatUtil.toComponent("&7Slow but powerful, deal damage to enemies close by.")
-                );
+                ).build();
     }
 
     @Override
