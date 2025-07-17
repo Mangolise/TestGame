@@ -12,7 +12,6 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.entity.PlayerSkin;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
-import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.inventory.InventoryType;
@@ -23,7 +22,6 @@ import net.minestom.server.item.component.HeadProfile;
 import net.minestom.server.tag.Tag;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,25 +45,23 @@ public class ModMenuFeature implements Game.Feature<TestGame> {
             e.getPlayer().openInventory(new ModMenu(e.getPlayer()).getInventory());
         });
 
-        eventNode.addListener(PlayerSpawnEvent.class, e -> {
-            if (Arrays.stream(e.getPlayer().getInventory().getItemStacks()).noneMatch(stack -> stack.material().equals(MOD_MENU_ITEM.material()))) {
-                PlayerSkin skin = e.getPlayer().getSkin();
-                ItemStack item = skin == null ? MOD_MENU_ITEM : MOD_MENU_ITEM.with(DataComponents.PROFILE, new HeadProfile(skin));
-
-                if (e.getPlayer().getInventory().getItemStack(8).isAir()) {
-                    e.getPlayer().getInventory().setItemStack(8, item);
-                } else {
-                    e.getPlayer().getInventory().addItemStack(item);
-                }
-            }
-        });
-
         eventNode.addListener(InventoryPreClickEvent.class, e -> {
             if (e.getClickedItem().getTag(IS_MOD_MENU_ITEM) && e.getClick() instanceof Click.Right) {
                 e.setCancelled(true);
                 e.getPlayer().openInventory(new ModMenu(e.getPlayer()).getInventory());
             }
         });
+    }
+
+    public void giveItem(Player player) {
+        PlayerSkin skin = player.getSkin();
+        ItemStack item = skin == null ? MOD_MENU_ITEM : MOD_MENU_ITEM.with(DataComponents.PROFILE, new HeadProfile(skin));
+
+        if (player.getInventory().getItemStack(8).isAir()) {
+            player.getInventory().setItemStack(8, item);
+        } else {
+            player.getInventory().addItemStack(item);
+        }
     }
 
     private static class ModMenu extends InventoryMenu {

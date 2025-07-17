@@ -33,8 +33,6 @@ import net.minestom.server.event.player.PlayerDisconnectEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.registry.RegistryKey;
@@ -94,6 +92,9 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         AttackSystem.register(instance);
 
+        super.setup();  // do this after the instance is set up so that features can access it
+        // but before the players are spawned so that the join function can access the features
+
         // Player spawning
         for (Player player : config.players) {
             joinPlayer(player);
@@ -150,8 +151,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
                 lose();
             }
         });
-
-        super.setup();  // do this after the instance is set up so that features can access it
 
         // Start the wave system
         WaveSystem.from(instance).start();
@@ -277,21 +276,12 @@ public class TestGame extends BaseGame<TestGame.Config> {
         player.setGameMode(GameMode.ADVENTURE);
         player.setRespawnPoint(SPAWN);
 
-        // TODO: should we do this?
-        // Setting the base value instead of adding a modifier seems to reduce FOV effects.
-        //player.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("scale-movement-bonus", 1.5, AttributeOperation.ADD_MULTIPLIED_BASE));
-//        player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1 * 1.5);
+        player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(32);
 
-        // TODO: this should be changed, only on weapons like the staff would this be big
-        player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(10000.0);
-
+        // Give the default weapon bundle
         player.getInventory().clear();
-
-        // TODO: remove this and make sure each weapon that should be obtainable has a mod.
         player.getInventory().addItemStack(BundleMenu.createBundleItem(true));
-        player.getInventory().setItemStack(5, ItemStack.of(Material.SKELETON_SPAWN_EGG));
-        player.getInventory().setItemStack(6, ItemStack.of(Material.CHICKEN_SPAWN_EGG));
-        player.getInventory().setItemStack(7, ItemStack.of(Material.ZOMBIE_SPAWN_EGG));
+        feature(ModMenuFeature.class).giveItem(player);
 
         player.eventNode().addListener(PlayerDisconnectEvent.class, e -> {
             leavePlayer(e.getPlayer());
