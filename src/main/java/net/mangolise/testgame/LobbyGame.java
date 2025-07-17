@@ -17,12 +17,14 @@ import net.mangolise.gamesdk.permissions.Permissions;
 import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.gamesdk.util.InventoryMenu;
 import net.mangolise.testgame.commands.AcceptPartyInviteCommand;
+import net.mangolise.testgame.commands.InviteCommand;
 import net.mangolise.testgame.commands.LeaveCommand;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.entity.PlayerSkin;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeInstance;
@@ -164,8 +166,11 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     public void setup() {
         super.setup();
 
-        MinecraftServer.getCommandManager().register(new AcceptPartyInviteCommand(this));
-        MinecraftServer.getCommandManager().register(new LeaveCommand(this));
+        MinecraftServer.getCommandManager().register(
+                new AcceptPartyInviteCommand(this),
+                new LeaveCommand(this),
+                new InviteCommand(this)
+        );
 
         RegistryKey<DimensionType> dim = MinecraftServer.getDimensionTypeRegistry().getKey(Key.key("lobby-dimension"));
         if (dim == null) {
@@ -215,6 +220,8 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         });
 
         world.eventNode().addListener(PlayerEntityInteractEvent.class, e -> {
+            if (e.getHand() != PlayerHand.MAIN) return;
+
             if (!e.getPlayer().getItemInMainHand().equals(invitePartyMemberItem)) {
                 return;
             }
@@ -223,22 +230,26 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 return;
             }
 
-            Set<Player> invitees = e.getPlayer().getTag(PARTY_MEMBER_INVITES_TAG);
-            if (!invitees.add(target)) {
-                // it was already there
-                e.getPlayer().sendMessage(ChatUtil.toComponent("&cYou have already invited &6" + target.getUsername() + "&c to your party."));
-                return;
-            }
-
-            e.getPlayer().sendMessage(ChatUtil.toComponent("&aYou have invited &6" + target.getUsername() + "&a to your party!"));
-            target.sendMessage(ChatUtil.toComponent("&6" + e.getPlayer().getUsername() + "&a has invited you to their party!"));
-
-            Component acceptMessage = Component.text("Click here to accept the invite.")
-                    .color(NamedTextColor.GOLD)
-                    .hoverEvent(HoverEvent.showText(ChatUtil.toComponent("&aClick this to join their party!")))
-                    .clickEvent(ClickEvent.runCommand("/acceptpartyinvite " + e.getPlayer().getUsername()));
-            target.sendMessage(acceptMessage);
+            sendPartyInvite(e.getPlayer(), target);
         });
+    }
+
+    public void sendPartyInvite(Player player, Player target) {
+        Set<Player> invitees = player.getTag(PARTY_MEMBER_INVITES_TAG);
+        if (!invitees.add(target)) {
+            // it was already there
+            player.sendMessage(ChatUtil.toComponent("&cYou have already invited &6" + target.getUsername() + "&c to your party."));
+            return;
+        }
+
+        player.sendMessage(ChatUtil.toComponent("&aYou have invited &6" + target.getUsername() + "&a to your party!"));
+        target.sendMessage(ChatUtil.toComponent("&6" + player.getUsername() + "&a has invited you to their party!"));
+
+        Component acceptMessage = Component.text("Click here to accept the invite.")
+                .color(NamedTextColor.GOLD)
+                .hoverEvent(HoverEvent.showText(ChatUtil.toComponent("&aClick this to join their party!")))
+                .clickEvent(ClickEvent.runCommand("/acceptpartyinvite " + player.getUsername()));
+        target.sendMessage(acceptMessage);
     }
 
     private void startGame(Player[] players) {
@@ -537,6 +548,10 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             }
         }
         return null;
+    }
+
+    public @Nullable TestGame gameByPlayer(Player player) {
+        return gameByInstance(player.getInstance());
     }
 
     @Override

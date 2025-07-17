@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import java.time.Duration;
 import java.util.List;
 
+// TODO: Make this work
 public class JacobEntity extends HostileEntity implements PlayerTeam {
     
     private final Weapon weapon;
