@@ -5,7 +5,6 @@ import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.events.ProjectileCollideEntityEvent;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.projectiles.VanillaProjectile;
-import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
@@ -13,7 +12,6 @@ import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
-import net.minestom.server.item.component.UseCooldown;
 import net.minestom.server.tag.Tag;
 
 import java.util.List;
@@ -76,13 +74,10 @@ public record BowWeapon() implements Weapon {
     }
 
     @Override
-    public ItemStack getItem() {
+    public ItemStack.Builder generateItem() {
         return ItemStack.builder(Material.BOW)
                 .customName(ChatUtil.toComponent("&r&6&lLiterally Just A Bow"))
-                .lore(ChatUtil.toComponent("&7You clearly cheated to get this."))
-                .set(Weapon.WEAPON_TAG, getId())
-                .set(DataComponents.USE_COOLDOWN, new UseCooldown(0, getId()))
-                .build();
+                .lore(ChatUtil.toComponent("&7You clearly cheated to get this."));
     }
 
     @Override

@@ -174,11 +174,16 @@ public final class AttackSystemImpl implements AttackSystem {
                 return;
             }
 
-            if (isWeapon(player.getItemInHand(PlayerHand.MAIN), Weapon.weapon(MaceWeapon.class))) { // mace
+            ItemStack item = player.getItemInHand(PlayerHand.MAIN);
+            Entity target = e.getTarget();
+
+            onEntitySwing(player, e.getTarget(), item);
+
+            if (isWeapon(item, Weapon.weapon(MaceWeapon.class))) { // mace
                 MaceWeapon maceWeapon = new MaceWeapon();
                 AttackSystem.instance(player.getInstance()).use(player, maceWeapon, tags -> {
                     tags.setTag(Attack.USER, player);
-                    tags.setTag(Attack.TARGET, e.getTarget());
+                    tags.setTag(Attack.TARGET, target);
                     tags.setTag(MaceWeapon.IS_LAUNCH_ATTACK, false);
                 });
             }
@@ -186,16 +191,27 @@ public final class AttackSystemImpl implements AttackSystem {
 
         instance.eventNode().addListener(PlayerEntityInteractEvent.class, e -> {
             Player player = e.getPlayer();
-
-            // staff
-            if (isWeapon(player.getItemInHand(e.getHand()), Weapon.weapon(StaffWeapon.class))) {
-                StaffWeapon staffWeapon = new StaffWeapon();
-                AttackSystem.instance(instance).use(player, staffWeapon, tags -> {
-                    tags.setTag(Attack.USER, player);
-                    tags.setTag(Attack.TARGET, e.getTarget());
-                });
-            }
+            onEntitySwing(player, e.getTarget(), player.getItemInHand(e.getHand()));
         });
+    }
+
+    private void onEntitySwing(Player player, Entity target, ItemStack item) {
+        // staff
+        if (isWeapon(item, Weapon.weapon(StaffWeapon.class))) {
+            StaffWeapon staffWeapon = new StaffWeapon();
+            AttackSystem.instance(instance).use(player, staffWeapon, tags -> {
+                tags.setTag(Attack.USER, player);
+                tags.setTag(Attack.TARGET, target);
+            });
+        } else if (isWeapon(item, Weapon.weapon(DirectDamageWeapon.class))) { // Direct Damage (dev tool)
+            DirectDamageWeapon directDamageWeapon = new DirectDamageWeapon();
+            AttackSystem.instance(player.getInstance()).use(player, directDamageWeapon, tags -> {
+                tags.setTag(Attack.USER, player);
+                tags.setTag(Attack.TARGET, target);
+                tags.setTag(Attack.DAMAGE, 1000.0);
+                tags.setTag(Attack.COOLDOWN, 0.25);
+            });
+        }
     }
 
     private void onSwing(Player player, ItemStack item) {
