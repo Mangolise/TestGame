@@ -1,0 +1,125 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"parent": "guantlet",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "testgame:item/guantlet",
+		"particle": "testgame:item/guantlet"
+	},
+	"elements": [
+		{
+			"from": [5, -1, 5],
+			"to": [11, 5, 11],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 0, 7]},
+			"faces": {
+				"north": {"uv": [0, 0, 3, 3], "texture": "#0"},
+				"east": {"uv": [0, 3, 3, 6], "texture": "#0"},
+				"south": {"uv": [3, 0, 6, 3], "texture": "#0"},
+				"west": {"uv": [3, 3, 6, 6], "texture": "#0"},
+				"up": {"uv": [3, 9, 0, 6], "texture": "#0"},
+				"down": {"uv": [9, 0, 6, 3], "texture": "#0"}
+			}
+		},
+		{
+			"from": [5, 5, 5],
+			"to": [11, 11, 11],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 6, 7]},
+			"faces": {
+				"north": {"uv": [12.5, 12.5, 15.5, 15.5], "texture": "#0"},
+				"east": {"uv": [15.5, 12.5, 12.5, 15.5], "texture": "#0"},
+				"south": {"uv": [12.5, 12.5, 15.5, 15.5], "texture": "#0"},
+				"west": {"uv": [15.5, 12.5, 12.5, 15.5], "texture": "#0"},
+				"up": {"uv": [0, 13, 3, 16], "texture": "#0"},
+				"down": {"uv": [12.5, 12.5, 15.5, 15.5], "texture": "#0"}
+			}
+		},
+		{
+			"from": [10.5, 0, 6],
+			"to": [11.5, 4, 10],
+			"rotation": {"angle": 0, "axis": "y", "origin": [12.5, 0, 7]},
+			"faces": {
+				"north": {"uv": [5.5, 10.5, 6, 12.5], "texture": "#0"},
+				"east": {"uv": [9, 0, 11, 2], "texture": "#0"},
+				"south": {"uv": [10.5, 5.5, 11, 7.5], "texture": "#0"},
+				"west": {"uv": [2.5, 9, 4.5, 11], "texture": "#0"},
+				"up": {"uv": [6.5, 12.5, 6, 10.5], "texture": "#0"},
+				"down": {"uv": [7, 10.5, 6.5, 12.5], "texture": "#0"}
+			}
+		},
+		{
+			"from": [5, -3.5, 5.5],
+			"to": [10, 2.5, 10.5],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [7.5, -0.5, 8]},
+			"faces": {
+				"north": {"uv": [3, 6, 5.5, 9], "texture": "#0"},
+				"east": {"uv": [6, 3, 8.5, 6], "texture": "#0"},
+				"south": {"uv": [5.5, 6, 8, 9], "texture": "#0"},
+				"west": {"uv": [8, 6, 10.5, 9], "texture": "#0"},
+				"up": {"uv": [11, 5.5, 8.5, 3], "texture": "#0"},
+				"down": {"uv": [2.5, 9, 0, 11.5], "texture": "#0"}
+			}
+		},
+		{
+			"from": [9.0803, -3.60999, 6.5],
+			"to": [10.0803, -0.60999, 9.5],
+			"rotation": {"angle": -22.5, "axis": "z", "origin": [9.5803, -2.10999, 8]},
+			"faces": {
+				"north": {"uv": [7, 10.5, 7.5, 12], "texture": "#0"},
+				"east": {"uv": [4.5, 9, 6, 10.5], "texture": "#0"},
+				"south": {"uv": [10.5, 7.5, 11, 9], "texture": "#0"},
+				"west": {"uv": [6, 9, 7.5, 10.5], "texture": "#0"},
+				"up": {"uv": [11, 11.5, 10.5, 10], "texture": "#0"},
+				"down": {"uv": [11.5, 0, 11, 1.5], "texture": "#0"}
+			}
+		},
+		{
+			"from": [4.27269, -1.85642, 4.5],
+			"to": [8.27269, 0.14358, 6.5],
+			"rotation": {"angle": -45, "axis": "z", "origin": [6.27269, -0.85642, 5.5]},
+			"faces": {
+				"north": {"uv": [9, 2, 11, 3], "texture": "#0"},
+				"east": {"uv": [9.5, 10, 10.5, 11], "texture": "#0"},
+				"south": {"uv": [7.5, 9, 9.5, 10], "texture": "#0"},
+				"west": {"uv": [4.5, 10.5, 5.5, 11.5], "texture": "#0"},
+				"up": {"uv": [11.5, 10, 9.5, 9], "texture": "#0"},
+				"down": {"uv": [9.5, 10, 7.5, 11], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [90, 0, 0],
+			"translation": [0.25, -2, 6.5],
+			"scale": [0.76289, 0.8, 0.8]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [90, -180, 0],
+			"translation": [0.25, -2, 6.5],
+			"scale": [0.76289, 0.8, -0.8]
+		},
+		"firstperson_righthand": {
+			"rotation": [140, 74, -1],
+			"translation": [5.25, -2.75, 1.25],
+			"scale": [0.68, 0.68, 0.68]
+		},
+		"firstperson_lefthand": {
+			"rotation": [140, 74, -1],
+			"translation": [5.25, -2.75, 1.25],
+			"scale": [-0.68, 0.68, 0.68]
+		},
+		"ground": {
+			"rotation": [-180, -180, 0],
+			"translation": [0, -5.5, 0]
+		},
+		"gui": {
+			"rotation": [-34, -135, 0],
+			"translation": [0, 3.75, 0],
+			"scale": [0.7, 0.7, 0.7]
+		},
+		"fixed": {
+			"rotation": [0, -180, 0],
+			"translation": [0, 7.75, 0]
+		}
+	}
+}
