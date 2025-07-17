@@ -30,6 +30,7 @@ public class JacobEntity extends HostileEntity implements PlayerTeam {
         this.ticksToLive = ticksToLive;
 
         this.getAttribute(Attribute.MAX_HEALTH).setBaseValue(5.0);
+        this.setHealth(5.0f);
 
         this.addAIGroup(
                 List.of(

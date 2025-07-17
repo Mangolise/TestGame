@@ -62,7 +62,7 @@ public class BundleMenu {
                     .maxStackSize(64)
                     .build()
                     .withTag(IS_WEAPON_BUNDLE, false)
-                    .withTag(BUNDLE_RARITY, Mod.Rarity.RARE);
+                    .withTag(BUNDLE_RARITY, rarity);
         }
 
         var rarity = Mod.Rarity.COMMON;

@@ -152,7 +152,8 @@ public record MaceWeapon() implements Weapon {
                 .lore(
                         ChatUtil.toComponent("&7A heavy weapon that can launch enemies into the air."),
                         ChatUtil.toComponent("&7Slow but powerful, deal damage to enemies close by.")
-                );
+                )
+                .set(DataComponents.ITEM_MODEL, "minecraft:guantlet");
     }
 
     @Override

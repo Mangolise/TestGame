@@ -71,7 +71,8 @@ public record CannonBallBallWeapon() implements Weapon {
                         ChatUtil.toComponent("&7A heavy ball that splits into smaller balls on impact."),
                         ChatUtil.toComponent("&7It deals large area of effect damage in a chain reaction."),
                         ChatUtil.toComponent("&7Crits cause it to split even more.")
-                );
+                )
+                .set(DataComponents.ITEM_MODEL, "minecraft:cannon");
     }
 
     @Override

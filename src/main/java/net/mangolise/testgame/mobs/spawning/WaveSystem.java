@@ -8,6 +8,9 @@ import net.mangolise.gamesdk.util.Timer;
 import net.mangolise.testgame.GameConstants;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.minestom.server.entity.GameMode;
+import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.entity.attribute.AttributeModifier;
+import net.minestom.server.entity.attribute.AttributeOperation;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
@@ -104,6 +107,11 @@ public class WaveSystem {
             for (int i = 0; i < record.count(); i++) {
                 for (int j = 0; j < instance.getPlayers().stream().filter(p -> p.getGameMode() != GameMode.SPECTATOR).count(); j++) {
                     AttackableMob mob = record.entity().get();
+                    
+                    double modifier = -(0.8 / Math.pow(1.1, currentWave * 2.4));
+
+                    mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("wave_speed_modifier", modifier, AttributeOperation.ADD_MULTIPLIED_TOTAL));
+                    
                     mobs.add(mob);
                 }
             }
@@ -137,13 +145,6 @@ public class WaveSystem {
 //                mob.asEntity().getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(1.0 + (currentWave * 0.5));
 //                mob.asEntity().getAttribute(Attribute.MAX_HEALTH).setBaseValue(10.0 + (currentWave * 2.0));
 //                mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_boost", Math.pow(1.01, currentWave) - 1.8, AttributeOperation.ADD_MULTIPLIED_BASE));
-
-                mob.asEntity().scheduler().scheduleTask(() -> {
-                    // after 30 seconds, make them glowing
-                    if (!mob.asEntity().isRemoved()) {
-                        mob.asEntity().setGlowing(true);
-                    }
-                }, TaskSchedule.seconds(30), TaskSchedule.stop());
                 SpawnSystem.spawn(instance, mob.asEntity());
             }
 

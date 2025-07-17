@@ -67,7 +67,10 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
             final int segments = 10;
             double percentHealth = this.getHealth() / this.getAttribute(Attribute.MAX_HEALTH).getValue();
             int healthSegments = (int) (percentHealth * segments);
-            String healthBar = "&a" + "█".repeat(healthSegments) + "&c" + "█".repeat(segments - healthSegments);
+            int emptySegments = segments - healthSegments;
+            healthSegments = Math.max(healthSegments, 0);
+            emptySegments = Math.max(emptySegments, 0);
+            String healthBar = "&a" + "█".repeat(healthSegments) + "&c" + "█".repeat(emptySegments);
             this.set(DataComponents.CUSTOM_NAME, ChatUtil.toComponent(healthBar));
             this.setCustomNameVisible(true);
 

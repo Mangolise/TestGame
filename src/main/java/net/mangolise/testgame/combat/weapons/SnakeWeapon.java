@@ -92,7 +92,8 @@ public record SnakeWeapon() implements Weapon {
                 .lore(
                         ChatUtil.toComponent("&7Spawn a slithery snake that forks upon critting an enemy."),
                         ChatUtil.toComponent("&7When it hits a hoard it can cause a chain reaction!")
-                );
+                )
+                .set(DataComponents.ITEM_MODEL, "minecraft:hypnosis");
     }
 
     @Override

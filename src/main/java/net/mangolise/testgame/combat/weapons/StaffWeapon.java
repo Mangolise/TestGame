@@ -81,7 +81,8 @@ public record StaffWeapon() implements Weapon {
                         ChatUtil.toComponent("&7A magical staff that can chain lightning attacks."),
                         ChatUtil.toComponent("&7Hit groups of enemies to cause a chain reaction "),
                         ChatUtil.toComponent("&7of forking lightning bolts!")
-                );
+                )
+                .set(DataComponents.ITEM_MODEL, "minecraft:staff");
     }
 
     @Override

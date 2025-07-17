@@ -233,9 +233,10 @@ public class TestGame extends BaseGame<TestGame.Config> {
             return;
         }
 
-        if (info.ticks() > 20) {
+        if (info.ticks() > 60) {
             // apply random movement to prevent being stuck
-            entity.setVelocity(new Vec(8 * (Math.random() - 0.5), 8 * Math.random(), 8 * (Math.random() - 0.5)));
+            double scalar = 16;
+            entity.setVelocity(new Vec(scalar * (Math.random() - 0.5), scalar * Math.random(), scalar * (Math.random() - 0.5)));
             // reset the navigation info
             entity.setTag(NAVIGATION_INFO, new NavigationInfo(entity.getPosition(), goalPos, 0));
             return;
