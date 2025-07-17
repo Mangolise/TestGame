@@ -6,6 +6,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.advancements.FrameType;
+import net.minestom.server.advancements.Notification;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
@@ -132,6 +134,12 @@ public class BundleMenu {
                     .append(mod.name())
                     .decoration(TextDecoration.ITALIC, false)
             );
+
+            if (mod.rarity() == Mod.Rarity.EPIC) {
+                player.sendNotification(new Notification(Component.text("You unlocked: ").append(mod.name()), FrameType.CHALLENGE, mod.item()));
+            } else {
+                player.sendNotification(new Notification(Component.text("You unlocked: ").append(mod.name()), FrameType.GOAL, mod.item()));
+            }
 
             for (Weapon weaponToGrant : mod.getWeaponGrants()) {
                 boolean playerHasWeapon = false;
