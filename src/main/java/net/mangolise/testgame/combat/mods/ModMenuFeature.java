@@ -76,7 +76,8 @@ public class ModMenuFeature implements Game.Feature<TestGame> {
                 int maxLevel = mod.maxLevel() + 1;
 
                 List<Component> lore = new ArrayList<>(Objects.requireNonNull(item.get(DataComponents.LORE)));
-                lore.add(Component.text(String.format("Level: %d/%d", level, maxLevel), NamedTextColor.WHITE));
+                lore.add(Component.text(""));
+                lore.add(Component.text(String.format("Level: %d/%d", level, maxLevel), NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
 
                 addMenuItem(item
                         .withLore(lore)

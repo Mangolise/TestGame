@@ -1,7 +1,6 @@
 package net.mangolise.testgame.combat.mods;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.CannonBallBallWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
@@ -15,6 +14,10 @@ import java.util.function.Consumer;
 public sealed interface CannonBallBallWeaponMods extends Mod {
     record SplitCount(int level) implements CannonBallBallWeaponMods {
 
+        public Component name() {
+            return Component.text("Split Count").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.RARE;
@@ -22,13 +25,7 @@ public sealed interface CannonBallBallWeaponMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.HEAVY_CORE)
-                    .customName(name())
-                    .lore(
-                            Component.text("CannonBallBall: ", NamedTextColor.GRAY).append(Component.text("+1 Split", NamedTextColor.GREEN))
-                    )
-                    .hideExtraTooltip()
-                    .build();
+            return createItem(Material.HEAVY_CORE, List.of("Cannon Ball Ball: +1 Split"), List.of());
         }
 
         @Override

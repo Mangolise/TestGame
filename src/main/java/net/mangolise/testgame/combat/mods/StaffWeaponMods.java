@@ -1,8 +1,6 @@
 package net.mangolise.testgame.combat.mods;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.StaffWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
@@ -16,6 +14,10 @@ import java.util.function.Consumer;
 public sealed interface StaffWeaponMods extends Mod {
 
     record ArcChance(int level) implements StaffWeaponMods {
+        public Component name() {
+            return Component.text("Arc Chance").color(this.rarity().color());
+        }
+
         @Override
         public int maxLevel() {
             return 4;
@@ -28,14 +30,9 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.BREEZE_ROD)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("Staff: +5% Arc Chance", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("Staff: +5% Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .amount(1)
-                    .build();
+            return createItem(Material.BREEZE_ROD,
+                    List.of("Staff: +5% Arc Chance"),
+                    List.of("Staff: +5% Cooldown"));
         }
 
         @Override
@@ -59,6 +56,10 @@ public sealed interface StaffWeaponMods extends Mod {
     }
 
     record ArcRadius(int level) implements StaffWeaponMods {
+        public Component name() {
+            return Component.text("Arc Radius").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.RARE;
@@ -66,14 +67,9 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.NETHER_STAR)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("Staff: +0.5 Block Arc Range", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("Staff: -1.0 Damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .amount(1)
-                    .build();
+            return createItem(Material.NETHER_STAR,
+                    List.of("Staff: +0.5 Block Arc Range"),
+                    List.of("Staff: -1.0 Damage"));
         }
 
         @Override

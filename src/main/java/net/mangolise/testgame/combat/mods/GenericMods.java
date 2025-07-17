@@ -3,13 +3,9 @@ package net.mangolise.testgame.combat.mods;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.MaceWeapon;
-import net.mangolise.testgame.combat.weapons.SnakeWeapon;
 import net.mangolise.testgame.mobs.JacobEntity;
-import net.minestom.server.component.DataComponent;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.LivingEntity;
@@ -17,24 +13,25 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeModifier;
 import net.minestom.server.entity.attribute.AttributeOperation;
-import net.minestom.server.entity.metadata.EntityMeta;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
-import net.minestom.server.item.component.AttributeList;
 import net.minestom.server.item.component.PotionContents;
-import net.minestom.server.item.component.TooltipDisplay;
 import net.minestom.server.potion.PotionType;
 import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 sealed public interface GenericMods extends Mod {
 
     record DoubleAttack(int level) implements GenericMods {
+
+        public Component name() {
+            return Component.text("Double Attack").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.EPIC;
@@ -47,15 +44,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.NETHERITE_SWORD)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("2x Attacks", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("-50% Damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(List.of()))
-                    .amount(2)
-                    .maxStackSize(2).build();
+            return createItem(Material.NETHERITE_SWORD, List.of("2x Attacks"), List.of("-50% Damage"));
         }
 
         @Override
@@ -180,6 +169,10 @@ sealed public interface GenericMods extends Mod {
 //    }
     
     record LuckyLeonard(int level) implements GenericMods {
+        public Component name() {
+            return Component.text("Lucky Leonard").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.COMMON;
@@ -187,12 +180,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.GOLD_INGOT)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+5% Crit chance", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .build();
+            return createItem(Material.GOLD_INGOT, List.of("+5% Crit Chance"), List.of());
         }
 
         @Override
@@ -209,6 +197,10 @@ sealed public interface GenericMods extends Mod {
     }
     
     record QuickHands(int level) implements GenericMods {
+        public Component name() {
+            return Component.text("Quick Hands").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.COMMON;
@@ -216,12 +208,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.RABBIT_FOOT)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+5% Cooldown Reduction", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .build();
+            return createItem(Material.RABBIT_FOOT, List.of("+5% Cooldown Reduction"), List.of());
         }
 
         @Override
@@ -239,6 +226,10 @@ sealed public interface GenericMods extends Mod {
     }
 
     record CoinFlip(int level) implements GenericMods {
+        public Component name() {
+            return Component.text("Coin Flip").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.COMMON;
@@ -246,13 +237,9 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.GOLD_NUGGET)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("2.5 + (0.5 per level)x Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("50% - (10% per level) Chance to do Nothing", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .build();
+            return createItem(Material.GOLD_NUGGET,
+                    List.of("2.5 + (0.5 per level)x Damage"),
+                    List.of("50% - (10% per level) Chance to do Nothing"));
         }
 
         @Override
@@ -281,6 +268,10 @@ sealed public interface GenericMods extends Mod {
     }
 
     record Jacob(int level) implements GenericMods {
+        public Component name() {
+            return Component.text("Jacob").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.EPIC;
@@ -288,14 +279,9 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.GOAT_SPAWN_EGG)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("Jacob joins your side", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("    1.5 + (0.5 per level) Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("    2 + (2 per level) Seconds to live", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .build();
+            return createItem(Material.GOAT_SPAWN_EGG,
+                    List.of("Jacob joins your side", "    1.5 + (0.5 per level) Damage", "    2 + (2 per level) Seconds to live"),
+                    List.of());
         }
 
         @Override
@@ -359,6 +345,10 @@ sealed public interface GenericMods extends Mod {
     }
 
     record CommonIncreaseHealth(int level) implements IncreaseHealth {
+        public Component name() {
+            return Component.text("Health Increase").color(this.rarity().color());
+        }
+
         @Override
         public String getId() {
             return "common_max_health_mod";
@@ -381,17 +371,17 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.APPLE)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+1.0 Heart", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("+5% Slowness", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .build();
+            return createItem(Material.APPLE,
+                    List.of("+1.0 Heart"),
+                    List.of("+5% Slowness"));
         }
     }
 
     record RareIncreaseHealth(int level) implements IncreaseHealth {
+        public Component name() {
+            return Component.text("Rare Health Increase").color(this.rarity().color());
+        }
+
         @Override
         public String getId() {
             return "rare_max_health_mod";
@@ -414,17 +404,17 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.GOLDEN_APPLE)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+2.0 Hearts", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("+5% Slowness", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .build();
+            return createItem(Material.GOLDEN_APPLE,
+                    List.of("+2.0 Hearts"),
+                    List.of("+5% Slowness"));
         }
     }
 
     record EpicIncreaseHealth(int level) implements IncreaseHealth {
+        public Component name() {
+            return Component.text("Epic Health Increase").color(this.rarity().color());
+        }
+
         @Override
         public String getId() {
             return "epic_max_health_mod";
@@ -447,13 +437,9 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.ENCHANTED_GOLDEN_APPLE)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+4.0 Hearts", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("+5% Slowness", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .build();
+            return createItem(Material.ENCHANTED_GOLDEN_APPLE,
+                    List.of("+4.0 Hearts"),
+                    List.of("+5% Slowness"));
         }
     }
 
@@ -477,6 +463,10 @@ sealed public interface GenericMods extends Mod {
     }
 
     record CommonIncreaseDamage(int level) implements IncreaseDamage {
+        public Component name() {
+            return Component.text("Damage Increase").color(this.rarity().color());
+        }
+
         @Override
         public double getDamageAmount() {
             return 2 * (level + 1);
@@ -499,17 +489,17 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.IRON_INGOT)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+1.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("+5% Weapon Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .build();
+            return createItem(Material.IRON_INGOT,
+                    List.of("+1.0 Damage"),
+                    List.of("+5% Weapon Cooldown"));
         }
     }
 
     record RareIncreaseDamage(int level) implements IncreaseDamage {
+        public Component name() {
+            return Component.text("Rare Damage Increase").color(this.rarity().color());
+        }
+
         @Override
         public double getDamageAmount() {
             return 4 * (level + 1);
@@ -532,17 +522,17 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.DIAMOND)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+2.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("+5% Weapon Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .build();
+            return createItem(Material.DIAMOND,
+                    List.of("+2.0 Damage"),
+                    List.of("+5% Weapon Cooldown"));
         }
     }
 
     record EpicIncreaseDamage(int level) implements IncreaseDamage {
+        public Component name() {
+            return Component.text("Epic Damage Increase").color(this.rarity().color());
+        }
+
         @Override
         public double getDamageAmount() {
             return 8 * (level + 1);
@@ -565,19 +555,19 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.NETHERITE_INGOT)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+4.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("+10% Weapon Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .build();
+            return createItem(Material.NETHERITE_INGOT,
+                    List.of("+4.0 Damage"),
+                    List.of("+10% Weapon Cooldown"));
         }
     }
 
     // -------------------------------------------------------------------------------------------
 
     record GlassCannon(int level) implements GenericMods {
+        public Component name() {
+            return Component.text("Glass Cannon").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.EPIC;
@@ -616,15 +606,10 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.POTION)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+50% damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("-50% max health", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .set(DataComponents.POTION_CONTENTS, new PotionContents(PotionType.STRENGTH))
-                    .hideExtraTooltip()
-                    .build();
+            return createItem(Material.POTION,
+                    List.of("+50% Damage"),
+                    List.of("-50% Max Health"))
+                    .with(DataComponents.POTION_CONTENTS, new PotionContents(PotionType.STRENGTH));
         }
 
         @Override
@@ -634,6 +619,10 @@ sealed public interface GenericMods extends Mod {
     }
 
     record GamblersDice(int level) implements GenericMods {
+        public Component name() {
+            return Component.text("Gamblers Dice").color(this.rarity().color());
+        }
+
         @Override
         public int maxLevel() {
             return 1;
@@ -646,15 +635,10 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.RABBIT_HIDE)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("20% chance to deal 300% of current damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("20% chance to deal 30% of current damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false),
-                            Component.text("Rolls chances per attack", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .hideExtraTooltip()
-                    .build();
+            return createItem(Material.RABBIT_HIDE,
+                    List.of("20% chance to deal 300% of current damage"),
+                    List.of("20% chance to deal 30% of current damage"),
+                    List.of("Rolls chances per attack"));
         }
 
         @Override
@@ -677,6 +661,10 @@ sealed public interface GenericMods extends Mod {
     }
 
     record Agility(int level) implements GenericMods {
+        public Component name() {
+            return Component.text("Agility").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.COMMON;
@@ -689,14 +677,9 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.SUGAR)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+5% Speed", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("-1.0 Heart", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .hideExtraTooltip()
-                    .build();
+            return createItem(Material.SUGAR,
+                    List.of("+5% Speed"),
+                    List.of("-1.0 Heart"));
         }
 
         @Override
@@ -724,6 +707,10 @@ sealed public interface GenericMods extends Mod {
     }
 
     record Acrobatics(int level) implements GenericMods {
+        public Component name() {
+            return Component.text("Acrobatics").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.COMMON;
@@ -731,13 +718,9 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.GLISTERING_MELON_SLICE)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("+5% Jump Boost", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .hideExtraTooltip()
-                    .build();
+            return createItem(Material.GLISTERING_MELON_SLICE,
+                    List.of("+5% Jump Boost"),
+                    List.of());
         }
 
         @Override

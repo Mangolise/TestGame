@@ -3,16 +3,20 @@ package net.mangolise.testgame.combat.mods;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.Weapon;
 import net.mangolise.testgame.util.Utils;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
+import net.minestom.server.item.component.TooltipDisplay;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public sealed interface Mod extends Attack.Node permits CannonBallBallWeaponMods, GenericMods, MaceWeaponMods, SnakeWeaponMods, StaffWeaponMods {
 
@@ -64,6 +68,30 @@ public sealed interface Mod extends Attack.Node permits CannonBallBallWeaponMods
     Rarity rarity();
     ItemStack item();
     int level();
+
+    default ItemStack createItem(Material material, List<String> positives, List<String> negatives) {
+        return createItem(material, positives, negatives, List.of());
+    }
+
+    default ItemStack createItem(Material material, List<String> positives, List<String> negatives, List<String> info) {
+        var builder = ItemStack.builder(material)
+                .customName(this.name().decoration(TextDecoration.ITALIC, false).decorate(TextDecoration.BOLD))
+                .set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(false, Set.of(DataComponents.ATTRIBUTE_MODIFIERS, DataComponents.DAMAGE)))
+                .amount(1);
+
+        List<Component> lore = new ArrayList<>();
+        for (String positive : positives) {
+            lore.add(Component.text(positive, NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
+        }
+        for (String negative : negatives) {
+            lore.add(Component.text(negative, NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
+        }
+        for (String infoLine : info) {
+            lore.add(Component.text(infoLine, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+        }
+        builder.lore(lore);
+        return builder.build();
+    }
 
     enum Rarity {
         COMMON,

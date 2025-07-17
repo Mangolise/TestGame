@@ -1,8 +1,6 @@
 package net.mangolise.testgame.combat.mods;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.MaceWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
@@ -16,6 +14,10 @@ import java.util.function.Consumer;
 public sealed interface MaceWeaponMods extends Mod {
 
     record SlamRadius(int level) implements MaceWeaponMods {
+        public Component name() {
+            return Component.text("Slam Radius").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.RARE;
@@ -23,14 +25,7 @@ public sealed interface MaceWeaponMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.MACE)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("Mace: +1 Block Slam Range", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("Mace: -1.0 Damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .amount(1)
-                    .build();
+            return createItem(Material.MACE, List.of("Mace: +1 Block Slam Range"), List.of("Mace: -1.0 Damage"));
         }
 
         @Override
@@ -52,6 +47,10 @@ public sealed interface MaceWeaponMods extends Mod {
     }
 
     record SlamIntensity(int level) implements MaceWeaponMods {
+        public Component name() {
+            return Component.text("Slam Intensity").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.EPIC;
@@ -59,15 +58,9 @@ public sealed interface MaceWeaponMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.FIRE_CHARGE)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("Mace: +5 Slam Velocity", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("Mace: +1.0 Damage", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("Mace: +0.5s Cooldown", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .amount(1)
-                    .build();
+            return createItem(Material.FIRE_CHARGE,
+                    List.of("Mace: +5 Slam Velocity", "Mace: +1.0 Damage"),
+                    List.of("Mace: +0.5s Cooldown"));
         }
 
         @Override
@@ -93,6 +86,10 @@ public sealed interface MaceWeaponMods extends Mod {
     }
 
     record SwingRadius(int level) implements MaceWeaponMods {
+        public Component name() {
+            return Component.text("Swing Radius").color(this.rarity().color());
+        }
+
         @Override
         public int maxLevel() {
             return 6;
@@ -105,14 +102,9 @@ public sealed interface MaceWeaponMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.FIREWORK_STAR)
-                    .customName(this.name().decoration(TextDecoration.ITALIC, false))
-                    .lore(
-                            Component.text("Mace: +0.5 Blocks Swing Radius", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false),
-                            Component.text("Mace: -0.5 Damage", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)
-                    )
-                    .amount(1)
-                    .build();
+            return createItem(Material.FIREWORK_STAR,
+                    List.of("Mace: +0.5 Blocks Swing Radius"),
+                    List.of("Mace: -0.5 Damage"));
         }
 
         @Override

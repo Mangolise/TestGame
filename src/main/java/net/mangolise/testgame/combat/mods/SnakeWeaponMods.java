@@ -1,7 +1,6 @@
 package net.mangolise.testgame.combat.mods;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.weapons.SnakeWeapon;
 import net.mangolise.testgame.combat.weapons.Weapon;
@@ -14,6 +13,10 @@ import java.util.function.Consumer;
 
 public sealed interface SnakeWeaponMods extends Mod {
     record Acceleration(int level) implements SnakeWeaponMods {
+        public Component name() {
+            return Component.text("Acceleration").color(this.rarity().color());
+        }
+
         @Override
         public Rarity rarity() {
             return Rarity.COMMON;
@@ -21,14 +24,9 @@ public sealed interface SnakeWeaponMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return ItemStack.builder(Material.IRON_BOOTS)
-                    .customName(this.name())
-                    .lore(
-                            Component.text("+ Multiplies the acceleration of your snakes", NamedTextColor.GREEN),
-                            Component.text("    Acceleration Multiplication: 1.0 + (1.0 per level)", NamedTextColor.GREEN)
-                    )
-                    .amount(1)
-                    .build();
+            return createItem(Material.IRON_BOOTS,
+                    List.of("Snake: +1.0 Acceleration"),
+                    List.of());
         }
 
         @Override
