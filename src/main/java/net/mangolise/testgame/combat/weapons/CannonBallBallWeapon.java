@@ -35,7 +35,7 @@ public record CannonBallBallWeapon() implements Weapon {
 
     @Override
     public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-        attack.setTag(Attack.DAMAGE, 8.0);
+        attack.setTag(Attack.DAMAGE, 12.0);
         attack.setTag(Attack.CRIT_CHANCE, 0.5);
         attack.setTag(Attack.COOLDOWN, 1.0);
 
@@ -57,7 +57,8 @@ public record CannonBallBallWeapon() implements Weapon {
             double inaccuracy = attacks.size() - 1.0; // more attacks, more inaccuracy
             velocity = velocity.add((Math.random() - 0.5) * inaccuracy, (Math.random() - 0.5) * inaccuracy, (Math.random() - 0.5) * inaccuracy);
 
-            createCannonBall(user, user.getInstance(), attack, position, velocity, Vec.ONE, attack.getTag(SPLIT_COUNT), 6);
+            int splitCount = attack.getTag(SPLIT_COUNT);
+            createCannonBall(user, user.getInstance(), attack, position, velocity, Vec.ONE, splitCount, 6);
         }
     }
 
@@ -78,7 +79,7 @@ public record CannonBallBallWeapon() implements Weapon {
         return "cannon_ball";
     }
 
-    private void createCannonBall(LivingEntity user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount, int fallbackSplitCount) {
+    private void createCannonBall(LivingEntity user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount, int childCount) {
         VanillaProjectile cannonBall = new VanillaProjectile(user, EntityType.BLOCK_DISPLAY);
         cannonBall.editEntityMeta(BlockDisplayMeta.class, meta -> {
             meta.setBlockState(Block.SMOOTH_BASALT);
@@ -94,7 +95,7 @@ public record CannonBallBallWeapon() implements Weapon {
 
         final Attack finalAttack = attack;
         cannonBall.eventNode().addListener(EventListener.builder(ProjectileCollideAnyEvent.class)
-                .handler(event -> onCannonBallCollide(event, user, cannonBall, finalAttack, splitCount, fallbackSplitCount))
+                .handler(event -> onCannonBallCollide(event, user, cannonBall, finalAttack, splitCount, childCount))
                 .expireWhen(ignored -> cannonBall.isRemoved())
                 .build());
     }
@@ -104,7 +105,7 @@ public record CannonBallBallWeapon() implements Weapon {
         return PRIORITY_WEAPON;
     }
 
-    private void onCannonBallCollide(ProjectileCollideAnyEvent event, LivingEntity user, VanillaProjectile cannonBall, Attack attack, int splitCount, int fallbackSplitCount) {
+    private void onCannonBallCollide(ProjectileCollideAnyEvent event, LivingEntity user, VanillaProjectile cannonBall, Attack attack, int splitCount, int childCount) {
         double scale = ((BlockDisplayMeta)cannonBall.getEntityMeta()).getScale().x();
 
         if (event instanceof ProjectileCollideEntityEvent eEvent) {
@@ -118,7 +119,7 @@ public record CannonBallBallWeapon() implements Weapon {
             target.applyAttack(DamageType.FALLING_ANVIL, attackCopy);
         }
 
-        if (splitCount <= 0 || fallbackSplitCount <= 0) {
+        if (splitCount <= 0) {
             return;
         }
 
@@ -135,12 +136,11 @@ public record CannonBallBallWeapon() implements Weapon {
         }
 
         // split into children
-        final int CHILD_COUNT = 6;
-        final double CHILD_SCALE_MOD = Math.pow(CHILD_COUNT, 1.0 / 3.0); // is this math right, idk
+        final double CHILD_SCALE_MOD = Math.pow(childCount, 1.0 / 3.0); // is this math right, idk
         Attack attackCopy = attack;
 
-        for (int i = 0; i < CHILD_COUNT; i++) {
-            double rotation = i * Math.TAU / CHILD_COUNT;
+        for (int i = 0; i < childCount; i++) {
+            double rotation = i * Math.TAU / childCount;
             Pos position = cannonBall.getPosition().withYaw((float) rotation);
             Vec velocity = new Vec(6, 12, 0).rotateAroundY(rotation);
 
@@ -149,10 +149,10 @@ public record CannonBallBallWeapon() implements Weapon {
             Attack childAttack = attackCopy.copy(true);
             attackCopy = childAttack;
 
-            int consumeCount = IntStream.range(0, attackCopy.sampleCrits()).anyMatch(j -> Math.random() < scale * 0.5) ? 0 : 1;
+            int consumeCount = IntStream.range(0, attackCopy.sampleCrits()).anyMatch(j -> Math.random() < scale * 0.75) ? 0 : 1;
 
             ThrottledScheduler.use(instance, "cannonball-weapon-ball-attack", 4, () -> {
-                createCannonBall(user, instance, childAttack, position, velocity, new Vec(scale / CHILD_SCALE_MOD), splitCount - consumeCount, fallbackSplitCount - 1);
+                createCannonBall(user, instance, childAttack, position, velocity, new Vec(scale / CHILD_SCALE_MOD), splitCount - consumeCount, childCount - 1);
             });
         }
     }
