@@ -2,12 +2,14 @@ package net.mangolise.testgame.mobs;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import net.mangolise.gamesdk.util.ChatUtil;
 import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.mods.BundleMenu;
 import net.mangolise.testgame.mobs.spawning.WaveSystem;
 import net.mangolise.testgame.util.Throttler;
+import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
@@ -61,6 +63,14 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
         }
 
         Throttler.useTime(this.instance, "testgame.hostileentity.tick", 40, () -> {
+            // Update health tag
+            final int segments = 10;
+            double percentHealth = this.getHealth() / this.getAttribute(Attribute.MAX_HEALTH).getValue();
+            int healthSegments = (int) (percentHealth * segments);
+            String healthBar = "&a" + "█".repeat(healthSegments) + "&c" + "█".repeat(segments - healthSegments);
+            this.set(DataComponents.CUSTOM_NAME, ChatUtil.toComponent(healthBar));
+            this.setCustomNameVisible(true);
+
             try {
                 if (this.getTarget() != null && this.getTarget().isRemoved()) {
                     // if the target is removed, clear it
