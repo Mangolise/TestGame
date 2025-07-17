@@ -30,12 +30,14 @@ public class BossBarSystem {
     }
 
     public void start() {
-        BossBar bossBar = BossBar.bossBar(Component.text("Wave").color(TextColor.color(226, 0, 0)), 1.0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS);
+        Component name = Component.text("Wave").color(TextColor.color(226, 0, 0));
+        BossBar bossBar = BossBar.bossBar(name, 1.0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS);
 
         instance.eventNode().addListener(SpawnWaveEvent.class, event -> {
             int maxSize = event.getEntities().size();
 
             bossBar.progress(1.0f);
+            bossBar.name(name.append(Component.text(" " + event.getWaveNumber())));
             instance.showBossBar(bossBar);
 
             for (AttackableMob entity : event.getEntities()) {
