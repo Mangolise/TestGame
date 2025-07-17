@@ -152,6 +152,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         // Start the wave system
         WaveSystem.from(instance).start();
+        BossBarSystem.from(instance).start();
 
         Log.logger().info("Started game");
     }
