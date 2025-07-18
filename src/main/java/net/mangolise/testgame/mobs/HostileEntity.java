@@ -189,7 +189,7 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
             ItemStack itemStack = BundleMenu.createBundleItem(false);
 
             for (Player player : instance.getPlayers()) {
-                if (player.getGameMode() != GameMode.ADVENTURE) {
+                if (player.getGameMode() != GameMode.ADVENTURE) { // TODO: Check if they are not dead instead
                     continue;
                 }
 
@@ -202,7 +202,7 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
                 Entity displayEntity = createDisplayEntity(itemEntity);
                 displayEntity.setAutoViewable(false);
 
-                itemEntity.setInstance(instance, position);
+                itemEntity.setInstance(instance, position.asVec());
 
                 instance.scheduler().scheduleNextTick(() -> {
                     itemEntity.addPassenger(displayEntity);

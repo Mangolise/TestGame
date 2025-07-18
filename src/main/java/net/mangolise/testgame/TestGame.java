@@ -31,6 +31,8 @@ import net.minestom.server.event.player.PlayerDisconnectEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.inventory.TransactionOption;
+import net.minestom.server.item.ItemStack;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.registry.RegistryKey;
@@ -118,8 +120,9 @@ public class TestGame extends BaseGame<TestGame.Config> {
             }
             
             // give every player a random bag
+            ItemStack newBundle = BundleMenu.createBundleItem(false);
             for (Player player : e.getInstance().getPlayers()) {
-                player.getInventory().addItemStack(BundleMenu.createBundleItem(false));
+                player.getInventory().addItemStack(newBundle);
             }
 
             // respawn dead players
@@ -130,16 +133,14 @@ public class TestGame extends BaseGame<TestGame.Config> {
             }
             deadPlayers.clear();
 
+            // give all bundles to their owners
             for (Entity entity : e.getInstance().getEntities()) {
-                if (entity instanceof ItemEntity item) {
+                if (entity instanceof ItemEntity item && item.getViewers().size() == 1) {
                     // tp to random player
-                    Player randomPlayer = e.getInstance().getPlayers().stream()
-                            .skip((int) (Math.random() * e.getInstance().getPlayers().size()))
-                            .findFirst()
-                            .orElse(null);
-                    
-                    if (randomPlayer != null) {
-                        item.teleport(randomPlayer.getPosition().add(0, 1, 0));
+                    Player viewer = item.getViewers().stream().findAny().get();
+
+                    if (viewer.getInventory().addItemStack(item.getItemStack(), TransactionOption.ALL_OR_NOTHING)) {
+                        item.remove();
                     }
                 }
             }
