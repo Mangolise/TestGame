@@ -5,34 +5,40 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.weapons.Weapon;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.advancements.FrameType;
 import net.minestom.server.advancements.Notification;
 import net.minestom.server.entity.Player;
-import net.minestom.server.event.inventory.InventoryCloseEvent;
+import net.minestom.server.entity.PlayerHand;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.InventoryType;
-import net.minestom.server.inventory.click.Click;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.tag.Tag;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // TODO: maybe possibly make the messages have a hover for item tooltips and a click that opens ModMenu
 public class BundleMenu {
-    public static Tag<Mod.Rarity> BUNDLE_RARITY = Tag.String("testgame.modmenu.rarity").map(Mod.Rarity::valueOf, Mod.Rarity::name);
-    public static Tag<Boolean> BUNDLE_INVENTORY = Tag.Boolean("testgame.modmenu.bundle_inventory").defaultValue(false);
-    public static Tag<Boolean> IS_BARRIER = Tag.Boolean("testgame.modmenu.is_barrier").defaultValue(false);
-    public static Tag<Boolean> IS_WEAPON_BUNDLE = Tag.Boolean("testgame.modmenu.is_weapon_bundle").defaultValue(false);
-    public static Tag<Mod> ITEM_MOD = Tag.Component("testgame.modmenu.item_mod").map(c -> Mod.values().stream().filter(a -> a.create(0).name().equals(c)).findAny().get().create(0), Mod::name);
+    public static final Tag<Mod.Rarity> BUNDLE_RARITY = Tag.String("testgame.bundlemenu.rarity").map(Mod.Rarity::valueOf, Mod.Rarity::name);
+    public static final Tag<Boolean> IS_BARRIER = Tag.Boolean("testgame.bundlemenu.is_barrier").defaultValue(false);
+    public static final Tag<Boolean> IS_WEAPON_BUNDLE = Tag.Boolean("testgame.bundlemenu.is_weapon_bundle").defaultValue(false);
+    public static final Tag<Mod> ITEM_MOD = Tag.Component("testgame.bundlemenu.item_mod").map(c -> Mod.values().stream().filter(a -> a.create(0).name().equals(c)).findAny().get().create(0), Mod::name);
+    public static final Tag<Boolean> BUNDLE_INVENTORY = Tag.Boolean("testgame.bundlemenu.is_bundle_inventory").defaultValue(false);
+    public static final Tag<OpenBundleInfo> OPEN_BUNDLE_MENU = Tag.Transient("testgame.bundlemenu.inv_rarity");
+
+    public static final Map<Mod.Rarity, Tag<Inventory>> LAST_MOD_SELECTION = Map.of(
+            Mod.Rarity.COMMON, Tag.Transient("testgame.bundlemenu.last_mod_selection.common"),
+            Mod.Rarity.RARE  , Tag.Transient("testgame.bundlemenu.last_mod_selection.rare"),
+            Mod.Rarity.EPIC  , Tag.Transient("testgame.bundlemenu.last_mod_selection.epic")
+    );
+
+    public static final Tag<Inventory> LAST_MOD_SELECTION_WEAPON = Tag.Transient("testgame.bundlemenu.last_mod_selection.weapon");
+
+    public record OpenBundleInfo(Mod.Rarity rarity, boolean isWeaponBundle, PlayerHand hand) { }
 
     public static ItemStack createBundleItem(boolean isWeaponBundle) {
         if (isWeaponBundle) {
@@ -79,18 +85,17 @@ public class BundleMenu {
             return;
         }
 
-        openBundleMenu(e.getPlayer(), e.getItemStack());
-        e.getPlayer().setItemInHand(e.getHand(), e.getItemStack().consume(1));
+        openBundleMenu(e.getPlayer(), e.getItemStack(), e.getHand());
     }
 
-    public static void onInventoryCloseEvent(InventoryCloseEvent e) {
-        if (!e.getInventory().getTag(BUNDLE_INVENTORY)) {
-            return;
+    private static void clearLastModSelectionAndConsumeItem(Player player, OpenBundleInfo rarity) {
+        if (rarity.isWeaponBundle()) {
+            player.removeTag(LAST_MOD_SELECTION_WEAPON);
+        } else {
+            player.removeTag(LAST_MOD_SELECTION.get(rarity.rarity()));
         }
 
-        MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
-            e.getPlayer().openInventory((Inventory) e.getInventory());
-        });
+        player.setItemInHand(rarity.hand(), player.getItemInHand(rarity.hand()).consume(1));
     }
 
     public static void onItemClickEvent(InventoryPreClickEvent e) {
@@ -99,16 +104,14 @@ public class BundleMenu {
             return;
         }
 
-        if (e.getInventory() != inv && !(e.getClick() instanceof Click.RightShift || e.getClick() instanceof Click.LeftShift)) {
-            return;
-        }
-
         e.setCancelled(true);
+
         Player player = e.getPlayer();
 
         if (e.getClickedItem().getTag(IS_BARRIER)) {
-            inv.removeTag(BUNDLE_INVENTORY);
-            e.getPlayer().closeInventory();
+            clearLastModSelectionAndConsumeItem(player, player.getTag(OPEN_BUNDLE_MENU));
+            player.closeInventory();
+            return;
         }
 
         Mod mod = e.getClickedItem().getTag(ITEM_MOD);
@@ -116,19 +119,21 @@ public class BundleMenu {
             return;
         }
 
+        clearLastModSelectionAndConsumeItem(player, player.getTag(OPEN_BUNDLE_MENU));
+
         AttackSystem attackSystem = AttackSystem.instance(player.getInstance());
 
         Map<Class<? extends Mod>, Mod> modifiers = attackSystem.getModifiers(player);
 
         if (modifiers.containsKey(mod.getClass())) {
-            attackSystem.upgradeMod(e.getPlayer(), mod.getClass(), m -> m.level() + 1);
+            attackSystem.upgradeMod(player, mod.getClass(), m -> m.level() + 1);
             player.sendMessage(Component.text()
                     .append(Component.text("You upgraded: "))
                     .append(mod.name())
                     .decoration(TextDecoration.ITALIC, false)
             );
         } else {
-            attackSystem.add(e.getPlayer(), mod);
+            attackSystem.add(player, mod);
             player.sendMessage(Component.text()
                     .append(Component.text("You unlocked: "))
                     .append(mod.name())
@@ -157,15 +162,32 @@ public class BundleMenu {
             }
         }
 
-        inv.removeTag(BUNDLE_INVENTORY);
-        e.getPlayer().closeInventory();
+        player.closeInventory();
     }
 
     private static boolean isWeapon(ItemStack item, Weapon weapon) {
         return item.hasTag(Weapon.WEAPON_TAG) && item.getTag(Weapon.WEAPON_TAG).equals(weapon.getId());
     }
 
-    public static void openBundleMenu(Player player, ItemStack item) {
+    public static void openBundleMenu(Player player, ItemStack item, PlayerHand hand) {
+        Inventory inventory;
+        if (item.getTag(IS_WEAPON_BUNDLE)) {
+            inventory = player.getTag(LAST_MOD_SELECTION_WEAPON);
+            player.setTag(OPEN_BUNDLE_MENU, new OpenBundleInfo(Mod.Rarity.RARE, true, hand));
+        } else {
+            Mod.Rarity rarity = item.getTag(BUNDLE_RARITY);
+            inventory = player.getTag(LAST_MOD_SELECTION.get(rarity));
+            player.setTag(OPEN_BUNDLE_MENU, new OpenBundleInfo(rarity, false, hand));
+        }
+
+        if (inventory == null) {
+            inventory = generateBundleMenu(player, item, hand);
+        }
+
+        player.openInventory(inventory);
+    }
+
+    public static Inventory generateBundleMenu(Player player, ItemStack item, PlayerHand hand) {
         Inventory inventory = new Inventory(InventoryType.CHEST_1_ROW, "Mods Menu");
         inventory.setTag(BUNDLE_INVENTORY, true);
 
@@ -181,6 +203,8 @@ public class BundleMenu {
                 if (!selectedMods.contains(weaponMod)) {
                     selectedMods.add(weaponMod);
                 }
+
+                player.setTag(LAST_MOD_SELECTION_WEAPON, inventory);
             } else {
                 Mod mod = sampleUpgrade(item, player, selectedMods);
                 if (mod == null) {
@@ -188,6 +212,7 @@ public class BundleMenu {
                 }
 
                 selectedMods.add(mod);
+                player.setTag(LAST_MOD_SELECTION.get(item.getTag(BUNDLE_RARITY)), inventory);
             }
         }
 
@@ -204,7 +229,7 @@ public class BundleMenu {
             );
         }
 
-        player.openInventory(inventory);
+        return inventory;
     }
 
     private static Mod sampleWeaponUpgrade() {

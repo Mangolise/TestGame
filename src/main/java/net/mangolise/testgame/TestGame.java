@@ -23,7 +23,6 @@ import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.pathfinding.NavigableEntity;
 import net.minestom.server.event.entity.EntityTickEvent;
-import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.item.ItemDropEvent;
 import net.minestom.server.event.player.PlayerDeathEvent;
@@ -106,7 +105,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         instance.eventNode().addListener(PlayerUseItemEvent.class, BundleMenu::onItemUseEvent);
         instance.eventNode().addListener(InventoryPreClickEvent.class, BundleMenu::onItemClickEvent);
-        instance.eventNode().addListener(InventoryCloseEvent.class, BundleMenu::onInventoryCloseEvent);
         instance.eventNode().addListener(ItemDropEvent.class, e -> {
             if (!e.getItemStack().material().name().endsWith("bundle") || e.getItemStack().getTag(BundleMenu.IS_WEAPON_BUNDLE)) {
                 e.setCancelled(true);
