@@ -18,6 +18,7 @@ import net.mangolise.testgame.combat.mods.ModMenuFeature;
 import net.mangolise.testgame.mobs.spawning.CompleteWaveEvent;
 import net.mangolise.testgame.mobs.spawning.WaveSystem;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -94,6 +95,10 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         super.setup();  // do this after the instance is set up so that features can access it
         // but before the players are spawned so that the join function can access the features
+        
+        // TODO: Remove this hack in favor of better pathfinding
+        // Do the instance hack
+        NonSolidBlockRemovalHack.apply(worldLoader.world(), instance);
 
         // Player spawning
         for (Player player : config.players) {
@@ -113,6 +118,11 @@ public class TestGame extends BaseGame<TestGame.Config> {
             e.getInstance().playSound(Sound.sound(SoundEvent.ENTITY_PLAYER_LEVELUP.key(), Sound.Source.PLAYER, 1.0f, 1.0f));
             for (Player player : e.getInstance().getPlayers()) {
                 player.heal();
+            }
+            
+            // give every player a random bag
+            for (Player player : e.getInstance().getPlayers()) {
+                player.getInventory().addItemStack(BundleMenu.createBundleItem(false));
             }
 
             // respawn dead players
@@ -218,7 +228,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
         if (!(entity instanceof NavigableEntity navigable)) {
             return;
         }
-        
+
+        var pos = entity.getPosition();
         var goalPos = navigable.getNavigator().getGoalPosition();
         if (goalPos == null || entity.isRemoved()) {
             // If the entity has no goal or is removed, we don't need to do anything
@@ -229,22 +240,26 @@ public class TestGame extends BaseGame<TestGame.Config> {
         NavigationInfo info = entity.getTag(NAVIGATION_INFO);
 
         if (info == null) {
-            entity.setTag(NAVIGATION_INFO, new NavigationInfo(entity.getPosition(), goalPos, 0));
+            entity.setTag(NAVIGATION_INFO, new NavigationInfo(pos, goalPos, 0));
             return;
         }
 
         if (info.ticks() > 60) {
             // apply random movement to prevent being stuck
-            double scalar = 16;
-            entity.setVelocity(new Vec(scalar * (Math.random() - 0.5), scalar * Math.random(), scalar * (Math.random() - 0.5)));
+            double scalar = 32;
+            Vec vel = entity.getVelocity();
+            entity.setVelocity(vel.add(scalar * (Math.random() - 0.5), scalar * Math.random(), scalar * (Math.random() - 0.5)));
+            
             // reset the navigation info
-            entity.setTag(NAVIGATION_INFO, new NavigationInfo(entity.getPosition(), goalPos, 0));
+            entity.setTag(NAVIGATION_INFO, new NavigationInfo(pos, goalPos, 0));
             return;
         }
 
-        if (!goalPos.sameBlock(info.goal())) {
-            // reset the navigation info if the goal has changed
-            entity.setTag(NAVIGATION_INFO, new NavigationInfo(entity.getPosition(), goalPos, 0));
+        if (!pos.sameBlock(info.pos()) || !goalPos.sameBlock(info.goal())) {
+            boolean posChanged = !pos.sameBlock(info.pos());
+            boolean goalChanged = !goalPos.sameBlock(info.goal());
+            // reset the navigation info if the entity's position or goal has changed
+            entity.setTag(NAVIGATION_INFO, new NavigationInfo(pos, goalPos, 0));
             return;
         }
 

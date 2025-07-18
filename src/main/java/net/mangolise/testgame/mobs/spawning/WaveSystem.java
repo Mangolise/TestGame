@@ -59,6 +59,7 @@ public class WaveSystem {
     }
     
     private static final Tag<Integer> CURRENT_WAVE_TAG = Tag.Integer("current_wave");
+    private static final Tag<Integer> CURRENT_WAVE_SIZE_TAG = Tag.Integer("current_wave_size").defaultValue(0);
     private static final Tag<Long> LAST_WAVE_START_TAG = Tag.Long("last_wave_start").defaultValue(0L);
     private static final Tag<Boolean> NEXT_WAVE_WAITING_TAG = Tag.Boolean("next_wave_waiting").defaultValue(false);
     private static final Tag<List<AttackableMob>> MOBS_IN_WAVE_TAG = Tag.<List<AttackableMob>>Transient("mobs_in_wave").defaultValue(List.of());
@@ -76,6 +77,10 @@ public class WaveSystem {
 
     public int getCurrentWave() {
         return instance.getTag(CURRENT_WAVE_TAG);
+    }
+
+    public int getCurrentWaveSize() {
+        return instance.getTag(CURRENT_WAVE_SIZE_TAG);
     }
 
     // Starts the timer for the next wave, if it is not already waiting.
@@ -108,7 +113,7 @@ public class WaveSystem {
                 for (int j = 0; j < instance.getPlayers().stream().filter(p -> p.getGameMode() != GameMode.SPECTATOR).count(); j++) {
                     AttackableMob mob = record.entity().get();
                     
-                    double modifier = -(0.8 / Math.pow(1.1, currentWave * 2.4));
+                    double modifier = -(0.8 / Math.pow(1.08, currentWave * 2.0));
 
                     mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("wave_speed_modifier", modifier, AttributeOperation.ADD_MULTIPLIED_TOTAL));
                     
@@ -152,6 +157,7 @@ public class WaveSystem {
             instance.setTag(MOBS_IN_WAVE_TAG, mobs);
             instance.setTag(CURRENT_WAVE_TAG, currentWave + 1);
             instance.setTag(NEXT_WAVE_WAITING_TAG, false);
+            instance.setTag(CURRENT_WAVE_SIZE_TAG, mobs.size());
 
             SpawnWaveEvent event = new SpawnWaveEvent(instance, mobs, currentWave + 1);
             EventDispatcher.call(event);

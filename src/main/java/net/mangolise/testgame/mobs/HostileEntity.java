@@ -154,7 +154,12 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
 
         double random = Math.random();
 
-        if (isDead && random <= 0.1 * (1.0/WaveSystem.from(instance).getCurrentWave())) {
+        double currentWaveSize = WaveSystem.from(instance).getCurrentWaveSize();
+        double currentWave = WaveSystem.from(instance).getCurrentWave();
+        
+        double expectedNumberOfDrops = Math.pow(1.1, currentWave);
+        
+        if (isDead && random <= (expectedNumberOfDrops / currentWaveSize)) {
             ItemEntity itemEntity = GameSdkUtils.dropItem(instance, this.position, BundleMenu.createBundleItem(false));
             itemEntity.setPickable(true);
             itemEntity.setGlowing(true);

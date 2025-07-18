@@ -280,7 +280,7 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.GOAT_SPAWN_EGG,
-                    List.of("Jacob joins your side", "    1.5 + (0.5 per level) Damage", "    2 + (2 per level) Seconds to live"),
+                    List.of("Jacob joins your side", "    1.5 + (0.5 per level) Damage", "    2 + (1 per level) Seconds to live"),
                     List.of());
         }
 
@@ -300,7 +300,7 @@ sealed public interface GenericMods extends Mod {
             var user = attack.getTag(Attack.USER);
             
             // TODO: get the user's weapon via a new Attack.WEAPON tag
-            JacobEntity jacob = new JacobEntity(new MaceWeapon(), attack, (level * 2) * 20);
+            JacobEntity jacob = new JacobEntity(new MaceWeapon(), attack, 20 + (level) * 10);
             jacob.setInstance(user.getInstance(), user.getPosition());
         }
 

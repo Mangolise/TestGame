@@ -16,7 +16,9 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.DamageType;
+import net.minestom.server.entity.metadata.display.AbstractDisplayMeta;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
+import net.minestom.server.entity.metadata.display.ItemDisplayMeta;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
@@ -81,12 +83,12 @@ public record CannonBallBallWeapon() implements Weapon {
     }
 
     private void createCannonBall(LivingEntity user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount, int childCount) {
-        VanillaProjectile cannonBall = new VanillaProjectile(user, EntityType.BLOCK_DISPLAY);
-        cannonBall.editEntityMeta(BlockDisplayMeta.class, meta -> {
-            meta.setBlockState(Block.SMOOTH_BASALT);
+        VanillaProjectile cannonBall = new VanillaProjectile(user, EntityType.ITEM_DISPLAY);
+        cannonBall.editEntityMeta(ItemDisplayMeta.class, meta -> {
+            meta.setItemStack(ItemStack.of(Material.SMOOTH_BASALT).with(DataComponents.ITEM_MODEL, "minecraft:cannon_ball"));
             meta.setScale(scale);
+            meta.setTranslation(new Vec(0, 0, 0));
             meta.setPosRotInterpolationDuration(1);
-            meta.setTranslation(new Vec(-0.5));
         });
 
         cannonBall.setBoundingBox(new BoundingBox(Vec.ZERO, scale));
@@ -107,7 +109,7 @@ public record CannonBallBallWeapon() implements Weapon {
     }
 
     private void onCannonBallCollide(ProjectileCollideAnyEvent event, LivingEntity user, VanillaProjectile cannonBall, Attack attack, int splitCount, int childCount) {
-        double scale = ((BlockDisplayMeta)cannonBall.getEntityMeta()).getScale().x();
+        double scale = ((AbstractDisplayMeta) cannonBall.getEntityMeta()).getScale().x();
 
         if (event instanceof ProjectileCollideEntityEvent eEvent) {
             if (!(eEvent.getTarget() instanceof AttackableMob target && attack.canTarget(target))) {
