@@ -44,12 +44,12 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public ItemStack item() {
-            return createItem(Material.NETHERITE_SWORD, List.of("2x Attacks"), List.of("-50% Damage"));
+            return createItem(Material.NETHERITE_SWORD, List.of("2x Attacks"), List.of("-55% Damage"));
         }
 
         @Override
         public void attack(Attack attack, Consumer<Attack> next) {
-            attack.updateTag(Attack.DAMAGE, damage -> damage * 0.5);
+            attack.updateTag(Attack.DAMAGE, damage -> damage * 0.45);
 
             // attack twice
             next.accept(attack);
@@ -167,7 +167,7 @@ sealed public interface GenericMods extends Mod {
 //            return PRIORITY_POST_MODIFIER;
 //        }
 //    }
-    
+
     record LuckyLeonard(int level) implements GenericMods {
         public Component name() {
             return Component.text("Lucky Leonard").color(this.rarity().color());
@@ -195,7 +195,7 @@ sealed public interface GenericMods extends Mod {
             return PRIORITY_ADDITIVE_MODIFIER;
         }
     }
-    
+
     record QuickHands(int level) implements GenericMods {
         public Component name() {
             return Component.text("Quick Hands").color(this.rarity().color());
@@ -238,17 +238,17 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.GOLD_NUGGET,
-                    List.of("2.5 + (0.5 per level)x Damage"),
+                    List.of("2.0 + (0.5 per level)x Damage"),
                     List.of("50% - (10% per level) Chance to do Nothing"));
         }
 
         @Override
         public void attack(Attack attack, Consumer<Attack> next) {
-            double damageMultiplier = 2.5 + level * 0.5;
+            double damageMultiplier = 2.0 + level * 0.5;
             double chance = 0.5 - level * 0.1;
 
             double testValue = ThreadLocalRandom.current().nextDouble();
-            
+
             if (testValue < chance) {
                 if (attack.getTag(Attack.USER) instanceof Player player) {
                     // play sound
@@ -280,7 +280,7 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.GOAT_SPAWN_EGG,
-                    List.of("Jacob joins your side", "    1.5 + (0.5 per level) Damage", "    2 + (1 per level) Seconds to live"),
+                    List.of("Jacob joins your side", "    1.0 + (0.25 per level) Damage", "    1.5 + (0.5 per level) Seconds to live"),
                     List.of());
         }
 
@@ -288,19 +288,19 @@ sealed public interface GenericMods extends Mod {
         public void attack(Attack attack, Consumer<Attack> next) {
             // still do the normal attack
             next.accept(attack);
-            
+
             if (attack.sampleCrits() == 0) {
                 return; // no crits, no jacob
             }
 
             // Every time we crit, spawn a jacob entity with the same weapon
-            double damageMultiplier = 1.5 + level * 0.5;
+            double damageMultiplier = 1.0 + level * 0.25;
             Attack jacobAttack = attack.copy(true);
             jacobAttack.updateTag(Attack.DAMAGE, damage -> damage * damageMultiplier);
             var user = attack.getTag(Attack.USER);
-            
+
             // TODO: get the user's weapon via a new Attack.WEAPON tag
-            JacobEntity jacob = new JacobEntity(new MaceWeapon(), attack, 20 + (level) * 10);
+            JacobEntity jacob = new JacobEntity(new MaceWeapon(), attack, 30 + level * 10);
             jacob.setInstance(user.getInstance(), user.getPosition());
         }
 
@@ -448,17 +448,17 @@ sealed public interface GenericMods extends Mod {
     sealed interface IncreaseDamage extends GenericMods permits CommonIncreaseDamage, RareIncreaseDamage, EpicIncreaseDamage {
         @Override
         default void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            attack.getAndUpdateTag(Attack.DAMAGE, damage -> damage + getDamageAmount());
-            attack.getAndUpdateTag(Attack.COOLDOWN, coolDown -> coolDown * getCooldownAmount());
+            attack.updateTag(Attack.DAMAGE, damage -> damage * getDamageMultiplier());
+            attack.updateTag(Attack.COOLDOWN, coolDown -> coolDown * getCooldownAmount());
             next.accept(attack);
         }
 
-        double getDamageAmount();
+        double getDamageMultiplier();
         double getCooldownAmount();
 
         @Override
         default double priority() {
-            return PRIORITY_ADDITIVE_MODIFIER;
+            return PRIORITY_MULTIPLICATIVE_MODIFIER;
         }
     }
 
@@ -468,13 +468,13 @@ sealed public interface GenericMods extends Mod {
         }
 
         @Override
-        public double getDamageAmount() {
-            return 2 * (level + 1);
+        public double getDamageMultiplier() {
+            return 1.0 + (0.05 * (level + 1));
         }
 
         @Override
         public double getCooldownAmount() {
-            return 1.0 - (0.05 * (level + 1.0));
+            return 1.0 + (0.05 * (level + 1.0));
         }
 
         @Override
@@ -490,7 +490,7 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.IRON_INGOT,
-                    List.of("+1.0 Damage"),
+                    List.of("+5% Damage"),
                     List.of("+5% Weapon Cooldown"));
         }
     }
@@ -501,13 +501,13 @@ sealed public interface GenericMods extends Mod {
         }
 
         @Override
-        public double getDamageAmount() {
-            return 4 * (level + 1);
+        public double getDamageMultiplier() {
+            return 1.0 + (0.10 * (level + 1));
         }
 
         @Override
         public double getCooldownAmount() {
-            return 1.0 - (0.05 * (level + 1.0));
+            return 1.0 + (0.05 * (level + 1.0));
         }
 
         @Override
@@ -523,7 +523,7 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.DIAMOND,
-                    List.of("+2.0 Damage"),
+                    List.of("+10% Damage"),
                     List.of("+5% Weapon Cooldown"));
         }
     }
@@ -534,13 +534,13 @@ sealed public interface GenericMods extends Mod {
         }
 
         @Override
-        public double getDamageAmount() {
-            return 8 * (level + 1);
+        public double getDamageMultiplier() {
+            return 1.0 + (0.15 * (level + 1));
         }
 
         @Override
         public double getCooldownAmount() {
-            return 1.0 - (0.1 * (level + 1.0));
+            return 1.0 + (0.1 * (level + 1.0));
         }
 
         @Override
@@ -556,7 +556,7 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.NETHERITE_INGOT,
-                    List.of("+4.0 Damage"),
+                    List.of("+15% Damage"),
                     List.of("+10% Weapon Cooldown"));
         }
     }
@@ -600,14 +600,14 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            attack.updateTag(Attack.DAMAGE, damage -> damage * (1.5 * (level + 1.0)));
+            attack.updateTag(Attack.DAMAGE, damage -> damage * (1.3 * (level + 1.0)));
             next.accept(attack);
         }
 
         @Override
         public ItemStack item() {
             return createItem(Material.POTION,
-                    List.of("+50% Damage"),
+                    List.of("+30% Damage"),
                     List.of("-50% Max Health"))
                     .with(DataComponents.POTION_CONTENTS, new PotionContents(PotionType.STRENGTH));
         }
@@ -636,8 +636,8 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.RABBIT_HIDE,
-                    List.of("20% chance to deal 300% of current damage"),
-                    List.of("20% chance to deal 30% of current damage"),
+                    List.of("15% chance to deal 250% of current damage"),
+                    List.of("15% chance to deal 50% of current damage"),
                     List.of("Rolls chances per attack"));
         }
 
@@ -645,10 +645,10 @@ sealed public interface GenericMods extends Mod {
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
             double random = Math.random();
 
-            if (random <= 0.2) {
-                attack.updateTag(Attack.DAMAGE, damage -> damage * 3);
-            } else if (random <= 0.4) {
-                attack.updateTag(Attack.DAMAGE, damage -> damage * 0.3);
+            if (random <= 0.15) {
+                attack.updateTag(Attack.DAMAGE, damage -> damage * 2.5);
+            } else if (random <= 0.3) {
+                attack.updateTag(Attack.DAMAGE, damage -> damage * 0.5);
             }
 
             next.accept(attack);
