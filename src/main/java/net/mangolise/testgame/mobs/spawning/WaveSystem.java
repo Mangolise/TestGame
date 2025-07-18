@@ -147,10 +147,11 @@ public class WaveSystem {
             instance.sendMessage(Component.text(mobCountMessage.toString()));
 
             for (AttackableMob mob : mobs) {
-//                mob.asEntity().getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(1.0 + (currentWave * 0.5));
-//                mob.asEntity().getAttribute(Attribute.MAX_HEALTH).setBaseValue(10.0 + (currentWave * 2.0));
-//                mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_boost", Math.pow(1.01, currentWave) - 1.8, AttributeOperation.ADD_MULTIPLIED_BASE));
+                mob.asEntity().getAttribute(Attribute.ATTACK_DAMAGE).addModifier(new AttributeModifier("wave_damage_modifier", Math.pow(1.02, currentWave) - 1.0, AttributeOperation.ADD_MULTIPLIED_BASE));
+                mob.asEntity().getAttribute(Attribute.MAX_HEALTH).addModifier(new AttributeModifier("wave_health_modifier", Math.pow(1.1, currentWave), AttributeOperation.ADD_MULTIPLIED_BASE));
+                mob.asEntity().getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("wave_speed_modifier", Math.pow(1.01, currentWave) - 1.8, AttributeOperation.ADD_MULTIPLIED_BASE));
                 SpawnSystem.spawn(instance, mob.asEntity());
+                mob.asEntity().heal();
             }
 
             instance.setTag(LAST_WAVE_START_TAG, System.currentTimeMillis());

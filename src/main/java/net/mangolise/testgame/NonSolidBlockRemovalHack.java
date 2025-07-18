@@ -37,7 +37,13 @@ public class NonSolidBlockRemovalHack {
     private static void forEachRemovalBlock(Int2ObjectMap<List<Point>> data, BiConsumer<Point, Block> consumer) {
         for (Int2ObjectMap.Entry<List<Point>> entry : data.int2ObjectEntrySet()) {
             Block block = Block.fromStateId(entry.getIntKey());
-            if (!block.compare(Block.BARRIER) && block.isSolid()) continue;
+            if (!block.compare(Block.BARRIER) && block.isSolid()) {
+                continue;
+            }
+            
+            if (block.name().toLowerCase().contains("button")) {
+                continue;
+            }
             
             List<Point> points = entry.getValue();
             for (Point point : points) {

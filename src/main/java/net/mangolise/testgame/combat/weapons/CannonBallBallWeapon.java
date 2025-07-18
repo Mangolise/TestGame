@@ -82,7 +82,7 @@ public record CannonBallBallWeapon() implements Weapon {
         return "cannon_ball";
     }
 
-    private void createCannonBall(LivingEntity user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount, int childCount) {
+    private void createCannonBall(LivingEntity user, Instance instance, Attack attack, Pos position, Vec velocity, Vec scale, int splitCount, double childCount) {
         VanillaProjectile cannonBall = new VanillaProjectile(user, EntityType.ITEM_DISPLAY);
         cannonBall.editEntityMeta(ItemDisplayMeta.class, meta -> {
             meta.setItemStack(ItemStack.of(Material.SMOOTH_BASALT).with(DataComponents.ITEM_MODEL, "minecraft:cannon_ball"));
@@ -108,7 +108,7 @@ public record CannonBallBallWeapon() implements Weapon {
         return PRIORITY_WEAPON;
     }
 
-    private void onCannonBallCollide(ProjectileCollideAnyEvent event, LivingEntity user, VanillaProjectile cannonBall, Attack attack, int splitCount, int childCount) {
+    private void onCannonBallCollide(ProjectileCollideAnyEvent event, LivingEntity user, VanillaProjectile cannonBall, Attack attack, int splitCount, double childCount) {
         double scale = ((AbstractDisplayMeta) cannonBall.getEntityMeta()).getScale().x();
 
         if (event instanceof ProjectileCollideEntityEvent eEvent) {
@@ -142,7 +142,7 @@ public record CannonBallBallWeapon() implements Weapon {
         final double CHILD_SCALE_MOD = Math.pow(childCount, 1.0 / 3.0); // is this math right, idk
         Attack attackCopy = attack;
 
-        for (int i = 0; i < childCount; i++) {
+        for (int i = 0; i < (int) childCount; i++) {
             double rotation = i * Math.TAU / childCount;
             Pos position = cannonBall.getPosition().withYaw((float) rotation);
             Vec velocity = new Vec(6, 12, 0).rotateAroundY(rotation);
@@ -155,7 +155,7 @@ public record CannonBallBallWeapon() implements Weapon {
             int consumeCount = IntStream.range(0, attackCopy.sampleCrits()).anyMatch(j -> Math.random() < scale * 0.75) ? 0 : 1;
 
             ThrottledScheduler.use(instance, "cannonball-weapon-ball-attack", 4, () -> {
-                createCannonBall(user, instance, childAttack, position, velocity, new Vec(scale / CHILD_SCALE_MOD), splitCount - consumeCount, childCount - 1);
+                createCannonBall(user, instance, childAttack, position, velocity, new Vec(scale / CHILD_SCALE_MOD), splitCount - consumeCount, childCount / (Math.random() + 1.0));
             });
         }
     }
