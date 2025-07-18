@@ -28,7 +28,9 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeInstance;
+import net.minestom.server.entity.metadata.display.AbstractDisplayMeta;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
+import net.minestom.server.entity.metadata.display.TextDisplayMeta;
 import net.minestom.server.event.EventNode;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.item.ItemDropEvent;
@@ -257,6 +259,16 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         Entity armourStand2 = new Entity(EntityType.ARMOR_STAND);
         armourStand2.setNoGravity(true);
         armourStand2.setInstance(world, new Pos(0.5, 68, 31.5));
+
+        Entity displayTextEntity = new Entity(EntityType.TEXT_DISPLAY);
+        displayTextEntity.editEntityMeta(TextDisplayMeta.class, meta -> {
+            meta.setHasNoGravity(true);
+            meta.setSeeThrough(true);
+            meta.setBillboardRenderConstraints(AbstractDisplayMeta.BillboardConstraints.CENTER);
+            meta.setText(ChatUtil.toComponent("&aHallo! &6Welcome!\n &7This is Jacob's Mod it was made for the Minestom GameJam!\n by &6Mangolise"));
+        });
+
+        displayTextEntity.setInstance(world, new Pos(0.5, 66, 13.5));
 
         scoreboard = new Sidebar(ChatUtil.toComponent("&a&lBest Wave Leaderboard"));
         updateScoreboard();
@@ -663,9 +675,9 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 .pages(
                         ChatUtil.toComponent(
                                 """
-                                &r&b&lWelcome to a game!
+                                &r&b&lWelcome to Jacobs Mod!
                                 
-                                &r&0This game is a zombie survival game where you build up weapons with upgrades to defend against hordes of zombies.
+                                &r&0Jacobs Mod is a wave survival game where you build up weapons with upgrades to defend against hordes of mobs.
                                 
                                 &r&0&oMade by CoPokBl, Calcilore, Krystilize and EclipsedMango""")
                 ).build();
