@@ -26,8 +26,18 @@ import java.awt.*;
 import java.time.Duration;
 
 public abstract non-sealed class HostileEntity extends EntityCreature implements AttackableMob {
-    public HostileEntity(@NotNull EntityType entityType) {
+    private final Sound hurtSound;
+    private final Sound deathSound;
+    private final Sound walkSound;
+
+    private Pos lastPos = new Pos(0, 0, 0);
+    private double walkDist = 0;
+
+    public HostileEntity(@NotNull EntityType entityType, Sound hurtSound, Sound deathSound, Sound walkSound) {
         super(entityType);
+        this.hurtSound = hurtSound;
+        this.deathSound = deathSound;
+        this.walkSound = walkSound;
     }
 
     @Override
@@ -44,6 +54,7 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
             player.playSound(Sound.sound(Key.key("minecraft:entity.experience_orb.pickup"), Sound.Source.HOSTILE, 0.01f, 1f));
         }
 
+        instance.playSound(hurtSound, position);
         this.damage(new Damage(type, null, user, null, (float) (damage * critMultiplier)));
     }
 
@@ -75,6 +86,14 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
             String healthBar = "&a" + "█".repeat(healthSegments) + "&c" + "█".repeat(emptySegments);
             this.set(DataComponents.CUSTOM_NAME, ChatUtil.toComponent(healthBar));
             this.setCustomNameVisible(true);
+
+            walkDist += position.distance(lastPos);
+            lastPos = position;
+
+            while (walkDist > 0) {
+                instance.playSound(walkSound, position);
+                walkDist -= 2;
+            }
 
             try {
                 if (this.getTarget() != null && this.getTarget().isRemoved()) {
@@ -158,7 +177,11 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
 
         double currentWaveSize = WaveSystem.from(instance).getCurrentWaveSize();
         double currentWave = WaveSystem.from(instance).getCurrentWave();
-        
+
+        if (isDead) {
+            instance.playSound(deathSound, position);
+        }
+
         double expectedNumberOfDrops = Math.pow(1.1, currentWave);
         
         if (isDead && random <= (expectedNumberOfDrops / currentWaveSize)) {

@@ -193,8 +193,11 @@ sealed public interface GenericMods extends Mod {
             jacobAttack.updateTag(Attack.DAMAGE, damage -> damage * damageMultiplier);
             var user = attack.getTag(Attack.USER);
 
-            // TODO: get the user's weapon via a new Attack.WEAPON tag
-            JacobEntity jacob = new JacobEntity(new MaceWeapon(), attack, 30 + level * 10);
+            JacobEntity jacob = new JacobEntity(attack.weapon(), attack, 30 + level * 10,
+                    Sound.sound(SoundEvent.ENTITY_GOAT_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                    Sound.sound(SoundEvent.ENTITY_GOAT_DEATH, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                    Sound.sound(SoundEvent.ENTITY_GOAT_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f)
+            );
             jacob.setInstance(user.getInstance(), user.getPosition());
         }
 

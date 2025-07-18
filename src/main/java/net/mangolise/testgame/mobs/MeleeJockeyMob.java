@@ -1,5 +1,6 @@
 package net.mangolise.testgame.mobs;
 
+import net.kyori.adventure.sound.Sound;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.weapons.DirectDamageWeapon;
@@ -9,6 +10,7 @@ import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.ai.goal.MeleeAttackGoal;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.sound.SoundEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,8 +22,8 @@ public class MeleeJockeyMob extends HostileEntity {
     public Weapon weapon = new DirectDamageWeapon();
     private final MeleeMob rider;
     
-    public MeleeJockeyMob(EntityType type, EntityType passenger) {
-        super(type);
+    public MeleeJockeyMob(EntityType type, Sound hurtSound, Sound deathSound, Sound walkSound, EntityType passenger) {
+        super(type, hurtSound, deathSound, walkSound);
 
         this.addAIGroup(
                 List.of(
@@ -34,7 +36,7 @@ public class MeleeJockeyMob extends HostileEntity {
         );
         
         // Create the rider entity (a zombie)
-        this.rider = new MeleeMob(passenger, 4);
+        this.rider = new MeleeMob(passenger, hurtSound, deathSound, walkSound, 4);
     }
 
     public MeleeJockeyMob withWeapon(Weapon weapon) {

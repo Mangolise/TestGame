@@ -1,5 +1,6 @@
 package net.mangolise.testgame.mobs;
 
+import net.kyori.adventure.sound.Sound;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.weapons.DirectDamageWeapon;
@@ -17,8 +18,8 @@ public class MeleeMob extends HostileEntity {
     public Weapon weapon = new DirectDamageWeapon();
     private final double damage;
 
-    public MeleeMob(EntityType type, double damage) {
-        super(type);
+    public MeleeMob(EntityType type, Sound hurtSound, Sound deathSound, Sound walkSound, double damage) {
+        super(type, hurtSound, deathSound, walkSound);
 
         this.addAIGroup(
                 List.of(

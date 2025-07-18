@@ -1,5 +1,6 @@
 package net.mangolise.testgame.mobs;
 
+import net.kyori.adventure.sound.Sound;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.weapons.MaceWeapon;
@@ -23,8 +24,8 @@ public class JacobEntity extends HostileEntity implements PlayerTeam {
     private final Attack attack;
     private final int ticksToLive;
     
-    public JacobEntity(Weapon weapon, Attack attack, int ticksToLive) {
-        super(EntityType.GOAT);
+    public JacobEntity(Weapon weapon, Attack attack, int ticksToLive, Sound hurtSound, Sound deathSound, Sound walkSound) {
+        super(EntityType.GOAT, hurtSound, deathSound, walkSound);
         this.weapon = weapon;
         this.attack = attack;
         this.ticksToLive = ticksToLive;

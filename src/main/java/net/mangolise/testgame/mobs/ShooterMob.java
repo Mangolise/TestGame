@@ -1,5 +1,6 @@
 package net.mangolise.testgame.mobs;
 
+import net.kyori.adventure.sound.Sound;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.weapons.BowWeapon;
@@ -21,8 +22,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ShooterMob extends HostileEntity {
     Weapon weapon = new BowWeapon();
 
-    public ShooterMob(EntityType type) {
-        super(type);
+    public ShooterMob(EntityType type, Sound hurtSound, Sound deathSound, Sound walkSound) {
+        super(type, hurtSound, deathSound, walkSound);
 
         RangedAttackGoal rangedGoal = new RangedAttackGoal(this, Duration.ofMillis(1000), 100, 10, true, 10.0, 1.0);
         rangedGoal.setProjectileGenerator((shooter, targetPos, power, spread) -> {
