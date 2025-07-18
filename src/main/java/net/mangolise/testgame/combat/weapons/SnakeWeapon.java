@@ -167,7 +167,11 @@ public record SnakeWeapon() implements Weapon {
                 ThrottledScheduler.use(instance, "snake-weapon-fork-attack", 4, () -> {
                     forkSnake(pos, childrenRemainingTicks);
                     
-                    int numCrits = attack.copy(true).sampleCrits();
+                    Attack samplingAttack = attack.copy(true);
+                    
+                    samplingAttack.updateTag(Attack.CRIT_CHANCE, critChance -> critChance * Math.pow(Math.random(), 0.5));
+                    
+                    int numCrits = samplingAttack.sampleCrits();
                     for (int i = 0; i < numCrits; i++) {
                         forkSnake(pos, childrenRemainingTicks);
                     }
