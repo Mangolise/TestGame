@@ -5,12 +5,15 @@ import net.mangolise.gamesdk.Game;
 import net.mangolise.gamesdk.instance.InstanceAnalysis;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.ChatUtil;
+import net.mangolise.testgame.combat.mods.BundleMenu;
 import net.minestom.server.coordinate.BlockVec;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.player.PlayerBlockInteractEvent;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemStack;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
 
@@ -64,6 +67,14 @@ public class FindTheButtonFeature implements Game.Feature<TestGame> {
 
             if (foundButtons.size() == BUTTONS) {
                 context.game().instance().sendMessage(ChatUtil.toComponent("&a&lYOU FOUND ALL THE BUTTONS!"));
+                Instance instance = context.game().instance();
+
+                for (Player p : instance.getPlayers()) {
+                    for (int i = 0; i < 25; i++) {
+                        ItemStack item = BundleMenu.createBundleItem(false);
+                        p.getInventory().addItemStack(item);
+                    }
+                }
             }
         });
     }
