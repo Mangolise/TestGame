@@ -31,15 +31,15 @@ public sealed interface StaffWeaponMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.BREEZE_ROD,
-                    List.of("Staff: +5% Arc Chance"),
-                    List.of("Staff: +5% Cooldown"));
+                    List.of("Staff: +20% Arc Chance"),
+                    List.of("Staff: +10% Cooldown"));
         }
 
         @Override
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            attack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc * (0.05 + (level * 0.05)));
+            attack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + (0.20 + (level * 0.10)));
             if (attack.weapon() instanceof StaffWeapon) {
-                attack.updateTag(Attack.COOLDOWN, arc -> arc * (1.05 + (level * 0.05)));
+                attack.updateTag(Attack.COOLDOWN, arc -> arc * (1.10 + (level * 0.05)));
             }
             next.accept(attack);
         }

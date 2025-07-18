@@ -68,7 +68,7 @@ public record StaffWeapon() implements Weapon {
 
             user.getInstance().playSound(Sound.sound(Key.key("minecraft:item.trident.thunder"), Sound.Source.NEUTRAL, 0.1f, 1f), entityPos);
 
-            chainAttack(chainedEntities, originalEntity, attack, 1.0);
+            chainAttack(chainedEntities, originalEntity, attack);
         }
     }
 
@@ -95,7 +95,7 @@ public record StaffWeapon() implements Weapon {
         return PRIORITY_WEAPON;
     }
 
-    private void chainAttack(Set<UUID> chainedEntities, AttackableMob attackableMob, Attack attack, double depth) {
+    private void chainAttack(Set<UUID> chainedEntities, AttackableMob attackableMob, Attack attack) {
         if (attackableMob == null) {
             return;
         }
@@ -115,7 +115,7 @@ public record StaffWeapon() implements Weapon {
         for (Entity entity : entities) {
             if (!(entity instanceof AttackableMob mob && attack.canTarget(mob)) ||
                     chainedEntities.contains(entity.getUuid()) ||
-                    (Math.random() + attack.getTag(ARC_CHANCE)) / depth < 0.65 ||
+                    (attack.getTag(ARC_CHANCE)) > Math.random() ||
                     entity.isRemoved() ||
                     (mob.asEntity().isDead() || mob.asEntity().isInvulnerable())
             ) {
@@ -131,7 +131,9 @@ public record StaffWeapon() implements Weapon {
                     Vec end = entity.getPosition().asVec().add(0, entity.getEyeHeight() * entityScale, 0);
 
                     createLightningLine(start, end, instance);
-                    chainAttack(chainedEntities, mob, attack, depth + 1.0);
+                    Attack arcAttack = attack.copy(false);
+                    arcAttack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc * 0.9);
+                    chainAttack(chainedEntities, mob, attack);
                 });
             }, TaskSchedule.millis(100), TaskSchedule.stop());
         }
