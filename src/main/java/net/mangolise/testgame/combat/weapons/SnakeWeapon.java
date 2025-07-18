@@ -5,21 +5,29 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.mangolise.gamesdk.util.ChatUtil;
+import net.mangolise.testgame.util.MathUtils;
 import net.mangolise.testgame.util.ThrottledScheduler;
 import net.mangolise.testgame.util.Utils;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.mobs.AttackableMob;
+import net.minestom.server.collision.Aerodynamics;
+import net.minestom.server.collision.BoundingBox;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.LivingEntity;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.damage.DamageType;
+import net.minestom.server.entity.metadata.display.AbstractDisplayMeta;
+import net.minestom.server.entity.metadata.display.ItemDisplayMeta;
 import net.minestom.server.event.EventListener;
+import net.minestom.server.event.entity.EntityTickEvent;
 import net.minestom.server.event.instance.InstanceTickEvent;
+import net.minestom.server.event.instance.RemoveEntityFromInstanceEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -27,6 +35,8 @@ import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
+import net.minestom.server.timer.TaskSchedule;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -118,6 +128,7 @@ public record SnakeWeapon() implements Weapon {
 
         private int msSinceLastHit = 0;
         private final Vec randomCurve = Vec.ONE.mul(Math.random()).sub(0.5, 0, 0.5).mul(0.1);
+        private final SnakeDisplay display;
 
         public Snake(Instance instance, Attack attack, Pos pos, AttackableMob target, int remainingTicks, Set<AttackableMob> alreadyMarked) {
             this.instance = instance;
@@ -126,12 +137,22 @@ public record SnakeWeapon() implements Weapon {
             this.target = target;
             this.remainingTicks = remainingTicks;
             this.alreadyMarked = alreadyMarked;
+            
+            this.display = new SnakeDisplay();
+            this.display.move(instance, pos, Vec.ZERO);
         }
 
         public void init() {
             instance.eventNode().addListener(EventListener.builder(InstanceTickEvent.class)
                     .handler(event -> handleMoveTick(event.getDuration()))
-                    .expireWhen(e -> !instance.isRegistered() || remainingTicks <= 0)
+                    .expireWhen(e -> {
+                        if (!instance.isRegistered() || remainingTicks <= 0) {
+                            // remove the snake display
+                            display.remove();
+                            return true;
+                        }
+                        return false;
+                    })
                     .build());
         }
 
@@ -153,12 +174,16 @@ public record SnakeWeapon() implements Weapon {
 
             // make it relative to the time
             direction = direction.mul(Math.max(tickMs, 1) / 1000.0);
+            
+            Point posBefore = pos.asVec();
 
             pos = pos.add(direction);
             pos = pos.add(randomCurve);
 
+            Vec velocity = pos.asVec().sub(posBefore);
+
             // check if we hit the target
-            if (entity.getPosition().distanceSquared(pos) < speedBonus * speedBonus * 0.25) {
+            if (entity.getPosition().distanceSquared(pos) < speedBonus * speedBonus * 0.01) {
                 // hit the target
                 target.applyAttack(DamageType.IN_WALL, attack);
 
@@ -169,7 +194,7 @@ public record SnakeWeapon() implements Weapon {
                     
                     Attack samplingAttack = attack.copy(true);
                     
-                    samplingAttack.updateTag(Attack.CRIT_CHANCE, critChance -> critChance * Math.pow(Math.random(), 0.5));
+                    samplingAttack.updateTag(Attack.CRIT_CHANCE, critChance -> critChance * (1.0 - Math.pow(Math.random(), 3.0)));
                     
                     int numCrits = samplingAttack.sampleCrits();
                     for (int i = 0; i < numCrits; i++) {
@@ -196,10 +221,12 @@ public record SnakeWeapon() implements Weapon {
                 ParticlePacket packet = new ParticlePacket(Particle.ANGRY_VILLAGER, pos.add(0, entity.getEyeHeight() * entityScale, 0), Vec.ZERO, 0, 1);
                 instance.sendGroupedPacket(packet);
             }
+            
+            // update pos direction
+            pos = pos.withDirection(direction);
 
-            // show particles
-            ParticlePacket packet = new ParticlePacket(Particle.COMPOSTER, pos, Vec.ZERO, 0, 1);
-            instance.sendGroupedPacket(packet);
+            // update rendered snake
+            display.move(instance, pos, velocity);
 
             remainingTicks--;
             msSinceLastHit += tickMs;
@@ -230,6 +257,91 @@ public record SnakeWeapon() implements Weapon {
             
             Snake forkedSnake = new Snake(instance, forkedAttack, Pos.fromPoint(pos), newTarget, remainingTicks, alreadyMarked);
             forkedSnake.init();
+        }
+    }
+    
+    private static class SnakeDisplay {
+        
+        private static class DisplayEntity extends Entity {
+
+            public DisplayEntity(@Nullable Entity parent, Vec translation, Vec scale, Vec rotation, String model) {
+                this(translation, scale, rotation, model);
+                
+                parent.eventNode().addListener(EntityTickEvent.class, event -> {
+                    Point pos = parent.getPosition();
+                    Vec velo = parent.getVelocity();
+                    parent.scheduler().scheduleTask(() -> {
+                        if (this.isRemoved()) return;
+                        
+                        this.setInstance(parent.getInstance(), pos);
+                        this.setVelocity(velo);
+
+                        double speed = Math.max(velo.length(), 0.1) * 10.0;
+                        this.editEntityMeta(AbstractDisplayMeta.class, meta -> {
+                            Vec currentScale = meta.getScale();
+                            Vec newScale = new Vec(currentScale.x(), currentScale.y(), speed);
+                            meta.setScale(newScale);
+                            
+                            // move forward by half of the scale offset
+                            Vec translationOffset = new Vec(0, 0, speed * 0.015);
+                            Point newTranslation = meta.getTranslation().add(translationOffset);
+                            meta.setTranslation(newTranslation);
+                        });
+                    }, TaskSchedule.tick(1), TaskSchedule.stop());
+                });
+                
+                parent.eventNode().addListener(RemoveEntityFromInstanceEvent.class, event -> {
+                    if (!this.isRemoved()) {
+                        this.remove();
+                    }
+                });
+            }
+
+            public DisplayEntity(Vec translation, Vec scale, Vec rotation, String model) {
+                super(EntityType.ITEM_DISPLAY);
+
+                editEntityMeta(ItemDisplayMeta.class, meta -> {
+                    meta.setItemStack(ItemStack.of(Material.STONE).with(DataComponents.ITEM_MODEL, model));
+                    meta.setScale(scale);
+                    meta.setTranslation(translation);
+                    meta.setPosRotInterpolationDuration(2);
+                    meta.setRightRotation(MathUtils.createQuaternionFromEuler(rotation));
+                });
+
+                setBoundingBox(new BoundingBox(Vec.ZERO, scale));
+                
+                setNoGravity(true);
+                this.setAerodynamics(new Aerodynamics(0, 0, 0));
+            }
+        }
+        
+        private final DisplayEntity head = new DisplayEntity(new Vec(0, 0.5, 0.2), new Vec(0.9), Vec.ZERO, "minecraft:snake_head");
+
+        public SnakeDisplay() {
+            int bodySegments = 5;
+
+            Entity parent = head;
+
+            for (int i = 0; i < bodySegments; i++) {
+                parent = new DisplayEntity(parent, new Vec(0, 0.3, 0.4), new Vec(1.3), new Vec(90, 0, 0), "minecraft:snake_body");
+            }
+            new DisplayEntity(parent, new Vec(0, 0.3, 0.4), new Vec(1.3), new Vec(90, 0, 0), "minecraft:snake_tail");
+        }
+        
+        public void move(Instance instance, Pos pos, Vec velocity) {
+            
+            Point direction = pos.direction();
+            
+            Pos headPos = pos.add(direction.mul(0.0));
+            
+            head.setInstance(instance, headPos);
+            head.setVelocity(velocity);
+        }
+        
+        public void remove() {
+            if (!head.isRemoved()) {
+                head.remove();
+            }
         }
     }
 }
