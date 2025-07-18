@@ -57,7 +57,7 @@ import java.util.function.Consumer;
 public class LobbyGame extends BaseGame<LobbyGame.Config> {
     private static final Pos SPAWN = new Pos(0.5, 64, 0.5);
 
-    private static final Tag<Set<Player>> PARTY_MEMBERS_TAG = Tag.Transient("lobby.partymembers");
+    public static final Tag<Set<Player>> PARTY_MEMBERS_TAG = Tag.Transient("lobby.partymembers");
     private static final Tag<Set<Player>> PARTY_MEMBER_INVITES_TAG = Tag.Transient("lobby.partyinvites");
     private static final Tag<Player> JOINED_PARTY_TAG = Tag.Transient("lobby.joinedparty");
 

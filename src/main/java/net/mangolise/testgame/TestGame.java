@@ -253,8 +253,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
         }
 
         if (!pos.sameBlock(info.pos()) || !goalPos.sameBlock(info.goal())) {
-            boolean posChanged = !pos.sameBlock(info.pos());
-            boolean goalChanged = !goalPos.sameBlock(info.goal());
             // reset the navigation info if the entity's position or goal has changed
             entity.setTag(NAVIGATION_INFO, new NavigationInfo(pos, goalPos, 0));
             return;

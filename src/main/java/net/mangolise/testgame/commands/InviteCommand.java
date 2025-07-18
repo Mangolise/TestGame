@@ -14,6 +14,11 @@ public class InviteCommand extends MangoliseCommand {
         super("invite");
 
         addPlayerSyntax((player, context) -> {
+            if (!player.hasTag(LobbyGame.PARTY_MEMBERS_TAG)) {
+                player.sendMessage(ChatUtil.toComponent("&cYou need to create a party before inviting people!"));
+                return;
+            }
+
             List<Player> targets = getPlayers(context, player, "player");
             if (targets.isEmpty()) {
                 player.sendMessage("You must specify a player to invite.");
