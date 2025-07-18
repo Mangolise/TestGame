@@ -25,7 +25,7 @@ public sealed interface SnakeWeaponMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.IRON_BOOTS,
-                    List.of("Snake: +1.0 Acceleration"),
+                    List.of("Snake: +1.0 Acceleration"), // TODO: fix description?, behaviour should not change
                     List.of());
         }
 

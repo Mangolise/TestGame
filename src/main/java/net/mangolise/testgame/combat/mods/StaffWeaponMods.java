@@ -37,9 +37,9 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            attack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + (0.20 + (level * 0.10)));
+            attack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + (1.20 + (level * 0.20)));
             if (attack.weapon() instanceof StaffWeapon) {
-                attack.updateTag(Attack.COOLDOWN, arc -> arc * (1.10 + (level * 0.05)));
+                attack.updateTag(Attack.COOLDOWN, arc -> arc * (1.10 + (level * 0.10)));
             }
             next.accept(attack);
         }
@@ -51,7 +51,7 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public double priority() {
-            return PRIORITY_ADDITIVE_MODIFIER;
+            return PRIORITY_MULTIPLICATIVE_MODIFIER;
         }
     }
 

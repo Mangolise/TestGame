@@ -79,14 +79,14 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public void attack(Attack attack, Consumer<Attack> next) {
-            attack.updateTag(Attack.CRIT_CHANCE, crit -> crit + (5.0 + level * 5.0));
+            attack.updateTag(Attack.CRIT_CHANCE, crit -> crit * (1.05 + level * 0.05));
 
             next.accept(attack);
         }
 
         @Override
         public double priority() {
-            return PRIORITY_ADDITIVE_MODIFIER;
+            return PRIORITY_MULTIPLICATIVE_MODIFIER;
         }
     }
 
@@ -115,7 +115,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public double priority() {
-            return PRIORITY_ADDITIVE_MODIFIER;
+            return PRIORITY_MULTIPLICATIVE_MODIFIER;
         }
     }
 
@@ -133,7 +133,7 @@ sealed public interface GenericMods extends Mod {
         public ItemStack item() {
             return createItem(Material.GOLD_NUGGET,
                     List.of("2.0 + (0.5 per level)x Damage"),
-                    List.of("50% - (10% per level) Chance to do Nothing"));
+                    List.of("50% - (10% per level) Chance to fail to attack"));
         }
 
         @Override
@@ -174,7 +174,7 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.GOAT_SPAWN_EGG,
-                    List.of("Jacob joins your side", "    1.0 + (0.25 per level) Damage", "    1.5 + (0.5 per level) Seconds to live"),
+                    List.of("Jacob joins your side", "    1.0 + (0.25 per level)x your Damage", "    1.5 + (0.5 per level) Seconds to live"),
                     List.of());
         }
 
@@ -214,7 +214,7 @@ sealed public interface GenericMods extends Mod {
             }
 
             mob.getAttribute(Attribute.MAX_HEALTH).addModifier(new AttributeModifier(getId(), getHealthAmount(), AttributeOperation.ADD_VALUE));
-            mob.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier(getId(), -0.0015 * (level() + 1.0), AttributeOperation.ADD_VALUE));
+            mob.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier(getId(), -0.05 * (level() + 1.0), AttributeOperation.ADD_MULTIPLIED_BASE));
             mob.setHealth(mob.getHealth() + (float) getHealthAmount());
         }
 
@@ -267,7 +267,7 @@ sealed public interface GenericMods extends Mod {
         public ItemStack item() {
             return createItem(Material.APPLE,
                     List.of("+1.0 Heart"),
-                    List.of("+5% Slowness"));
+                    List.of("-5% Movement Speed")); // TODO: maybe dont use slowness
         }
     }
 
@@ -300,7 +300,7 @@ sealed public interface GenericMods extends Mod {
         public ItemStack item() {
             return createItem(Material.GOLDEN_APPLE,
                     List.of("+2.0 Hearts"),
-                    List.of("+5% Slowness"));
+                    List.of("-5% Movement Speed")); // TODO: maybe dont use slowness
         }
     }
 
@@ -333,7 +333,7 @@ sealed public interface GenericMods extends Mod {
         public ItemStack item() {
             return createItem(Material.ENCHANTED_GOLDEN_APPLE,
                     List.of("+4.0 Hearts"),
-                    List.of("+5% Slowness"));
+                    List.of("-5% Movement Speed")); // TODO: maybe dont use slowness
         }
     }
 
@@ -519,7 +519,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public int maxLevel() {
-            return 1;
+            return 0;
         }
 
         @Override
@@ -573,7 +573,7 @@ sealed public interface GenericMods extends Mod {
         public ItemStack item() {
             return createItem(Material.SUGAR,
                     List.of("+5% Speed"),
-                    List.of("-1.0 Heart"));
+                    List.of("-1 Heart"));
         }
 
         @Override
@@ -582,7 +582,8 @@ sealed public interface GenericMods extends Mod {
                 return;
             }
 
-            mob.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_mod", 0.005, AttributeOperation.ADD_VALUE));
+            mob.getAttribute(Attribute.MOVEMENT_SPEED).addModifier(new AttributeModifier("speed_mod", 0.05 * (level + 1.0), AttributeOperation.ADD_MULTIPLIED_BASE));
+            mob.getAttribute(Attribute.MAX_HEALTH).addModifier(new AttributeModifier("speed_mod", -2.0 * (level + 1.0), AttributeOperation.ADD_VALUE));
         }
 
         @Override
@@ -592,11 +593,12 @@ sealed public interface GenericMods extends Mod {
             }
 
             mob.getAttribute(Attribute.MOVEMENT_SPEED).removeModifier(Key.key("speed_mod"));
+            mob.getAttribute(Attribute.MAX_HEALTH).removeModifier(Key.key("speed_mod"));
         }
 
         @Override
         public double priority() {
-            return PRIORITY_ADDITIVE_MODIFIER;
+            return PRIORITY_MULTIPLICATIVE_MODIFIER;
         }
     }
 
@@ -613,7 +615,7 @@ sealed public interface GenericMods extends Mod {
         @Override
         public ItemStack item() {
             return createItem(Material.GLISTERING_MELON_SLICE,
-                    List.of("+5% Jump Boost"),
+                    List.of("+20% Jump Boost"),
                     List.of());
         }
 
@@ -623,7 +625,7 @@ sealed public interface GenericMods extends Mod {
                 return;
             }
 
-            mob.getAttribute(Attribute.JUMP_STRENGTH).addModifier(new AttributeModifier("jump_boost", 0.005, AttributeOperation.ADD_VALUE));
+            mob.getAttribute(Attribute.JUMP_STRENGTH).addModifier(new AttributeModifier("jump_boost", 0.2 + level * 0.2, AttributeOperation.ADD_MULTIPLIED_BASE));
         }
 
         @Override
@@ -637,7 +639,7 @@ sealed public interface GenericMods extends Mod {
 
         @Override
         public double priority() {
-            return PRIORITY_ADDITIVE_MODIFIER;
+            return PRIORITY_MULTIPLICATIVE_MODIFIER;
         }
     }
 }
