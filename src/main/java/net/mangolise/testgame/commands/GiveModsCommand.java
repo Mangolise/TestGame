@@ -23,7 +23,7 @@ public class GiveModsCommand extends MangoliseCommand {
     public GiveModsCommand() {
         super("givemods");
         
-        addPlayerSyntax(this::usageAll, ArgumentType.Literal("all"), ArgumentType.Integer("level").setDefaultValue(3));
+        addPlayerSyntax(this::usageAll, ArgumentType.Literal("all"), ArgumentType.Integer("level").setDefaultValue(-1));
         addPlayerSyntax(this::usageModName, ArgumentType.Word("mod_name").from(modNames.toArray(String[]::new)), ArgumentType.Integer("level").setDefaultValue(3));
 
         addPlayerSyntax((sender, context) ->
@@ -34,26 +34,34 @@ public class GiveModsCommand extends MangoliseCommand {
 
     private void usageModName(Player player, CommandContext context) {
         String modName = context.get("mod_name");
-        Mod.Factory factory = modFromName(modName);
-        
-        if (factory == null) {
-            player.sendMessage(Component.text("Unknown mod: " + modName));
-            return;
-        }
-        
-        int level = context.get("level");
-        Mod mod = factory.create(level);
-        
+        Mod mod = getMod(modName, context.get("level"));
         giveMods(player, List.of(mod));
     }
 
     private void usageAll(Player player, CommandContext context) {
         int level = context.get("level");
-        
         List<Mod> mods = Mod.values().stream()
-                .map(factory -> factory.create(level))
+                .map(factory -> getMod(factory, level))
                 .toList();
         giveMods(player, mods);
+    }
+    
+    private Mod getMod(String modName, int level) {
+        Mod.Factory factory = modFromName(modName);
+        if (factory == null) {
+            throw new IllegalArgumentException("Unknown mod: " + modName);
+        }
+        
+        return getMod(factory, level);
+    }
+    
+    private Mod getMod(Mod.Factory factory, int level) {
+        
+        if (level == -1) {
+            level = factory.create(0).maxLevel();
+        }
+        
+        return factory.create(level);
     }
     
     private void giveMods(@NotNull Player player, List<Mod> mods) {
