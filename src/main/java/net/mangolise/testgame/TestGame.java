@@ -7,7 +7,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.ItemDropFeature;
-import net.mangolise.gamesdk.features.ItemPickupFeature;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.ChatUtil;
@@ -18,7 +17,6 @@ import net.mangolise.testgame.combat.mods.ModMenuFeature;
 import net.mangolise.testgame.mobs.spawning.CompleteWaveEvent;
 import net.mangolise.testgame.mobs.spawning.WaveSystem;
 import net.minestom.server.MinecraftServer;
-import net.minestom.server.adventure.audience.Audiences;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -300,6 +298,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
         feature(ModMenuFeature.class).giveItem(player);
 
         player.eventNode().addListener(PlayerDisconnectEvent.class, e -> {
+            instance.sendMessage(ChatUtil.toComponent("&7[&aGame&7] &7[&c-&7] &7" + e.getPlayer().getUsername()));
             leavePlayer(e.getPlayer());
         });
 
@@ -330,7 +329,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
         return List.of(
                 new NoCollisionFeature(),
                 new FindTheButtonFeature(),
-                new ItemPickupFeature(),
                 new ItemDropFeature(),
                 new ModMenuFeature(),
                 new BossBarFeature()

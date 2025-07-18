@@ -9,7 +9,9 @@ import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.mods.BundleMenu;
 import net.mangolise.testgame.mobs.spawning.WaveSystem;
 import net.mangolise.testgame.util.Throttler;
+import net.minestom.server.MinecraftServer;
 import net.minestom.server.component.DataComponents;
+import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
@@ -18,10 +20,16 @@ import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.event.entity.EntityDespawnEvent;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.item.ItemStack;
 import net.minestom.server.registry.RegistryKey;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public abstract non-sealed class HostileEntity extends EntityCreature implements AttackableMob {
     public HostileEntity(@NotNull EntityType entityType) {
@@ -160,16 +168,37 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
         double expectedNumberOfDrops = Math.pow(1.1, currentWave);
         
         if (isDead && random <= (expectedNumberOfDrops / currentWaveSize)) {
-            ItemEntity itemEntity = GameSdkUtils.dropItem(instance, this.position, BundleMenu.createBundleItem(false));
-            itemEntity.setPickable(true);
-            itemEntity.setGlowing(true);
+            ItemStack itemStack = BundleMenu.createBundleItem(false);
 
-            Entity displayEntity = createDisplayEntity(itemEntity);
-            itemEntity.addPassenger(displayEntity);
+            for (Player player : instance.getPlayers()) {
+                if (player.getGameMode() != GameMode.ADVENTURE) {
+                    continue;
+                }
 
-            itemEntity.eventNode().addListener(EntityDespawnEvent.class, e -> {
-                e.getEntity().getPassengers().stream().findAny().ifPresent(Entity::remove);
-            });
+                ItemEntity itemEntity = new ItemEntity(itemStack);
+                itemEntity.setPickupDelay(Duration.ofMillis(500));
+
+                itemEntity.setGlowing(true);
+                itemEntity.setAutoViewable(false);
+
+                Entity displayEntity = createDisplayEntity(itemEntity);
+                displayEntity.setAutoViewable(false);
+
+                instance.scheduler().scheduleNextTick(() -> {
+                    instance.scheduler().scheduleNextTick(() -> {
+                        itemEntity.addViewer(player);
+                        displayEntity.addViewer(player);
+                    });
+
+                    itemEntity.addPassenger(displayEntity);
+                });
+
+                itemEntity.setInstance(instance, new Pos(this.position));
+
+                itemEntity.eventNode().addListener(EntityDespawnEvent.class, e -> {
+                    e.getEntity().getPassengers().stream().findAny().ifPresent(Entity::remove);
+                });
+            }
         }
     }
 
