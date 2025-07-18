@@ -3,6 +3,7 @@ package net.mangolise.testgame;
 public class GameConstants {
     public static final String[] CREATORS = {
             "iVec4",
+            "uVec4",
             "Krystilize",
             "CoPokBl",
             "Calcilore",
