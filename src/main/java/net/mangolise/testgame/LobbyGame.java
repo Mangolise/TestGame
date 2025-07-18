@@ -13,6 +13,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.AdminCommandsFeature;
+import net.mangolise.gamesdk.features.ItemDropFeature;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.features.SignFeature;
 import net.mangolise.gamesdk.permissions.Permissions;
@@ -27,7 +28,6 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeInstance;
-import net.minestom.server.entity.metadata.display.AbstractDisplayMeta;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
@@ -609,6 +609,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 new FancyChatFeature(),
                 new PickUpViewableItemFeature(),
                 new SignFeature(),
+                new ItemDropFeature(),
                 new NoCollisionFeature()
         );
     }

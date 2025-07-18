@@ -3,15 +3,12 @@ package net.mangolise.testgame.mobs;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.mangolise.gamesdk.util.ChatUtil;
-import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.mods.BundleMenu;
 import net.mangolise.testgame.mobs.spawning.WaveSystem;
 import net.mangolise.testgame.util.Throttler;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.component.DataComponents;
-import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
@@ -19,6 +16,7 @@ import net.minestom.server.entity.damage.Damage;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.event.entity.EntityDespawnEvent;
+import net.minestom.server.event.entity.EntityItemMergeEvent;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.registry.RegistryKey;
@@ -26,10 +24,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 public abstract non-sealed class HostileEntity extends EntityCreature implements AttackableMob {
     public HostileEntity(@NotNull EntityType entityType) {
@@ -184,16 +178,18 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
                 Entity displayEntity = createDisplayEntity(itemEntity);
                 displayEntity.setAutoViewable(false);
 
+                itemEntity.setInstance(instance, position);
+
                 instance.scheduler().scheduleNextTick(() -> {
+                    itemEntity.addPassenger(displayEntity);
+
                     instance.scheduler().scheduleNextTick(() -> {
                         itemEntity.addViewer(player);
                         displayEntity.addViewer(player);
                     });
-
-                    itemEntity.addPassenger(displayEntity);
                 });
 
-                itemEntity.setInstance(instance, new Pos(this.position));
+                itemEntity.eventNode().addListener(EntityItemMergeEvent.class, e -> e.setCancelled(true));
 
                 itemEntity.eventNode().addListener(EntityDespawnEvent.class, e -> {
                     e.getEntity().getPassengers().stream().findAny().ifPresent(Entity::remove);

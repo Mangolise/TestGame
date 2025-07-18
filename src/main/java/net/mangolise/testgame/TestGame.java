@@ -6,7 +6,6 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.mangolise.gamesdk.BaseGame;
-import net.mangolise.gamesdk.features.ItemDropFeature;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.ChatUtil;
@@ -329,7 +328,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
         return List.of(
                 new NoCollisionFeature(),
                 new FindTheButtonFeature(),
-                new ItemDropFeature(),
                 new ModMenuFeature(),
                 new BossBarFeature()
         );
