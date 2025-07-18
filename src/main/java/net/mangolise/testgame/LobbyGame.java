@@ -4,6 +4,8 @@ import net.hollowcube.polar.PolarLoader;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.inventory.Book;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.resource.ResourcePackInfo;
+import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -46,6 +48,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
@@ -207,6 +211,15 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 e.getPlayer().sendMessage(ChatUtil.toComponent("&c&lYou have admin permissions!"));
             } else if (Permissions.hasPermission(e.getPlayer(), "game.minestomofficial")) {
                 e.getPlayer().sendMessage(ChatUtil.toComponent("&b&lWelcome to our game! You are a Minestom official!"));
+            }
+
+            // send resource pack
+            try {
+                e.getPlayer().sendResourcePacks(ResourcePackRequest.resourcePackRequest()
+                                .packs(ResourcePackInfo.resourcePackInfo(UUID.fromString("f8b1c0d2-3c4e-4f5a-8b6c-7d8e9f0a1b2c"), new URI("https://github.com/Mangolise/public-assets/releases/download/indev/resourcepack.zip"), "zip"))
+                        .build());
+            } catch (URISyntaxException ex) {
+                throw new RuntimeException(ex);
             }
         });
 
