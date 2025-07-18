@@ -3,6 +3,8 @@ package net.mangolise.testgame.mobs;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.mangolise.gamesdk.util.ChatUtil;
+import net.mangolise.testgame.LobbyGame;
+import net.mangolise.testgame.TestGame;
 import net.mangolise.testgame.combat.Attack;
 import net.mangolise.testgame.combat.mods.Mod;
 import net.mangolise.testgame.combat.mods.BundleMenu;
@@ -190,9 +192,14 @@ public abstract non-sealed class HostileEntity extends EntityCreature implements
         if (isDead && random <= (expectedNumberOfDrops / currentWaveSize)) {
             ItemStack itemStack = BundleMenu.createBundleItem(false);
 
+            TestGame game = LobbyGame.get().gameByInstance(instance);
+            if (game == null) {
+                return;
+            }
+
             for (Player player : instance.getPlayers()) {
-                if (player.getGameMode() != GameMode.ADVENTURE) { // TODO: Check if they are not dead instead
-                    continue;
+                if (!game.players().contains(player.getUuid())) {
+                    continue;  // they are spectators, skip them
                 }
 
                 ItemEntity itemEntity = new ItemEntity(itemStack);

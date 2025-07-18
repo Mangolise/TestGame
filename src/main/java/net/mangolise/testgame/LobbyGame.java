@@ -80,6 +80,14 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     private final List<TestGame> games = new ArrayList<>();
     private static final @NotNull PlayerSkin defaultSkin = Objects.requireNonNull(PlayerSkin.fromUsername("Technoblade"));
     private Sidebar scoreboard;
+    private static LobbyGame singleton;
+
+    public static LobbyGame get() {
+        if (singleton == null) {
+            throw new IllegalStateException("LobbyGame instance not initialized. Call setup() first.");
+        }
+        return singleton;
+    }
 
     private record GameFinish(String[] players, int wave) { }
 
@@ -195,6 +203,11 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
 
     @Override
     public void setup() {
+        if (singleton != null) {
+            throw new IllegalStateException("LobbyGame instance already initialized.");
+        }
+        singleton = this;
+
         super.setup();
 
         MinecraftServer.getCommandManager().register(
