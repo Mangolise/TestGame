@@ -66,9 +66,10 @@ public record MaceWeapon() implements Weapon {
             Instance instance = user.getInstance();
 
             if (attack.getTag(IS_LAUNCH_ATTACK)) {
-                Collection<Entity> entities = instance.getNearbyEntities(user.getPosition(),  2.5 + attack.getTag(SLAM_RADIUS));
-
-                displayBlockVisuals(instance, user.getPosition().asVec());
+                double radius = 2.5 + attack.getTag(SLAM_RADIUS);
+                Collection<Entity> entities = instance.getNearbyEntities(user.getPosition(), radius);
+                
+                displayBlockVisuals(instance, user.getPosition().asVec(), (int) Math.round(radius));
                 instance.sendGroupedPacket(new ParticlePacket(Particle.CAMPFIRE_COSY_SMOKE, false, true, user.getPosition(), new Vec(0, 0, 0), 0.1f, 100));
                 instance.playSound(Sound.sound(Key.key("minecraft:block.anvil.land"), Sound.Source.PLAYER, 0.5f, 0.5f), user.getPosition());
                 instance.playSound(Sound.sound(Key.key("minecraft:entity.dragon_fireball.explode"), Sound.Source.PLAYER, 0.8f, 1.0f), user.getPosition());
@@ -103,11 +104,11 @@ public record MaceWeapon() implements Weapon {
         }
     }
 
-    private void displayBlockVisuals(Instance instance, Vec position) {
-        for (int x = -5; x < 5; x++) {
-            for (int z = -5; z < 5; z++) {
+    private void displayBlockVisuals(Instance instance, Vec position, int radius) {
+        for (int x = -radius; x < radius; x++) {
+            for (int z = -radius; z < radius; z++) {
                 double dist = new Vec(x, z).length();
-                if (dist > 5) {
+                if (dist > radius) {
                     continue;
                 }
 

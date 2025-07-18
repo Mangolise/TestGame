@@ -4,6 +4,7 @@ import net.mangolise.testgame.mobs.AttackableMob;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.scoreboard.Sidebar;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

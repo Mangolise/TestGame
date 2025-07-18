@@ -101,7 +101,7 @@ public record StaffWeapon() implements Weapon {
         }
 
         LivingEntity originEntity = attackableMob.asEntity();
-        
+
         if (originEntity.isRemoved() || originEntity.isDead()) {
             return;
         }
@@ -115,7 +115,7 @@ public record StaffWeapon() implements Weapon {
         for (Entity entity : entities) {
             if (!(entity instanceof AttackableMob mob && attack.canTarget(mob)) ||
                     chainedEntities.contains(entity.getUuid()) ||
-                    (attack.getTag(ARC_CHANCE)) > Math.random() ||
+                    (attack.getTag(ARC_CHANCE)) < Math.random() ||
                     entity.isRemoved() ||
                     (mob.asEntity().isDead() || mob.asEntity().isInvulnerable())
             ) {
@@ -182,4 +182,3 @@ public record StaffWeapon() implements Weapon {
         );
     }
 }
-

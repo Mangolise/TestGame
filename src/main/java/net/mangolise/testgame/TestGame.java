@@ -50,7 +50,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
     private static final Pos SPAWN = new Pos(7.5, 0, 8.5);
     private static final PolarLoader worldLoader;
     private final Set<UUID> players = new HashSet<>();  // list of players who belong in this game (allows them to rejoin)
-    private final List<Player> deadPlayers = new ArrayList<>();  // they should respawn at the end of the wave
+    private static final Tag<Boolean> IS_PLAYER_DEAD = Tag.Boolean("is_player_dead").defaultValue(false);
 
     static {
         try {
@@ -126,12 +126,14 @@ public class TestGame extends BaseGame<TestGame.Config> {
             }
 
             // respawn dead players
-            for (Player player : deadPlayers) {
-                player.setGameMode(GameMode.ADVENTURE);
-                player.teleport(SPAWN);
-                player.showTitle(Title.title(ChatUtil.toComponent("&a&lYou respawned!"), ChatUtil.toComponent("&7Get ready for the next wave.")));
+            for (Player player : instance.getPlayers()) {
+                if (player.getTag(IS_PLAYER_DEAD)) {
+                    player.setGameMode(GameMode.ADVENTURE);
+                    player.teleport(SPAWN);
+                    player.showTitle(Title.title(ChatUtil.toComponent("&a&lYou respawned!"), ChatUtil.toComponent("&7Get ready for the next wave.")));
+                    player.removeTag(IS_PLAYER_DEAD);
+                }
             }
-            deadPlayers.clear();
 
             // give all bundles to their owners
             for (Entity entity : e.getInstance().getEntities()) {
@@ -151,7 +153,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
             Player p = e.getPlayer();
             MinecraftServer.getSchedulerManager().scheduleNextTick(p::respawn);
             p.setGameMode(GameMode.SPECTATOR);
-            deadPlayers.add(p);
+            p.setTag(IS_PLAYER_DEAD, true);
             p.showTitle(Title.title(ChatUtil.toComponent("&c&lYou died!"), ChatUtil.toComponent("&7You will respawn at the end of the wave.")));
 
             if (instance.getPlayers().stream().noneMatch(pl -> pl.getGameMode() != GameMode.SPECTATOR)) {
@@ -167,7 +169,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
     }
 
     public boolean isDead(Player player) {
-        return deadPlayers.contains(player);
+        return player.getTag(IS_PLAYER_DEAD);
     }
 
     // do fancy stuff
