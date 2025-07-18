@@ -65,7 +65,9 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     private static final Tag<Set<Player>> PARTY_MEMBER_INVITES_TAG = Tag.Transient("lobby.partyinvites");
     private static final Tag<Player> JOINED_PARTY_TAG = Tag.Transient("lobby.joinedparty");
 
-    private final List<GameFinish> gameFinishes = new ArrayList<>();
+    private final List<GameFinish> gameFinishes = new ArrayList<>(List.of(
+            new GameFinish(new String[]{"TypoSquatter", "cakeless"}, 9)
+    ));
 
     private final ConcurrentLinkedQueue<Player> queue = new ConcurrentLinkedQueue<>();
     private @Nullable Task queueStartTask = null;
@@ -361,7 +363,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             List<String> names = new ArrayList<>();
             for (UUID uuid : game.players()) {
                 Player p = MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(uuid);
-                assert p != null;
+                if (p == null) continue;
                 names.add(p.getUsername());
             }
             gameFinishes.add(new GameFinish(names.toArray(String[]::new), wave));
