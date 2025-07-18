@@ -24,15 +24,15 @@ import net.mangolise.testgame.commands.LeaveCommand;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.entity.GameMode;
-import net.minestom.server.entity.Player;
-import net.minestom.server.entity.PlayerHand;
-import net.minestom.server.entity.PlayerSkin;
+import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeInstance;
+import net.minestom.server.entity.metadata.display.AbstractDisplayMeta;
+import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.instance.block.Block;
 import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -55,7 +55,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 public class LobbyGame extends BaseGame<LobbyGame.Config> {
-    private static final Pos SPAWN = new Pos(5, 66.5, 6);
+    private static final Pos SPAWN = new Pos(0.5, 64, 0.5);
 
     private static final Tag<Set<Player>> PARTY_MEMBERS_TAG = Tag.Transient("lobby.partymembers");
     private static final Tag<Set<Player>> PARTY_MEMBER_INVITES_TAG = Tag.Transient("lobby.partyinvites");
@@ -146,7 +146,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     }
 
     public static void CreateRegistryEntries() {
-        DimensionType dimension = DimensionType.builder().ambientLight(15).build();
+        DimensionType dimension = DimensionType.builder().build();
         MinecraftServer.getDimensionTypeRegistry().register("lobby-dimension", dimension);
     }
 
@@ -183,7 +183,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
 
         PolarLoader loader;
         try {
-            loader = new PolarLoader(new FileInputStream("lobby.polar"));
+            loader = new PolarLoader(new FileInputStream("newlobby.polar"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -191,6 +191,30 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         world = MinecraftServer.getInstanceManager().createInstanceContainer(dim, loader);
         world.setTimeRate(0);
         world.setTimeSynchronizationTicks(0);
+
+        // Made this because NO ONE wanted to add a way to load entities from a worlds entity folder so now we deal with this.
+        createLantern(world, new Pos(9, 68, 13), "true");
+        createLantern(world, new Pos(-9, 68, 13), "true");
+        createLantern(world, new Pos(5, 68, 4), "true");
+        createLantern(world, new Pos(0, 68, 23), "true");
+        createLantern(world, new Pos(-8, 74, 13), "true");
+        createLantern(world, new Pos(8, 74, 13), "true");
+        createLantern(world, new Pos(-13, 67, 19), "false");
+        createLantern(world, new Pos(-11, 67, 7), "false");
+        createLantern(world, new Pos(11, 67, 7), "false");
+        createLantern(world, new Pos(13, 67, 19), "false");
+
+        Entity armourStand = new Entity(EntityType.ARMOR_STAND);
+        armourStand.setNoGravity(true);
+        armourStand.setInstance(world, new Pos(-16.5, 66, 13.5, 90, 0));
+
+        Entity armourStand1 = new Entity(EntityType.ARMOR_STAND);
+        armourStand1.setNoGravity(true);
+        armourStand1.setInstance(world, new Pos(17.5, 66, 13.5, 90, 0));
+
+        Entity armourStand2 = new Entity(EntityType.ARMOR_STAND);
+        armourStand2.setNoGravity(true);
+        armourStand2.setInstance(world, new Pos(0.5, 68, 31.5));
 
         MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {
             e.setSpawningInstance(world);
@@ -245,6 +269,15 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
 
             sendPartyInvite(e.getPlayer(), target);
         });
+    }
+
+    private static void createLantern(Instance instance, Pos pos, String hanging) {
+        Entity laternEntity = new Entity(EntityType.BLOCK_DISPLAY);
+        laternEntity.editEntityMeta(BlockDisplayMeta.class, e -> {
+            e.setBlockState(Block.LANTERN.withProperty("hanging", hanging));
+            e.setHasNoGravity(true);
+        });
+        laternEntity.setInstance(instance, pos);
     }
 
     public void sendPartyInvite(Player player, Player target) {
