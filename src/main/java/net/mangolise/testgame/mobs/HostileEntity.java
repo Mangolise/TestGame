@@ -9,6 +9,7 @@ import net.mangolise.testgame.combat.mods.BundleMenu;
 import net.mangolise.testgame.mobs.spawning.WaveSystem;
 import net.mangolise.testgame.util.Throttler;
 import net.minestom.server.component.DataComponents;
+import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
