@@ -48,7 +48,11 @@ public class ModMenuFeature implements Game.Feature<TestGame> {
         eventNode.addListener(InventoryPreClickEvent.class, e -> {
             if (e.getClickedItem().getTag(IS_MOD_MENU_ITEM) && e.getClick() instanceof Click.Right) {
                 e.setCancelled(true);
-                e.getPlayer().openInventory(new ModMenu(e.getPlayer()).getInventory());
+
+                Player player = e.getPlayer();
+                if (player.getOpenInventory() == null) {
+                    player.openInventory(new ModMenu(e.getPlayer()).getInventory());
+                }
             }
         });
     }
