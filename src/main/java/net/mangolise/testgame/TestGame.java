@@ -61,17 +61,17 @@ public class TestGame extends BaseGame<TestGame.Config> {
     }
 
     private Instance instance;
-    private Runnable endCallback;
+    private Consumer<Integer> endCallback;
     private Consumer<Player> kickFromGameConsumer = ignored -> {};
     private boolean isEnding = false;  // if it's ending then we don't want to end it again
 
-    protected TestGame(Config config, Runnable endCallback) {
+    protected TestGame(Config config, Consumer<Integer> endCallback) {
         super(config);
         this.endCallback = endCallback;
     }
 
     protected TestGame(Config config) {
-        this(config, () -> {});
+        this(config, (ignored) -> {});
     }
 
     public static void CreateRegistryEntries() {
@@ -149,7 +149,8 @@ public class TestGame extends BaseGame<TestGame.Config> {
         });
         instance.eventNode().addListener(EntityTickEvent.class, this::tickEntity);
         instance.eventNode().addListener(PlayerDeathEvent.class, e -> {
-            e.setChatMessage(ChatUtil.toComponent("&6" + e.getPlayer().getUsername() + " &chas been killed! &7They will respawn at the end of the wave."));
+            e.setChatMessage(null);
+            instance.sendMessage(ChatUtil.toComponent("&6" + e.getPlayer().getUsername() + " &chas been killed! &7They will respawn at the end of the wave."));
             Player p = e.getPlayer();
             MinecraftServer.getSchedulerManager().scheduleNextTick(p::respawn);
             p.setGameMode(GameMode.SPECTATOR);
@@ -268,7 +269,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
     public void end() {
         Log.logger().info("Ending game");
         if (endCallback != null) {
-            endCallback.run();
+            endCallback.accept(WaveSystem.from(instance).getCurrentWave());
         }
 
         // kick spectators
@@ -342,7 +343,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
         return worldLoader;
     }
 
-    public void setEndCallback(Runnable endCallback) {
+    public void setEndCallback(Consumer<Integer> endCallback) {
         this.endCallback = endCallback;
     }
 

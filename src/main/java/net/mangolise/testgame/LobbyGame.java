@@ -29,8 +29,11 @@ import net.minestom.server.entity.*;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeInstance;
 import net.minestom.server.entity.metadata.display.BlockDisplayMeta;
+import net.minestom.server.event.EventNode;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
+import net.minestom.server.event.item.ItemDropEvent;
 import net.minestom.server.event.player.*;
+import net.minestom.server.event.trait.InstanceEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.inventory.InventoryType;
@@ -38,6 +41,7 @@ import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.component.HeadProfile;
 import net.minestom.server.registry.RegistryKey;
+import net.minestom.server.scoreboard.Sidebar;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.timer.Task;
@@ -61,6 +65,8 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     private static final Tag<Set<Player>> PARTY_MEMBER_INVITES_TAG = Tag.Transient("lobby.partyinvites");
     private static final Tag<Player> JOINED_PARTY_TAG = Tag.Transient("lobby.joinedparty");
 
+    private final List<GameFinish> gameFinishes = new ArrayList<>();
+
     private final ConcurrentLinkedQueue<Player> queue = new ConcurrentLinkedQueue<>();
     private @Nullable Task queueStartTask = null;
     private BossBar queueBossBar = BossBar.bossBar(
@@ -73,6 +79,9 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     private Instance world;
     private final List<TestGame> games = new ArrayList<>();
     private static final @NotNull PlayerSkin defaultSkin = Objects.requireNonNull(PlayerSkin.fromUsername("Technoblade"));
+    private Sidebar scoreboard;
+
+    private record GameFinish(String[] players, int wave) { }
 
     private static final ItemStack infoItem = ItemStack
             .builder(Material.REDSTONE_TORCH)
@@ -166,6 +175,24 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         giveRegularItems(player);
     }
 
+    private void updateScoreboard() {
+        for (Sidebar.ScoreboardLine line : scoreboard.getLines()) {
+            scoreboard.removeLine(line.getId());
+        }
+
+        List<GameFinish> topFinishes = getLeaderboard(5);
+        int index = 5;
+        for (GameFinish finish : topFinishes) {
+            String players = String.join(", ", finish.players);
+            scoreboard.createLine(new Sidebar.ScoreboardLine("" + index, ChatUtil.toComponent("&6" + players + ": Wave " + finish.wave), index));
+            index--;
+        }
+
+        if (topFinishes.isEmpty()) {
+            scoreboard.createLine(new Sidebar.ScoreboardLine("empty", ChatUtil.toComponent("&7No entries yet."), 1));
+        }
+    }
+
     @Override
     public void setup() {
         super.setup();
@@ -216,6 +243,9 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         armourStand2.setNoGravity(true);
         armourStand2.setInstance(world, new Pos(0.5, 68, 31.5));
 
+        scoreboard = new Sidebar(ChatUtil.toComponent("&a&lBest Wave Leaderboard"));
+        updateScoreboard();
+
         MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {
             e.setSpawningInstance(world);
             e.getPlayer().eventNode().addListener(PlayerDisconnectEvent.class, dc -> {
@@ -224,7 +254,15 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             });
         });
 
-        world.eventNode().addListener(PlayerSpawnEvent.class, e -> {
+        EventNode<InstanceEvent> eventNode = world.eventNode();
+
+        eventNode.addListener(ItemDropEvent.class, e -> {
+            e.setCancelled(true);
+        });
+
+        eventNode.addListener(PlayerSpawnEvent.class, e -> {
+            scoreboard.addViewer(e.getPlayer());
+
             if (!e.isFirstSpawn()) {
                 return;
             }
@@ -247,16 +285,16 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             }
         });
 
-        world.eventNode().addListener(InventoryPreClickEvent.class, e -> {
+        eventNode.addListener(InventoryPreClickEvent.class, e -> {
             e.setCancelled(true);
             inventoryItemInteract(e.getPlayer(), e.getClickedItem());
         });
 
-        world.eventNode().addListener(PlayerUseItemEvent.class, e -> {
+        eventNode.addListener(PlayerUseItemEvent.class, e -> {
             inventoryItemInteract(e.getPlayer(), e.getItemStack());
         });
 
-        world.eventNode().addListener(PlayerEntityInteractEvent.class, e -> {
+        eventNode.addListener(PlayerEntityInteractEvent.class, e -> {
             if (e.getHand() != PlayerHand.MAIN) return;
 
             if (!e.getPlayer().getItemInMainHand().equals(invitePartyMemberItem)) {
@@ -301,15 +339,44 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     private void startGame(Player[] players) {
         for (Player player : players) {
             player.sendMessage(ChatUtil.toComponent("&aSending you into the game..."));
+            scoreboard.removeViewer(player);
         }
         TestGame game = new TestGame(new TestGame.Config(players));
         game.setup();
         games.add(game);
-        game.setEndCallback(() -> games.remove(game));
+        game.setEndCallback(wave -> {
+            List<String> names = new ArrayList<>();
+            for (UUID uuid : game.players()) {
+                Player p = MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(uuid);
+                assert p != null;
+                names.add(p.getUsername());
+            }
+            gameFinishes.add(new GameFinish(names.toArray(String[]::new), wave));
+            games.remove(game);
+            updateScoreboard();
+        });
         game.setKickFromGameConsumer(player -> {
             addPlayer(player);
             player.sendMessage(ChatUtil.toComponent("&cThe game has ended! You have been returned to the lobby."));
         });
+    }
+
+    private List<GameFinish> getLeaderboard(int topNumber) {
+        // sort the game finishes by wave number, descending, on draw sort by index in the list
+        // put in new list
+        List<GameFinish> sortedFinishes = new ArrayList<>(gameFinishes);
+        sortedFinishes.sort((a, b) -> {
+            int waveComparison = Integer.compare(b.wave, a.wave);
+            if (waveComparison != 0) {
+                return waveComparison;
+            }
+            return Integer.compare(gameFinishes.indexOf(a), gameFinishes.indexOf(b));
+        });
+
+        // get the top N finishes
+        return sortedFinishes.stream()
+                .limit(topNumber)
+                .toList();
     }
 
     private void giveRegularItems(Player player) {
@@ -387,10 +454,13 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             InventoryMenu menu = new InventoryMenu(InventoryType.CHEST_6_ROW, ChatUtil.toComponent("&a&lOngoing Games"));
             for (TestGame game : games) {
                 List<Component> lore = new ArrayList<>();  // will contain the player names
-                for (Player p : game.instance().getPlayers()) {
+                List<Player> players = game.instance().getPlayers().stream().filter(p -> p.getGameMode() != GameMode.SPECTATOR).toList();
+                for (Player p : players) {
                     lore.add(ChatUtil.toComponent("&r&7" + p.getUsername()));
                 }
-                PlayerSkin iconSkin = !game.instance().getPlayers().isEmpty() ? game.instance().getPlayers().stream().findFirst().get().getSkin() : null;
+
+                Optional<Player> firstPlayer = players.stream().findFirst();
+                PlayerSkin iconSkin = firstPlayer.map(Player::getSkin).orElse(null);
                 if (iconSkin == null) {
                     iconSkin = defaultSkin;
                 }
@@ -398,7 +468,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                         .of(Material.PLAYER_HEAD)
                         .with(DataComponents.PROFILE, new HeadProfile(iconSkin))
                         .withLore(lore)
-                        .withCustomName(ChatUtil.toComponent("&r&bGame: " + game.instance().getPlayers().size() + " players"));
+                        .withCustomName(ChatUtil.toComponent("&r&bGame: " + players.size() + " players"));
                 menu.addMenuItem(icon).onLeftClick(e -> game.addSpectator(e.player()));
             }
             player.openInventory(menu.getInventory());
