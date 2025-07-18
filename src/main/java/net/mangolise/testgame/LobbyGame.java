@@ -574,6 +574,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 // TODO: Remove admin commands in production
                 new AdminCommandsFeature(),
                 new FancyChatFeature(),
+                new PickUpViewableItemFeature(),
                 new SignFeature(),
                 new NoCollisionFeature()
         );

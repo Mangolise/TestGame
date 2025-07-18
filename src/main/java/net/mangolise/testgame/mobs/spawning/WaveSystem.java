@@ -126,12 +126,15 @@ public class WaveSystem {
 
         Timer.countDown(GameConstants.SECONDS_BETWEEN_WAVES, 20, i -> {
             instance.sendActionBar(ChatUtil.toComponent("&aWave &6" + displayWave + " &astarting in &6" + (i) + " &aseconds!"));
+            if (i <= 3) {
+                instance.playSound(Sound.sound(SoundEvent.ENTITY_EXPERIENCE_ORB_PICKUP, Sound.Source.PLAYER, 0.5f, 1.0f));
+            }
         }).thenAccept(ignored -> {
             instance.showTitle(Title.title(
                     ChatUtil.toComponent("&6&lWave " + displayWave),
                     ChatUtil.toComponent("&7Get ready!")
             ));
-            instance.playSound(Sound.sound(SoundEvent.ENTITY_ENDER_DRAGON_GROWL.key(), Sound.Source.PLAYER, 0.2f, 1.0f));
+            instance.playSound(Sound.sound(SoundEvent.BLOCK_END_PORTAL_SPAWN, Sound.Source.PLAYER, 0.4f, 1.0f));
 
             // announce the number of mobs
             Map<Class<? extends AttackableMob>, Integer> mobCount = mobs.stream()
