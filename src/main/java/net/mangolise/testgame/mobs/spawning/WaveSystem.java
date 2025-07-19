@@ -16,7 +16,6 @@ import net.minestom.server.event.instance.InstanceTickEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.sound.SoundEvent;
 import net.minestom.server.tag.Tag;
-import net.minestom.server.timer.TaskSchedule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,7 +146,7 @@ public class WaveSystem {
             if (!mobCountMessage.isEmpty()) {
                 mobCountMessage.setLength(mobCountMessage.length() - 2);
             }
-            instance.sendMessage(Component.text(mobCountMessage.toString()));
+//            instance.sendMessage(Component.text(mobCountMessage.toString()));
 
             for (AttackableMob mob : mobs) {
                 mob.asEntity().getAttribute(Attribute.ATTACK_DAMAGE).addModifier(new AttributeModifier("wave_damage_modifier", Math.pow(1.02, currentWave) - 1.0, AttributeOperation.ADD_MULTIPLIED_BASE));
