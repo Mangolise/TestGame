@@ -19,6 +19,7 @@ import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.features.SignFeature;
 import net.mangolise.gamesdk.permissions.Permissions;
 import net.mangolise.gamesdk.util.ChatUtil;
+import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.gamesdk.util.InventoryMenu;
 import net.mangolise.testgame.commands.AcceptPartyInviteCommand;
 import net.mangolise.testgame.commands.InviteCommand;
@@ -54,8 +55,6 @@ import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -239,12 +238,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             throw new IllegalStateException("Dimension type 'lobby-dimension' not registered. Call CreateRegistryEntries() first.");
         }
 
-        PolarLoader loader;
-        try {
-            loader = new PolarLoader(new FileInputStream("newlobby.polar"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        PolarLoader loader = GameSdkUtils.getPolarLoaderFromResource("newlobby.polar");
 
         world = MinecraftServer.getInstanceManager().createInstanceContainer(dim, loader);
         world.setTimeRate(0);

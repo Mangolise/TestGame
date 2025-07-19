@@ -9,6 +9,7 @@ import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
 import net.mangolise.gamesdk.log.Log;
 import net.mangolise.gamesdk.util.ChatUtil;
+import net.mangolise.gamesdk.util.GameSdkUtils;
 import net.mangolise.gamesdk.util.Timer;
 import net.mangolise.testgame.combat.AttackSystem;
 import net.mangolise.testgame.combat.mods.BundleMenu;
@@ -39,8 +40,6 @@ import net.minestom.server.tag.Tag;
 import net.minestom.server.world.DimensionType;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -51,11 +50,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
     private static final Tag<Boolean> IS_PLAYER_DEAD = Tag.Boolean("is_player_dead").defaultValue(false);
 
     static {
-        try {
-            worldLoader = new ReadOnlyPolarLoader(new FileInputStream("game.polar"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        worldLoader = GameSdkUtils.getPolarLoaderFromResource("game.polar");
     }
 
     private Instance instance;
