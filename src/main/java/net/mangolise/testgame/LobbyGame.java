@@ -11,6 +11,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.AdminCommandsFeature;
 import net.mangolise.gamesdk.features.ItemDropFeature;
@@ -69,7 +70,8 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     private static final Tag<Player> JOINED_PARTY_TAG = Tag.Transient("lobby.joinedparty");
 
     private final List<GameFinish> gameFinishes = new ArrayList<>(List.of(
-            new GameFinish(new String[]{"TypoSquatter", "cakeless"}, 9)
+            new GameFinish(new String[]{"cakeless"}, 9),
+            new GameFinish(new String[]{"TypoSquatter"}, 9)
     ));
 
     private final ConcurrentLinkedQueue<Player> queue = new ConcurrentLinkedQueue<>();
@@ -193,11 +195,22 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             scoreboard.removeLine(line.getId());
         }
 
-        List<GameFinish> topFinishes = getLeaderboard(5);
-        int index = 5;
+        final int entries = 10;
+        List<GameFinish> topFinishes = getLeaderboard(entries);
+        int index = entries;
         for (GameFinish finish : topFinishes) {
+            TextColor colour = NamedTextColor.GRAY;
+            if (index == entries) {
+                colour = NamedTextColor.GOLD;  // top entry is gold
+            } else if (index == entries - 1) {
+                colour = TextColor.color(214,214,214);  // second entry is blue
+            } else if (index == entries - 2) {
+                colour = TextColor.color(205, 127, 50);  // third entry is green
+            }
+
             String players = String.join(", ", finish.players);
-            scoreboard.createLine(new Sidebar.ScoreboardLine("" + index, ChatUtil.toComponent("&6" + players + ": Wave " + finish.wave), index));
+//            scoreboard.createLine(new Sidebar.ScoreboardLine("" + index, ChatUtil.toComponent("&6" + players + ": Wave " + finish.wave), index));
+            scoreboard.createLine(new Sidebar.ScoreboardLine("" + index, Component.text(players).color(colour), finish.wave));
             index--;
         }
 
@@ -272,7 +285,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
 
         displayTextEntity.setInstance(world, new Pos(0.5, 66, 13.5));
 
-        scoreboard = new Sidebar(ChatUtil.toComponent("&a&lBest Wave Leaderboard"));
+        scoreboard = new Sidebar(ChatUtil.toComponent("&a&lHighest Wave"));
         updateScoreboard();
 
         MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {
@@ -379,8 +392,10 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 Player p = MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(uuid);
                 if (p == null) continue;
                 names.add(p.getUsername());
+
+                gameFinishes.add(new GameFinish(new String[] {p.getUsername()}, wave));
             }
-            gameFinishes.add(new GameFinish(names.toArray(String[]::new), wave));
+
             games.remove(game);
             updateScoreboard();
         });
@@ -394,6 +409,18 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         // sort the game finishes by wave number, descending, on draw sort by index in the list
         // put in new list
         List<GameFinish> sortedFinishes = new ArrayList<>(gameFinishes);
+
+        // Remove all duplicated names (keep the one with the highest wave)
+        Map<String, GameFinish> uniqueFinishes = new HashMap<>();
+        for (GameFinish finish : sortedFinishes) {
+            String playerName = String.join(", ", finish.players);
+            if (!uniqueFinishes.containsKey(playerName) || uniqueFinishes.get(playerName).wave < finish.wave) {
+                uniqueFinishes.put(playerName, finish);
+            }
+        }
+
+        sortedFinishes = new ArrayList<>(uniqueFinishes.values());
+
         sortedFinishes.sort((a, b) -> {
             int waveComparison = Integer.compare(b.wave, a.wave);
             if (waveComparison != 0) {
