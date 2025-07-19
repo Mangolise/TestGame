@@ -56,7 +56,7 @@ public final class AttackSystemImpl implements AttackSystem {
         }
 
         Set<Weapon> cooldowns = entity.getTag(COOLDOWNS);
-        if (cooldowns.contains(weapon)) {
+        if (cooldowns.contains(weapon) || (entity instanceof Player player && player.getGameMode().equals(GameMode.SPECTATOR))) {
             return;
         }
 
