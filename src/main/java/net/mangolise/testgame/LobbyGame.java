@@ -23,6 +23,7 @@ import net.mangolise.testgame.commands.AcceptPartyInviteCommand;
 import net.mangolise.testgame.commands.InviteCommand;
 import net.mangolise.testgame.commands.LeaveCommand;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.color.Color;
 import net.minestom.server.component.DataComponents;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.*;
@@ -265,6 +266,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
             meta.setHasNoGravity(true);
             meta.setSeeThrough(true);
             meta.setBillboardRenderConstraints(AbstractDisplayMeta.BillboardConstraints.CENTER);
+            meta.setBackgroundColor(new Color(1, 1, 1).asRGB());
             meta.setText(ChatUtil.toComponent("&aHallo! &6Welcome!\n &7This is Jacob's Mod it was made for the Minestom GameJam!\n by &6Mangolise"));
         });
 
