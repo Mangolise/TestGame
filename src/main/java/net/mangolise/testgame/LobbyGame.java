@@ -724,7 +724,6 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     @Override
     public List<Feature<?>> features() {
         return List.of(
-                // TODO: Remove admin commands in production
                 new AdminCommandsFeature(),
                 new FancyChatFeature(),
                 new PickUpViewableItemFeature(),
