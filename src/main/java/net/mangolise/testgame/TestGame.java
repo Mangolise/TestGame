@@ -20,7 +20,6 @@ import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.*;
-import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.pathfinding.NavigableEntity;
 import net.minestom.server.event.entity.EntityTickEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
@@ -288,8 +287,6 @@ public class TestGame extends BaseGame<TestGame.Config> {
 
         player.setGameMode(GameMode.ADVENTURE);
         player.setRespawnPoint(SPAWN);
-
-        player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(32);
 
         // Give the default weapon bundle
         player.getInventory().clear();

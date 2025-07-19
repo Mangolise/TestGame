@@ -37,7 +37,7 @@ public sealed interface StaffWeaponMods extends Mod {
 
         @Override
         public void attack(Attack attack, @UnknownNullability Consumer<Attack> next) {
-            attack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc + (1.20 + (level * 0.20)));
+            attack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc * (1.20 + (level * 0.20)));
             if (attack.weapon() instanceof StaffWeapon) {
                 attack.updateTag(Attack.COOLDOWN, arc -> arc * (1.10 + (level * 0.10)));
             }
