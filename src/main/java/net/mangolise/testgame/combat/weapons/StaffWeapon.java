@@ -21,6 +21,7 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.component.AttributeList;
+import net.minestom.server.item.component.TooltipDisplay;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.tag.Tag;
@@ -32,15 +33,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public record StaffWeapon() implements Weapon {
-    public static final Tag<Double> ARC_CHANCE = Tag.Double("testgame.attack.staff.arc_chance");
-    public static final Tag<Double> ARC_RADIUS = Tag.Double("testgame.attack.staff.arc_radius");
+    public static final Tag<Double> ARC_CHANCE = Tag.Double("testgame.attack.staff.arc_chance").defaultValue(0.75);
+    public static final Tag<Double> ARC_RADIUS = Tag.Double("testgame.attack.staff.arc_radius").defaultValue(1.5);
 
     @Override
     public void attack(Attack attack, Consumer<Attack> next) {
         attack.setTag(Attack.DAMAGE, 6.0);
         attack.setTag(Attack.CRIT_CHANCE, 0.5);
-        attack.setTag(ARC_CHANCE, 0.75);
-        attack.setTag(ARC_RADIUS, 1.5);
 
         next.accept(attack);
     }
@@ -82,6 +81,7 @@ public record StaffWeapon() implements Weapon {
         return ItemStack.builder(Material.BREEZE_ROD)
                 .set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
                 .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(new AttributeList.Modifier(Attribute.ENTITY_INTERACTION_RANGE, new AttributeModifier("testgame.weapons.staff.modifier", 1024.0, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND)))
+                .set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(true, Set.of(DataComponents.ATTRIBUTE_MODIFIERS)))
                 .customName(ChatUtil.toComponent("&r&b&lStaff"))
                 .lore(
                         ChatUtil.toComponent("&7A magical staff that can chain lightning attacks."),
@@ -138,7 +138,7 @@ public record StaffWeapon() implements Weapon {
 
                     createLightningLine(start, end, instance);
                     Attack arcAttack = attack.copy(false);
-                    arcAttack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc * 0.9);
+                    arcAttack.updateTag(StaffWeapon.ARC_CHANCE, arc -> arc * 0.75);
                     chainAttack(chainedEntities, mob, attack, depth + 1);
                 });
             }, TaskSchedule.millis(100), TaskSchedule.stop());
