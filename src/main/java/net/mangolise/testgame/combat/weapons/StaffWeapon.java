@@ -81,7 +81,7 @@ public record StaffWeapon() implements Weapon {
         return ItemStack.builder(Material.BREEZE_ROD)
                 .set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
                 .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(new AttributeList.Modifier(Attribute.ENTITY_INTERACTION_RANGE, new AttributeModifier("testgame.weapons.staff.modifier", 1024.0, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND)))
-                .set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(true, Set.of(DataComponents.ATTRIBUTE_MODIFIERS)))
+                .set(DataComponents.TOOLTIP_DISPLAY, new TooltipDisplay(false, Set.of(DataComponents.ATTRIBUTE_MODIFIERS)))
                 .customName(ChatUtil.toComponent("&r&b&lStaff"))
                 .lore(
                         ChatUtil.toComponent("&7A magical staff that can chain lightning attacks."),
@@ -117,11 +117,11 @@ public record StaffWeapon() implements Weapon {
 
         Instance instance = originEntity.getInstance();
 
-        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), 1.5 + attack.getTag(ARC_RADIUS));
+        Collection<Entity> entities = instance.getNearbyEntities(originEntity.getPosition(), attack.getTag(ARC_RADIUS));
         for (Entity entity : entities) {
             if (!(entity instanceof AttackableMob mob && attack.canTarget(mob)) ||
                     chainedEntities.contains(entity.getUuid()) ||
-                    attack.getTag(ARC_CHANCE) / ((float)depth * 0.5) < Math.random() ||
+                    attack.getTag(ARC_CHANCE) / ((float)depth) < Math.random() ||
                     entity.isRemoved() ||
                     (mob.asEntity().isDead() || mob.asEntity().isInvulnerable())
             ) {

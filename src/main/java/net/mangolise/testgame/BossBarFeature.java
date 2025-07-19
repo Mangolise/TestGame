@@ -61,7 +61,6 @@ public class BossBarFeature implements Game.Feature<TestGame> {
                 MinecraftServer.getSchedulerManager().scheduleEndOfTick(() -> {
                     if (e.getInstance() == instance && !WaveSystem.from(instance).isNextWaveWaiting()) {
                         e.getPlayer().showBossBar(bossBar);
-                        e.getPlayer().sendMessage("Joined instance");
                     }
                 });
             }

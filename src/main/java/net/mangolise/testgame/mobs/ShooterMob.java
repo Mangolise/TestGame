@@ -12,6 +12,8 @@ import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.ai.goal.RangedAttackGoal;
 import net.minestom.server.entity.attribute.Attribute;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
@@ -25,7 +27,9 @@ public class ShooterMob extends HostileEntity {
     public ShooterMob(EntityType type, Sound hurtSound, Sound deathSound, Sound walkSound) {
         super(type, hurtSound, deathSound, walkSound);
 
-        RangedAttackGoal rangedGoal = new RangedAttackGoal(this, Duration.ofMillis(1000), 100, 10, true, 10.0, 1.0);
+        this.setItemInMainHand(ItemStack.of(Material.BOW));
+
+        RangedAttackGoal rangedGoal = new RangedAttackGoal(this, Duration.ofMillis(1000), 100, 10, true, 2.0, 1.0);
         rangedGoal.setProjectileGenerator((shooter, targetPos, power, spread) -> {
             if (getTarget() instanceof Entity target) {
                 Pos from = getPosition().add(0D, getEyeHeight() + getAttributeValue(Attribute.SCALE), 0D);

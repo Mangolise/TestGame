@@ -10,127 +10,185 @@ import net.mangolise.testgame.combat.weapons.Weapon;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.mangolise.testgame.mobs.MeleeJockeyMob;
 import net.mangolise.testgame.mobs.MeleeMob;
+import net.mangolise.testgame.mobs.ShooterMob;
 import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.sound.SoundEvent;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public final class Waves {
 
-    private static final Map<Integer, List<SpawnRecord>> WAVES = Map.of(
-            0, List.of(
+    private static final List<List<SpawnRecord>> WAVES;
+
+    static {
+        WAVES = List.of(
+                List.of(  // Wave 1
                     meleeMob(
-                            3,
-                            EntityType.BOGGED,
-                            Sound.sound(SoundEvent.ENTITY_BOGGED_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_BOGGED_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_BOGGED_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            20,
-                            3
+                        3,
+                        EntityType.BOGGED,
+                        Sound.sound(SoundEvent.ENTITY_BOGGED_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                        Sound.sound(SoundEvent.ENTITY_BOGGED_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                        Sound.sound(SoundEvent.ENTITY_BOGGED_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                        20,
+                        3
                     )
-            ),
-            1, List.of(
+                ),
+                List.of(  // Wave 2
                     meleeMob(
-                            6,
-                            EntityType.BOGGED,
-                            Sound.sound(SoundEvent.ENTITY_BOGGED_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_BOGGED_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_BOGGED_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            20,
-                            3
+                        6,
+                        EntityType.BOGGED,
+                        Sound.sound(SoundEvent.ENTITY_BOGGED_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                        Sound.sound(SoundEvent.ENTITY_BOGGED_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                        Sound.sound(SoundEvent.ENTITY_BOGGED_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                        20,
+                        3
                     )
-            ),
-            2, List.of(
+                ),
+                List.of(  // Wave 3
                     new SpawnRecord(() -> new MeleeJockeyMob(
-                            EntityType.CAMEL,
-                            Sound.sound(SoundEvent.ENTITY_CAMEL_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_CAMEL_DEATH, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_CAMEL_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            EntityType.CREEPER), 6, List.of()
+                        EntityType.CAMEL,
+                        Sound.sound(SoundEvent.ENTITY_CAMEL_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                        Sound.sound(SoundEvent.ENTITY_CAMEL_DEATH, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                        Sound.sound(SoundEvent.ENTITY_CAMEL_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                        EntityType.CREEPER), 6, List.of()
                     )
-            ),
-            3, List.of(
-                    new SpawnRecord(() -> new MeleeJockeyMob(
-                            EntityType.CAMEL,
-                            Sound.sound(SoundEvent.ENTITY_CAMEL_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_CAMEL_DEATH, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_CAMEL_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            EntityType.CREEPER), 6, List.of()
-                    ),
-                    meleeMob(
-                            6,
-                            EntityType.HUSK,
-                            Sound.sound(SoundEvent.ENTITY_HUSK_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_HUSK_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_HUSK_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            20,
-                            3
-                    )
-            ),
-            4, List.of(
-                    new SpawnRecord(() -> new MeleeJockeyMob(
-                            EntityType.CAMEL,
-                            Sound.sound(SoundEvent.ENTITY_CAMEL_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_CAMEL_DEATH, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_CAMEL_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            EntityType.CREEPER), 6, List.of()
-                    ),
-                    meleeMob(
-                            6,
-                            EntityType.HUSK,
-                            Sound.sound(SoundEvent.ENTITY_HUSK_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_HUSK_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_HUSK_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            64,
-                            5
-                    ),
-                    warden(3, 128, MaceWeapon.class)
-            ),
-            5, List.of(
-                    new SpawnRecord(() -> new MeleeJockeyMob(
-                            EntityType.MULE,
-                            Sound.sound(SoundEvent.ENTITY_MULE_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_MULE_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_HORSE_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            EntityType.HUSK), 12, List.of(new GenericMods.Jacob(5)
-                    )),
-                    meleeMob(
-                            6,
-                            EntityType.HUSK,
-                            Sound.sound(SoundEvent.ENTITY_HUSK_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_HUSK_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_HUSK_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            64,
-                            5
-                    ),
-                    warden(5, 256, MaceWeapon.class)
-            ),
-            6, List.of(
-                    new SpawnRecord(() -> new MeleeJockeyMob(
-                            EntityType.CHICKEN,
-                            Sound.sound(SoundEvent.ENTITY_CHICKEN_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_CHICKEN_DEATH, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_CHICKEN_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f),
-                            EntityType.ZOMBIE).withWeapon(new StaffWeapon()), 16, List.of(new StaffWeaponMods.ArcChance(5)
-                    )),
-                    meleeMob(
-                            6,
-                            EntityType.HUSK,
-                            Sound.sound(SoundEvent.ENTITY_HUSK_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_HUSK_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            Sound.sound(SoundEvent.ENTITY_HUSK_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
-                            64,
-                            5
-                    ),
-                    warden(10, 312, MaceWeapon.class)
-            ),
-            7, List.of(
-                    warden(46, 412, MaceWeapon.class)
-            )
-    );
+                ),
+                List.of(  // Wave 4
+                        new SpawnRecord(() -> new MeleeJockeyMob(
+                                EntityType.CAMEL,
+                                Sound.sound(SoundEvent.ENTITY_CAMEL_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_CAMEL_DEATH, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_CAMEL_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                EntityType.CREEPER), 6, List.of()
+                        ),
+                        meleeMob(
+                                6,
+                                EntityType.HUSK,
+                                Sound.sound(SoundEvent.ENTITY_HUSK_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                20,
+                                3
+                        )
+                ),
+                List.of(  // Wave 5
+                        new SpawnRecord(() -> new MeleeJockeyMob(
+                                EntityType.CAMEL,
+                                Sound.sound(SoundEvent.ENTITY_CAMEL_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_CAMEL_DEATH, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_CAMEL_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                EntityType.CREEPER), 6, List.of()
+                        ),
+                        meleeMob(
+                                6,
+                                EntityType.HUSK,
+                                Sound.sound(SoundEvent.ENTITY_HUSK_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                64,
+                                5
+                        ),
+                        warden(3, 64, MaceWeapon.class)
+                ),
+                List.of(  // Wave 6
+                        new SpawnRecord(() -> new MeleeJockeyMob(
+                                EntityType.MULE,
+                                Sound.sound(SoundEvent.ENTITY_MULE_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_MULE_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HORSE_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                EntityType.HUSK), 6, List.of(new GenericMods.Jacob(5)
+                        )),
+                        meleeMob(
+                                6,
+                                EntityType.HUSK,
+                                Sound.sound(SoundEvent.ENTITY_HUSK_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                64,
+                                5
+                        ),
+                        warden(1, 256, MaceWeapon.class),
+                        rangedMob(
+                                3,
+                                EntityType.SKELETON,
+                                1
+                        )
+                ),
+                List.of(  // Wave 7
+                        new SpawnRecord(() -> new MeleeJockeyMob(
+                                EntityType.CHICKEN,
+                                Sound.sound(SoundEvent.ENTITY_CHICKEN_HURT, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_CHICKEN_DEATH, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_CHICKEN_STEP, Sound.Source.NEUTRAL, 0.4f, 1.0f),
+                                EntityType.ZOMBIE).withWeapon(new StaffWeapon()), 12, List.of(new StaffWeaponMods.ArcChance(5)
+                        )),
+                        meleeMob(
+                                6,
+                                EntityType.HUSK,
+                                Sound.sound(SoundEvent.ENTITY_HUSK_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                32,
+                                5
+                        ),
+                        warden(2, 256, MaceWeapon.class),
+                        rangedMob(
+                                4,
+                                EntityType.SKELETON,
+                                12
+                        )
+                ),
+                List.of(  // Wave 8
+                        warden(16, 312, MaceWeapon.class),
+                        rangedMob(
+                                3,
+                                EntityType.SKELETON,
+                                12
+                        ),
+                        rangedMob(
+                                6,
+                                EntityType.ZOMBIFIED_PIGLIN,
+                                16
+                        )
+                ),
+                List.of(  // Wave 9
+                        meleeMob(
+                                32,
+                                EntityType.HUSK,
+                                Sound.sound(SoundEvent.ENTITY_HUSK_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                32,
+                                5
+                        ),
+                        warden(3, 448, MaceWeapon.class),
+                        rangedMob(
+                                6,
+                                EntityType.SKELETON,
+                                12
+                        )
+                ),
+                List.of(  // Wave 10
+                        meleeMob(
+                                32,
+                                EntityType.HUSK,
+                                Sound.sound(SoundEvent.ENTITY_HUSK_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                Sound.sound(SoundEvent.ENTITY_HUSK_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                                64,
+                                5
+                        ),
+                        warden(12, 512, MaceWeapon.class),
+                        rangedMob(
+                                6,
+                                EntityType.SKELETON,
+                                12
+                        )
+                )
+        );
+    }
 
     private static List<SpawnRecord> getDefaultWave(int waveNumber) {
         return List.of(warden(30 + (waveNumber * 5), 128, MaceWeapon.class));
@@ -144,6 +202,21 @@ public final class Waves {
                     deathSound,
                     walkSound,
                     dmg
+            );
+            mob.getAttribute(Attribute.MAX_HEALTH).setBaseValue(health);
+            mob.heal();
+            return mob;
+        };
+        return new SpawnRecord(sup, count, List.of());
+    }
+
+    private static SpawnRecord rangedMob(int count, EntityType type, double health) {
+        Supplier<AttackableMob> sup = () -> {
+            ShooterMob mob = new ShooterMob(
+                    type,
+                    Sound.sound(SoundEvent.ENTITY_SKELETON_HORSE_HURT, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                    Sound.sound(SoundEvent.ENTITY_SKELETON_DEATH, Sound.Source.HOSTILE, 0.4f, 1.0f),
+                    Sound.sound(SoundEvent.ENTITY_SKELETON_STEP, Sound.Source.HOSTILE, 0.4f, 1.0f)
             );
             mob.getAttribute(Attribute.MAX_HEALTH).setBaseValue(health);
             mob.heal();

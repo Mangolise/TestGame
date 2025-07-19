@@ -50,7 +50,7 @@ public record MaceWeapon() implements Weapon {
             attack.setTag(Attack.DAMAGE, 14.0);
         }
 
-        attack.setTag(Attack.COOLDOWN, 1.5);
+        attack.setTag(Attack.COOLDOWN, 1.0);
         attack.setTag(Attack.CRIT_CHANCE, 0.1);
 
         next.accept(attack);
