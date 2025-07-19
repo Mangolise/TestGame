@@ -81,7 +81,7 @@ public record StaffWeapon() implements Weapon {
     public ItemStack.Builder generateItem() {
         return ItemStack.builder(Material.BREEZE_ROD)
                 .set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
-                .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(new AttributeList.Modifier(Attribute.SCALE, new AttributeModifier("testgame.weapons.staff.modifier", 1024.0, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND)))
+                .set(DataComponents.ATTRIBUTE_MODIFIERS, new AttributeList(new AttributeList.Modifier(Attribute.ENTITY_INTERACTION_RANGE, new AttributeModifier("testgame.weapons.staff.modifier", 1024.0, AttributeOperation.ADD_VALUE), EquipmentSlotGroup.HAND)))
                 .customName(ChatUtil.toComponent("&r&b&lStaff"))
                 .lore(
                         ChatUtil.toComponent("&7A magical staff that can chain lightning attacks."),
