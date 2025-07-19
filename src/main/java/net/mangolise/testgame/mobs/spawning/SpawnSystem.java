@@ -28,7 +28,7 @@ public class SpawnSystem {
             
             ///execute in minecraft:test-game-dimension run tp @s 46.31 -9.25 -6.29 1252.50 3.60
             ///execute in minecraft:test-game-dimension run tp @s 46.31 -1.76 -6.29 1262.10 5.70
-            new SpawnInfo(new Vec(46, -9, -6), new Vec(46, -1, -6), 0.5),
+            new SpawnInfo(new Vec(47, 4, 5), new Vec(46, -1, -6), 0.5),
             
             ///execute in minecraft:test-game-dimension run tp @s 45.21 2.38 22.92 1260.60 22.35
             ///execute in minecraft:test-game-dimension run tp @s 45.54 2.38 20.67 1267.80 18.15
@@ -44,7 +44,7 @@ public class SpawnSystem {
             
             ///execute in minecraft:test-game-dimension run tp @s -3.55 7.35 42.43 1262.25 52.95
             ///execute in minecraft:test-game-dimension run tp @s -3.55 16.12 42.43 1252.20 84.90
-            new SpawnInfo(new Vec(-3, 7, 42), new Vec(-3, 16, 42), 0.5),
+            new SpawnInfo(new Vec(-9, 3, 42), new Vec(-9, 3, 42), 0.5),
             
             ///execute in minecraft:test-game-dimension run tp @s -27.02 -0.07 16.02 1351.35 14.40
             ///execute in minecraft:test-game-dimension run tp @s -19.45 -0.07 16.19 1351.65 16.35
