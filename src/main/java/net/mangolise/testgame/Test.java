@@ -46,7 +46,7 @@ public class Test {
         }
 
         CustomTabList tabList = new CustomTabList();
-        tabList.setHeader(ChatUtil.toComponent("&6&lSome Game"));
+        tabList.setHeader(ChatUtil.toComponent("&6&lJacob's Mod"));
         tabList.setFooter(ChatUtil.toComponent("&7This is a Minestom game jam game.\n&7Please vote 5/5!"));
 
         MinecraftServer.getGlobalEventHandler().addListener(AsyncPlayerConfigurationEvent.class, e -> {

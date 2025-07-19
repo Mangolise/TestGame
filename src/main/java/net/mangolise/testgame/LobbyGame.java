@@ -675,7 +675,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
                 .pages(
                         ChatUtil.toComponent(
                                 """
-                                &r&b&lWelcome to Jacobs Mod!
+                                &r&9&lWelcome to Jacob's Mod!
                                 
                                 &r&0Jacobs Mod is a wave survival game where you build up weapons with upgrades to defend against hordes of mobs.
                                 
