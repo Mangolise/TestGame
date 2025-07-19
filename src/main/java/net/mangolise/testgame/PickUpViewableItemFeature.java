@@ -2,6 +2,7 @@ package net.mangolise.testgame;
 
 import net.mangolise.gamesdk.Game;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.item.PickupItemEvent;
 import net.minestom.server.inventory.TransactionOption;
@@ -18,7 +19,7 @@ public class PickUpViewableItemFeature implements Game.Feature<Game> {
             return;
         }
 
-        if (player.isDead()) {
+        if (player.isDead() || player.getGameMode().equals(GameMode.SPECTATOR)) {
             event.setCancelled(true);
             return;
         }
