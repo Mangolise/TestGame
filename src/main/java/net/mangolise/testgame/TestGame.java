@@ -3,7 +3,6 @@ package net.mangolise.testgame;
 import net.hollowcube.polar.PolarLoader;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.mangolise.gamesdk.BaseGame;
 import net.mangolise.gamesdk.features.NoCollisionFeature;
@@ -105,7 +104,7 @@ public class TestGame extends BaseGame<TestGame.Config> {
             }
         });
         instance.eventNode().addListener(CompleteWaveEvent.class, e -> {
-            e.getInstance().sendMessage(Component.text("Wave " + e.getWaveNumber() + " completed!"));
+            e.getInstance().sendMessage(ChatUtil.toComponent("&aWave &6" + e.getWaveNumber() + " &acompleted!"));
             e.getInstance().playSound(Sound.sound(SoundEvent.ENTITY_PLAYER_LEVELUP.key(), Sound.Source.PLAYER, 1.0f, 1.0f));
             for (Player player : e.getInstance().getPlayers()) {
                 player.heal();
