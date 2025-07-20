@@ -107,9 +107,11 @@ public class WaveSystem {
 //        final double finalStrength = strength;
 
         List<Waves.SpawnRecord> waveMobs = Waves.getWave(currentWave);
+        int playerCount = (int)instance.getPlayers().stream().filter(p -> p.getGameMode() != GameMode.SPECTATOR).count();
+        int mobMultiplier = Math.max(1, playerCount / 2); // at least 1 mob per player, but more if there are more players
         for (Waves.SpawnRecord record : waveMobs) {
             for (int i = 0; i < record.count(); i++) {
-                for (int j = 0; j < instance.getPlayers().stream().filter(p -> p.getGameMode() != GameMode.SPECTATOR).count(); j++) {
+                for (int j = 0; j < mobMultiplier; j++) {
                     AttackableMob mob = record.entity().get();
                     
                     double modifier = -(0.8 / Math.pow(1.08, currentWave * 2.0));
