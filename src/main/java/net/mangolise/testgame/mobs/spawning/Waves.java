@@ -250,12 +250,11 @@ public final class Waves {
     }
 
     public static List<SpawnRecord> getWave(int waveNumber) {
-        List<SpawnRecord> wave = WAVES.get(waveNumber);
-        if (wave != null) {
-            return wave;
+        if (waveNumber >= WAVES.size()) {
+            return getDefaultWave(waveNumber);
         }
-        // If no specific wave is defined, return a default wave
-        return getDefaultWave(waveNumber);
+
+        return WAVES.get(waveNumber);
     }
 
     public record SpawnRecord(Supplier<AttackableMob> entity, int count, List<Mod> mods) { }

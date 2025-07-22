@@ -69,6 +69,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
     private static final Tag<Player> JOINED_PARTY_TAG = Tag.Transient("lobby.joinedparty");
 
     private final List<GameFinish> gameFinishes = new ArrayList<>(List.of(
+            new GameFinish(new String[]{"N4TH4NOT"}, 10),
             new GameFinish(new String[]{"cakeless"}, 9),
             new GameFinish(new String[]{"TypoSquatter"}, 9)
     ));
