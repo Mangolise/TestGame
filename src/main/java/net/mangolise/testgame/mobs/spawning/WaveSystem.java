@@ -8,6 +8,7 @@ import net.mangolise.gamesdk.util.Timer;
 import net.mangolise.testgame.GameConstants;
 import net.mangolise.testgame.mobs.AttackableMob;
 import net.minestom.server.entity.GameMode;
+import net.minestom.server.entity.Player;
 import net.minestom.server.entity.attribute.Attribute;
 import net.minestom.server.entity.attribute.AttributeModifier;
 import net.minestom.server.entity.attribute.AttributeOperation;
@@ -105,6 +106,10 @@ public class WaveSystem {
 //            mobs.add(entity);
 //        }
 //        final double finalStrength = strength;
+
+        for (Player player : instance.getPlayers()) {
+            player.heal();
+        }
 
         List<Waves.SpawnRecord> waveMobs = Waves.getWave(currentWave);
         int playerCount = (int)instance.getPlayers().stream().filter(p -> p.getGameMode() != GameMode.SPECTATOR).count();

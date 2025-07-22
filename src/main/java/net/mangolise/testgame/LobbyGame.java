@@ -187,6 +187,7 @@ public class LobbyGame extends BaseGame<LobbyGame.Config> {
         }
         player.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1);  // Set by the game, so we must manually reset it
         giveRegularItems(player);
+        player.heal();
     }
 
     private void updateScoreboard() {
